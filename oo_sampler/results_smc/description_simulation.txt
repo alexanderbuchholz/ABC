@@ -1,0 +1,30 @@
+9.4.2016
+SMC
+simulation with gaussian kernel for mc and rqmc, 
+variance was set to 0.1 times estimator
+40 simulation for 1000 particle
+epsilon fixed
+
+11.4.2016
+IS
+simulation with gaussian kernel for mc and rqmc, 
+variance was set to 2 times estimator
+40 simulation for 1000 particle
+epsilon fixed
+
+14.4.2016
+SMC
+start simulation with gaussian kernel for mc and rqmc 
+variance set to 2 times estimator
+40 simulations for a list of particles
+epsilon fixed
+IS simulation started with same parameters
+
+
+8.4.2016
+IS
+start simulation with gaussian kernel for mc and rqmc 
+variance set to 2 times estimator
+10 simulations for a list of particles
+epsilon fixed schedule
+10 simulation of Y for variance reduction
