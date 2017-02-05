@@ -106,6 +106,8 @@ def check_consistency_theta(theta_prop):
 #y_star = np.array([0,0])
 def f_y_star(dim=1):
     #pdb.set_trace()
+    if dim != 1:
+        raise ValueError("dimension needs to be 1 !")
     y_star = simulator(np.array([1.]), fixed_seed=True)
     return y_star
 #y_star = np.array([0,0])

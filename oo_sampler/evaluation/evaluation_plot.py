@@ -8,8 +8,8 @@ import ipdb as pdb
 import pickle
 import numpy as np
 #if __name__ == '__main__':
-path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_20-1-17"
-path2 = "/home/alex/python_programming/ABC_results_storage/simulation_results_17-1-17"
+path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results"
+path2 = "/home/alex/python_programming/ABC_results_storage/simulation_results"
 import os
 os.chdir(path1)
 import sys
@@ -18,9 +18,9 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
 #import sisson_simulation_parameters_mixture_model
-#import simulation_parameters_mixture_model
-import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
-import a20_1_17_simulation_parameters_tuberculosis_model as simulation_parameters_mixture_model
+import simulation_parameters_mixture_model_3_2_17 as simulation_parameters_mixture_model
+#import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
+#import a20_1_17_simulation_parameters_tuberculosis_model as simulation_parameters_mixture_model
 import f_rand_seq_gen
 import gaussian_densities_etc
 def f_summary_stats(parameters, sample_method = "MC", particles=500):
@@ -37,14 +37,14 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500):
         simulation = pickle.load( open( parameters.filename+str(i_simulation)+"_"+sample_method+str(parameters.kwargs["dim_auxiliary_var"])+"_AIS_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.Time)+".p", "rb" ) )
         final_means[:, i_simulation] = simulation["means_particles"][:, -1]
         #pdb.set_trace()
-        means[:, :simulation['T_max']+1, i_simulation] = simulation["means_particles"]
+        means[:, :simulation['T_max'], i_simulation] = simulation["means_particles"]
         final_ESS[:,i_simulation] = simulation["ESS"][-1]
         final_epsilon[:,i_simulation] = simulation["epsilon"][-1]
         epsilons[:,:,i_simulation] = simulation["epsilon"]
         final_simulation_time[:,i_simulation] = simulation["simulation_time"]
-        if parameters.kwargs["modified_sampling"] == '':
+        if parameters.kwargs["propagation_mechanism"] == 'AIS':
             final_number_simulations[:,i_simulation]=sum(simulation["M_list"])*simulation['N']
-        elif parameters.kwargs["modified_sampling"] == "true sisson":
+        elif parameters.kwargs["propagation_mechanism"] == "true sisson":
             final_number_simulations[:,i_simulation]= simulation['sampling_counter']
     #pdb.set_trace()
     means_means = final_means.mean(axis=1)
@@ -130,25 +130,25 @@ def resample_for_plotting(particles, weights):
     #pdb.set_trace()
     return particles_resampled
 
-simulation_RQMC = pickle.load( open("tuberculosis_model_adaptive_M_autochoose_eps_gaussian_kernel0_RQMC1_AIS_750_simulation_abc_epsilon_40.p", "rb"))
+simulation_RQMC = pickle.load( open("mixture_gaussians_bimodal_adaptive_M_autochoose_eps_gaussian_kernel39_MC1_AIS_5000_simulation_abc_epsilon_40.p", "rb"))
 os.chdir(path2)
-simulation_sisson = pickle.load( open("tuberculosis_true_sission17_MC1_AIS_200_simulation_abc_epsilon_24.p", "rb"))
+#simulation_sisson = pickle.load( open("tuberculosis_true_sission17_MC1_AIS_200_simulation_abc_epsilon_24.p", "rb"))
 
 #simulation_MC = pickle.load( open("adaptive_M_autochoose_eps_uniform_kernel10_MC2_AIS_5000_simulation_abc_epsilon_30.p", "rb"))
 #simulation_MC = pickle.load( open( filename+str(1)+"_"+"MC"+"_AIS_"+str(500)+"_simulation_abc_epsilon_"+str(parameters.repetitions)+".p", "rb" ) )
 #simulation_RQMC = pickle.load( open( filename+str(1)+"_"+"RQMC"+"_AIS_"+str(500)+"_simulation_abc_epsilon_"+str(parameters.repetitions)+".p", "rb" ) )
 pdb.set_trace()
-sisson_resampled = resample_for_plotting(simulation_sisson['particles'][:,:,-1], simulation_sisson['weights'][:,:,-1])
+#sisson_resampled = resample_for_plotting(simulation_sisson['particles'][:,:,-1], simulation_sisson['weights'][:,:,-1])
 #rqmc_resampled = resample_for_plotting(simulation_RQMC['particles'][:,:,-1], simulation_RQMC['weights'][:,:,-1])
-rqmc_resampled = resample_for_plotting(simulation_RQMC['particles'][:,:,6], simulation_RQMC['weights'][:,:,6])
+rqmc_resampled = resample_for_plotting(simulation_RQMC['particles'][:,:,4], simulation_RQMC['weights'][:,:,4])
 #mc_resampled = resample_for_plotting(simulation_MC['particles'][:,:,-1], simulation_MC['weights'][:,:,-1])
 pdb.set_trace()
 #simulation_RQMC['weights'][:,:,-1]
 #simulation_RQMC['particles'][:,:,-1]
 #plt.scatter(simulation_RQMC['particles'][1,:,-1], simulation_RQMC['particles'][0,:,-1])
-x1_sisson = pd.Series(sisson_resampled[0,:], name="$X_1$")
-x2_sisson = pd.Series(sisson_resampled[1,:], name="$X_2$")
-sns.jointplot(x1_sisson, x2_sisson, kind="kde")
+#x1_sisson = pd.Series(sisson_resampled[0,:], name="$X_1$")
+#x2_sisson = pd.Series(sisson_resampled[1,:], name="$X_2$")
+#sns.jointplot(x1_sisson, x2_sisson, kind="kde")
 
 x1_rqmc = pd.Series(rqmc_resampled[0,:], name="$X_1$")
 x2_rqmc = pd.Series(rqmc_resampled[1,:], name="$X_2$")

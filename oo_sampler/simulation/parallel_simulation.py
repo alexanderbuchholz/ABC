@@ -4,7 +4,7 @@ Created on Fri Jan  6 16:56:45 2017
     parallel simulation of ABC SMC
 @author: alex
 """
-
+import ipdb as pdb
 import sys
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/class_method_smc")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
