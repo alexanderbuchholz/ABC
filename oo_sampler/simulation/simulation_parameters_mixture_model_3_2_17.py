@@ -15,7 +15,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_fun
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
-import functions_mixture_model_2 as functions_model
+import functions_mixture_model as functions_model
 
 
 Time = 40
@@ -24,7 +24,7 @@ dim_particles = 2
 target_ESS_ratio_resampler = 0.4
 target_ESS_ratio_reweighter = 0.5
 epsilon_target = 0.025
-kwargs = {'N_particles_list': [1500, 2000, 2500, 3000, 4000, 5000],#[100,200,300,400,500,750,1000],
+kwargs = {'N_particles_list': [100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
@@ -75,6 +75,8 @@ if __name__ == '__main__':
     #pdb.set_trace()
     kwargs['inititation_particles'] = functions_model.theta_sampler_mc
     kwargs['sampler_type'] = 'MC'
+    #pdb.set_trace()
+    #filenames_list = filenames_list[36:40]
     del partial_parallel_smc
     partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
     for i_simulation in filenames_list:
