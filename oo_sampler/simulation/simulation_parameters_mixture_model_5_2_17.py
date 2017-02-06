@@ -15,7 +15,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_fun
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
-import functions_mixture_model_2 as functions_model
+import functions_mixture_model as functions_model
 
 
 Time = 40
@@ -28,7 +28,7 @@ kwargs = {'N_particles_list': [500,750,1000, 1500, 2000, 2500, 3000, 4000, 5000]
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
-            'dim_auxiliary_var' : 1,
+            'dim_auxiliary_var' : 10,
             'augment_M' : True,
             'target_ESS_ratio_reweighter' : target_ESS_ratio_resampler,
             'target_ESS_ratio_resampler' : target_ESS_ratio_reweighter,

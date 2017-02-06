@@ -19,7 +19,7 @@ import functions_transform_hilbert
 import resampling
 #from joblib import Parallel, delayed
 import pathos.multiprocessing as multiprocessing
-NUM_CORES = multiprocessing.cpu_count()
+NUM_CORES = 2#multiprocessing.cpu_count()
 
 
 class simulator_sampler():

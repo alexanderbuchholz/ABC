@@ -301,6 +301,7 @@ class smc_sampler(object):
         self.ESS_before_reweighting = self.ESS_before_reweighting[:current_t+1]
         self.mean_particles = self.mean_particles[:, :current_t+1]
         self.var_particles = self.var_particles[:,:, :current_t+1]
+        self.epsilon = self.epsilon[:current_t+1]
 
     def iterator_true_sisson(self, current_t, **kwargs):
         """
@@ -401,6 +402,7 @@ class smc_sampler(object):
                       'means_particles': self.mean_particles,
                       'var_particles':self.var_particles,
                       'ESS': self.ESS,
+                      'ESS_before_reweighting': self.ESS_before_reweighting,
                       'epsilon':self.epsilon,
                       'M':self.dim_auxiliary_var,
                       'N':self.N_particles,

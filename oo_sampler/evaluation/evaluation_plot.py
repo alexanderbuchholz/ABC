@@ -61,11 +61,11 @@ import seaborn as sns
 import pandas as pd
 #sisson_simulation_results = f_summary_stats(sisson_simulation_parameters_mixture_model, sample_method = "MC", particles=100)
 #MC_simulation_results = f_summary_stats(simulation_parameters_mixture_model, sample_method = "MC", particles=100)
-RQMC_simulation_results = f_summary_stats(simulation_parameters_mixture_model, sample_method = "RQMC", particles=750)
+#RQMC_simulation_results = f_summary_stats(simulation_parameters_mixture_model, sample_method = "RQMC", particles=750)
 
 #print sisson_simulation_results[0]
 #print MC_simulation_results[0]
-print RQMC_simulation_results[0]
+#print RQMC_simulation_results[0]
 if False:
     N_particles_list = [500,1000, 1500, 2000, 3000, 4000, 5000]
     MC_var = []
@@ -130,32 +130,34 @@ def resample_for_plotting(particles, weights):
     #pdb.set_trace()
     return particles_resampled
 
-simulation_RQMC = pickle.load( open("mixture_gaussians_bimodal_adaptive_M_autochoose_eps_gaussian_kernel39_MC1_AIS_5000_simulation_abc_epsilon_40.p", "rb"))
+simulation_RQMC = pickle.load( open("mixture_gaussians_bimodal_adaptive_M_autochoose_eps_gaussian_kernel0_RQMC1_AIS_500_simulation_abc_epsilon_40.p", "rb"))
 os.chdir(path2)
 #simulation_sisson = pickle.load( open("tuberculosis_true_sission17_MC1_AIS_200_simulation_abc_epsilon_24.p", "rb"))
 
 #simulation_MC = pickle.load( open("adaptive_M_autochoose_eps_uniform_kernel10_MC2_AIS_5000_simulation_abc_epsilon_30.p", "rb"))
 #simulation_MC = pickle.load( open( filename+str(1)+"_"+"MC"+"_AIS_"+str(500)+"_simulation_abc_epsilon_"+str(parameters.repetitions)+".p", "rb" ) )
 #simulation_RQMC = pickle.load( open( filename+str(1)+"_"+"RQMC"+"_AIS_"+str(500)+"_simulation_abc_epsilon_"+str(parameters.repetitions)+".p", "rb" ) )
-pdb.set_trace()
+#pdb.set_trace()
 #sisson_resampled = resample_for_plotting(simulation_sisson['particles'][:,:,-1], simulation_sisson['weights'][:,:,-1])
 #rqmc_resampled = resample_for_plotting(simulation_RQMC['particles'][:,:,-1], simulation_RQMC['weights'][:,:,-1])
-rqmc_resampled = resample_for_plotting(simulation_RQMC['particles'][:,:,4], simulation_RQMC['weights'][:,:,4])
+rqmc_resampled = resample_for_plotting(simulation_RQMC['particles'][:,:,simulation_RQMC["T_max"]-1], simulation_RQMC['weights'][:,:,simulation_RQMC["T_max"]-1])
 #mc_resampled = resample_for_plotting(simulation_MC['particles'][:,:,-1], simulation_MC['weights'][:,:,-1])
-pdb.set_trace()
+#pdb.set_trace()
 #simulation_RQMC['weights'][:,:,-1]
 #simulation_RQMC['particles'][:,:,-1]
 #plt.scatter(simulation_RQMC['particles'][1,:,-1], simulation_RQMC['particles'][0,:,-1])
 #x1_sisson = pd.Series(sisson_resampled[0,:], name="$X_1$")
 #x2_sisson = pd.Series(sisson_resampled[1,:], name="$X_2$")
 #sns.jointplot(x1_sisson, x2_sisson, kind="kde")
+sns.kdeplot(rqmc_resampled.flatten())
+plt.show()
 
-x1_rqmc = pd.Series(rqmc_resampled[0,:], name="$X_1$")
-x2_rqmc = pd.Series(rqmc_resampled[1,:], name="$X_2$")
-sns.jointplot(x1_rqmc, x2_rqmc, kind="kde")
+#x1_rqmc = pd.Series(rqmc_resampled[0,:], name="$X_1$")
+#x2_rqmc = pd.Series(rqmc_resampled[1,:], name="$X_2$")
+#sns.jointplot(x1_rqmc, x2_rqmc, kind="kde")
 #x1_mc = pd.Series(mc_resampled[0,:], name="$X_1$")
 #x2_mc = pd.Series(mc_resampled[1,:], name="$X_2$")
 #sns.jointplot(x1_mc, x2_mc, kind="kde")
-plt.show()
+
 
 pdb.set_trace()
