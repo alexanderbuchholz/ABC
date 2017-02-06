@@ -18,13 +18,13 @@ import gaussian_densities_etc
 import functions_mixture_model as functions_model
 
 
-Time = 40
-repetitions = 1
-dim_particles = 1
+Time = 60
+repetitions = 5
+dim_particles = 7
 target_ESS_ratio_resampler = 0.4
 target_ESS_ratio_reweighter = 0.4
-epsilon_target = 0.025
-kwargs = {'N_particles_list': [500],#,750,1000, 1500, 2000, 2500, 3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
+epsilon_target = 0.1
+kwargs = {'N_particles_list': [500,750,1000, 1500, 2000, 2500, 3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
@@ -35,7 +35,7 @@ kwargs = {'N_particles_list': [500],#,750,1000, 1500, 2000, 2500, 3000, 4000, 50
             'epsilon_target' : epsilon_target,
             'contracting_AIS' : False,
             'M_increase_until_acceptance' : True,
-            'M_target_multiple_N' : 3,
+            'M_target_multiple_N' : 1,
             'covar_factor' : 1.5,
             'propagation_mechanism' : 'AIS',
             'sampler_type' : 'RQMC',
@@ -65,47 +65,44 @@ if __name__ == '__main__':
     import os
     os.chdir(path)
     filenames_list = [filename+str(k) for k in K_repetitions]
+    partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
+    #partial_parallel_smc(filenames_list[0])
+    #partial_parallel_smc(filenames_list[1])
+    #parallel_simulation.parmap(partial_parallel_smc,filenames_list)
+    for i_simulation in filenames_list:
+        partial_parallel_smc(i_simulation)
 
-    if False: 
-    # simulation RQMC
-        partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
-        for i_simulation in filenames_list:
-            partial_parallel_smc(i_simulation)
+    # simulation for MC sampler
+    kwargs['inititation_particles'] = functions_model.theta_sampler_mc
+    kwargs['sampler_type'] = 'MC'
+    #pdb.set_trace()
 
-    if False: 
-        # Simulation MC
-        kwargs['inititation_particles'] = functions_model.theta_sampler_mc
-        kwargs['sampler_type'] = 'MC'
+    del partial_parallel_smc
+    partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
+    for i_simulation in filenames_list:
+        partial_parallel_smc(i_simulation)
 
-        del partial_parallel_smc
-        partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
-        for i_simulation in filenames_list:
-            partial_parallel_smc(i_simulation)
+    # simulation Del Moral
+    kwargs['inititation_particles'] = functions_model.theta_sampler_mc
+    kwargs['sampler_type'] = 'MC'
+    kwargs['kernel'] = gaussian_densities_etc.uniform_kernel
+    kwargs['propagation_mechanism'] = 'Del_Moral'
+    kwargs['M_increase_until_acceptance'] = False
+    kwargs['augment_M'] = False
+    kwargs['covar_factor'] = 2
 
+    del partial_parallel_smc
+    partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
+    for i_simulation in filenames_list:
+        partial_parallel_smc(i_simulation)
 
-    if True: 
-        # simulation Del Moral
-        kwargs['inititation_particles'] = functions_model.theta_sampler_mc
-        kwargs['sampler_type'] = 'MC'
-        kwargs['kernel'] = gaussian_densities_etc.uniform_kernel
-        kwargs['propagation_mechanism'] = 'Del_Moral'
-        kwargs['M_increase_until_acceptance'] = False
-        kwargs['augment_M'] = False
-        kwargs['covar_factor'] = 2
-
-        del partial_parallel_smc
-        partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
-        for i_simulation in filenames_list:
-            partial_parallel_smc(i_simulation)
-
-    if True: 
-        # simulation Sisson
-        kwargs['propagation_mechanism'] = 'true_sisson'
-        kwargs['autochoose_eps'] = ''
-        kwargs['dim_auxiliary_var'] = 1
-        kwargs['epsilon'] =  np.linspace(4, epsilon_target, Time),
-        
-        del partial_parallel_smc
-        partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
-        for i_simulation in filenames_list:
-            partial_parallel_smc(i_simulation)
+    # simulation Sisson
+    kwargs['propagation_mechanism'] = 'true_sisson'
+    kwargs['autochoose_eps'] = ''
+    kwargs['dim_auxiliary_var'] = 1
+    kwargs['epsilon'] =  np.linspace(4, epsilon_target, Time),
+    
+    del partial_parallel_smc
+    partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
+    for i_simulation in filenames_list:
+        partial_parallel_smc(i_simulation)

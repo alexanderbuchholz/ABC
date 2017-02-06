@@ -148,7 +148,9 @@ def exclude_theta(theta_prop):
 #N = 10 # number of particles
 #initial_particles_mc = np.array([ theta_sampler_mc(0) for i in range(N)])
 #y_star = np.array([0,0])
-def f_y_star(dim=None):
+def f_y_star(dim=7):
+    if dim != 7:
+        raise ValueError('dimension needs to be 7 for toggle switch model')
     import os
     current_path = os.getcwd()
     os.chdir(path_archive_simulations)

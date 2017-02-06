@@ -377,7 +377,7 @@ class smc_sampler(object):
                 start = time.time()
             print "now sampling for time step %d of in total %d" %(current_t,self.T)
             ## handle true sission(self.class_auxialiary_sampler.M_simulator)
-            if modified_sampling == "true sisson":
+            if modified_sampling == "true_sisson":
                 self.iterator_true_sisson(current_t)
             elif modified_sampling == "AIS":
                 self.iterator_ais(current_t, resample=resample)
@@ -415,7 +415,7 @@ class smc_sampler(object):
                       'auxiliary_particles_list': self.auxialiary_particles_list,
                       'M_list': self.M_list,
                       'T_max': self.T_max}
-            pickle.dump(output, open(filename+'_'+str(self.sampler_type)+str(self.dim_auxiliary_var)+'_'+str(self.propagation_mechanism)+'_'+str(self.N_particles)+"_simulation_abc_epsilon_"+str(self.T)+".p", "wb") )
+            pickle.dump(output, open(filename+'_'+str(self.sampler_type)+str(self.dim_auxiliary_var)+'_'+str(self.propagation_mechanism)+'_'+str(self.N_particles)+"_simulation_abc_epsilon_"+str(self.epsilon_target)+"_"+str(self.T)+".p", "wb") )
 
 
 if __name__ == '__main__':
@@ -462,7 +462,7 @@ if __name__ == '__main__':
     move_particle =gaussian_densities_etc.gaussian_move
     y_star = functions_mixture_model.f_y_star(dim_particles)
 
-    if autochoose_eps != '' and propagation_mechanism=='true sisson':
+    if autochoose_eps != '' and propagation_mechanism=='true_sisson':
         raise ValueError('if true sisson, then no autochoose_eps allowed!')
 
     test_sampler = smc_sampler(N_particles, 
