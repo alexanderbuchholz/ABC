@@ -22,8 +22,9 @@ def gaussian(u, mu=0, sigma=np.array([1])):
     ## needs still to get implemented!
     #if (mu==0 and sigma==np.array([1])):
     # calculate the cholesky decomposition
+    #pdb.set_trace()
     if len(sigma.shape) != 1:
-        sigmaL = np.linalg.cholesky(sigma)
+        œsigmaL = np.linalg.cholesky(np.atleast_2d(sigma))
     else : sigmaL = np.diag(np.ones(u.shape)*np.sqrt(sigma))
     if np.all(mu==0):
         mu = np.zeros(u.shape)
@@ -67,7 +68,7 @@ def student(u, mu=0, sigma=np.array([1]), df=3):
     #if (mu==0 and sigma==np.array([1])):
     # calculate the cholesky decomposition
     if len(sigma.shape) != 1:
-        sigmaL = np.linalg.cholesky(sigma)
+        sigmaL = np.linalg.cholesky(np.atleast_2d(sigma))
     else: sigmaL = np.diag(np.ones(u.shape)*np.sqrt(sigma))
     if np.all(mu==0):
         mu = np.zeros(u.shape)

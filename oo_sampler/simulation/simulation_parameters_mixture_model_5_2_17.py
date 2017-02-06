@@ -93,7 +93,7 @@ if __name__ == '__main__':
         kwargs['augment_M'] = False
         kwargs['covar_factor'] = 2
 
-        del partial_parallel_smc
+        #del partial_parallel_smc
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
         for i_simulation in filenames_list:
             partial_parallel_smc(i_simulation)

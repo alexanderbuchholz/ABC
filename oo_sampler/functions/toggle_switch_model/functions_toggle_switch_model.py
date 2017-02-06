@@ -24,7 +24,7 @@ import rtnorm as rt
 
 model_string = "toggle_switch_model"
 dim = 7
-exponent = 5
+exponent = 4
 
 #path_archive_simulations = '/home/alex/python_programming/ABC/oo_sampler/functions/toggle_switch_model'
 path_archive_simulations = '/home/alex/python_programming/ABC_results_storage/models_information'

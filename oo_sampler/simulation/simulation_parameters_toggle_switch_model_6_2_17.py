@@ -23,7 +23,7 @@ repetitions = 5
 dim_particles = 7
 target_ESS_ratio_resampler = 0.4
 target_ESS_ratio_reweighter = 0.4
-epsilon_target = 0.1
+epsilon_target = 10
 kwargs = {'N_particles_list': [500,750,1000, 1500, 2000, 2500, 3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     kwargs['propagation_mechanism'] = 'true_sisson'
     kwargs['autochoose_eps'] = ''
     kwargs['dim_auxiliary_var'] = 1
-    kwargs['epsilon'] =  np.linspace(4, epsilon_target, Time),
+    kwargs['epsilon'] =  np.linspace(100, epsilon_target, Time),
     
     del partial_parallel_smc
     partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)

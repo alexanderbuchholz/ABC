@@ -13,6 +13,7 @@ import time
 import sys
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
 import gaussian_densities_etc
+import functions_propagate_reweight_resample
 
 
 class smc_sampler(object):
@@ -431,12 +432,12 @@ if __name__ == '__main__':
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
-    import functions_mixture_model_2 as functions_mixture_model
-    #import functions_toggle_switch_model as functions_mixture_model
+    #import functions_mixture_model_2 as functions_mixture_model
+    import functions_toggle_switch_model as functions_mixture_model
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 200
-    dim_particles = 1
+    dim_particles = 7
     Time = 20
     dim_auxiliary_var = 1
     augment_M = True
@@ -480,7 +481,7 @@ if __name__ == '__main__':
     test_sampler.propagation_mechanism = propagation_mechanism
     test_sampler.sampler_type = sampler_type
     test_sampler.covar_factor = covar_factor
-    import functions_propagate_reweight_resample
+    
 
     simulator_mm = functions_propagate_reweight_resample.simulator_sampler(functions_mixture_model.simulator,
                                      y_star,
