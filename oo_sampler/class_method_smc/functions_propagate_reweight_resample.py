@@ -267,7 +267,7 @@ def accept_reject_del_moral(epsilon, aux_particles_new, aux_particles_old, kerne
         if np.isnan(weight_inter).any():
             weight_inter = 0.
         weights_next[:, i_particle] = weight_inter
-        gaussian_densities_etc.break_if_nan(weights_next)
+    gaussian_densities_etc.break_if_nan(weights_next)
     #pdb.set_trace()
     probabilities = np.random.uniform(size=N_particles)
     return (weights_next > probabilities)
@@ -276,16 +276,22 @@ def calculate_weights(epsilon, particles_preweights, aux_particles, weights_befo
     """
     general weight calculation
     """
-    weights_next = np.ones(particles_preweights.shape)
-    N_particles = particles_preweights.shape[1] # the shape of the weights is (1,N) !!!!!
+    #weights_next = np.ones(particles_preweights.shape)
+    #N_particles = particles_preweights.shape[1] # the shape of the weights is (1,N) !!!!!
     # loop over particles
-    for i_particle in range(N_particles):
-        density_aux = np.mean(gaussian_densities_etc.f_kernel_value(epsilon, aux_particles[:,i_particle], kernel))
-        weight_inter = particles_preweights[:, i_particle]*density_aux
-        if np.isnan(weight_inter).any():
-            weight_inter = 0.
-        weights_next[:, i_particle] = weight_inter
-        gaussian_densities_etc.break_if_nan(weights_next)
+    #for i_particle in range(N_particles):
+    #    pdb.set_trace()
+    #    density_aux = gaussian_densities_etc.f_kernel_value(epsilon, aux_particles[:,i_particle], kernel).mean()
+    #    weight_inter = particles_preweights[:, i_particle]*density_aux
+    #    if np.isnan(weight_inter).any():
+    #        weight_inter = 0.
+    #    weights_next[:, i_particle] = weight_inter
+    # vectorize code
+    density_aux = gaussian_densities_etc.f_kernel_value(epsilon, aux_particles, kernel).mean(axis=0)
+    weights_next = particles_preweights*density_aux
+    eliminator = np.isnan(weights_next)
+    weights_next[eliminator] = 0.
+    gaussian_densities_etc.break_if_nan(weights_next)
     #pdb.set_trace()
     return weights_next
 
@@ -322,7 +328,7 @@ def reweight_particles(epsilon, f_calculate_weights, particles_next, particles_p
 ###################################################################################################################################
 
 
-def f_dichotomic_search_ESS(previous_epsilon, partial_f_ESS, target_ESS, N_max_steps=100, tolerance=0.0000001):
+def f_dichotomic_search_ESS(previous_epsilon, partial_f_ESS, target_ESS, N_max_steps=100, tolerance=0.001):
     """
         function that does a dichotomic for the root of a function
     """

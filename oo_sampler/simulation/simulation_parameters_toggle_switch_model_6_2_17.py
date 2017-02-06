@@ -19,12 +19,12 @@ import functions_mixture_model as functions_model
 
 
 Time = 60
-repetitions = 5
+repetitions = 1
 dim_particles = 7
 target_ESS_ratio_resampler = 0.4
 target_ESS_ratio_reweighter = 0.4
 epsilon_target = 10
-kwargs = {'N_particles_list': [500,750,1000, 1500, 2000, 2500, 3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
+kwargs = {'N_particles_list': [1000, 1500, 2000, 3000, 4000], # 500,750, , 2500, 3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,

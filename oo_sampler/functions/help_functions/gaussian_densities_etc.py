@@ -102,10 +102,12 @@ def f_kernel_value(epsilon_t, delta_values, f_kernel):
     """
     function that returns the kernel values for an array of several y values
     """
-    multiple_y = delta_values.shape[0]
-    kernel_values = np.zeros(multiple_y)
-    for i_multiple_y in range(multiple_y):
-        kernel_values[i_multiple_y] = epsilon_t*f_kernel(delta_values[i_multiple_y]/ epsilon_t)
+    #multiple_y = delta_values.shape[0]
+    #kernel_values = np.zeros(multiple_y)
+    #pdb.set_trace()
+    kernel_values = epsilon_t*f_kernel(delta_values/ epsilon_t)
+    #for i_multiple_y in range(multiple_y):
+    #    kernel_values[i_multiple_y] = epsilon_t*f_kernel(delta_values[i_multiple_y]/ epsilon_t)
     return kernel_values
 
 

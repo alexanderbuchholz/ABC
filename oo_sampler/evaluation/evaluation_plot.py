@@ -18,7 +18,8 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
 #import sisson_simulation_parameters_mixture_model
-import simulation_parameters_mixture_model_3_2_17 as simulation_parameters_mixture_model
+#import simulation_parameters_mixture_model_3_2_17 as simulation_parameters_model
+import simulation_parameters_mixture_model_5_2_17 as simulation_parameters_model
 #import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
 #import a20_1_17_simulation_parameters_tuberculosis_model as simulation_parameters_mixture_model
 import f_rand_seq_gen
@@ -71,8 +72,8 @@ if False:
     MC_var = []
     RQMC_var = []
     for N_particles in N_particles_list:
-        MC_results =  f_summary_stats(simulation_parameters_mixture_model, sample_method = "MC", particles=N_particles)
-        RQMC_results = f_summary_stats(simulation_parameters_mixture_model, sample_method = "RQMC", particles=N_particles)
+        MC_results =  f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles)
+        RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles)
         MC_var.append(MC_results[1].mean())
         RQMC_var.append(RQMC_results[1].mean())
     sns.set_style("darkgrid")
@@ -130,7 +131,13 @@ def resample_for_plotting(particles, weights):
     #pdb.set_trace()
     return particles_resampled
 
-simulation_RQMC = pickle.load( open("mixture_gaussians_bimodal_adaptive_M_autochoose_eps_gaussian_kernel0_RQMC1_AIS_500_simulation_abc_epsilon_40.p", "rb"))
+
+def f_accept_reject_precalculated_particles(precalculated_particles, precalculated_auxialiary_particles, epsilon_target_accept_reject):
+    accept_reject_selector = precalculated_auxialiary_particles < epsilon_target_accept_reject
+    return precalculated_particles[:, accept_reject_selector]
+
+simulation_RQMC = pickle.load( open("mixture_gaussians_diff_variance_adaptive_M_autochoose_eps_gaussian_kernel1_RQMC1_AIS_4000_simulation_abc_epsilon_40.p", "rb"))
+simulation_MC = pickle.load( open("mixture_gaussians_diff_variance_adaptive_M_autochoose_eps_gaussian_kernel0_RQMC1_true_sisson_500_simulation_abc_epsilon_0.025_40.p", "rb"))
 os.chdir(path2)
 #simulation_sisson = pickle.load( open("tuberculosis_true_sission17_MC1_AIS_200_simulation_abc_epsilon_24.p", "rb"))
 
@@ -139,19 +146,33 @@ os.chdir(path2)
 #simulation_RQMC = pickle.load( open( filename+str(1)+"_"+"RQMC"+"_AIS_"+str(500)+"_simulation_abc_epsilon_"+str(parameters.repetitions)+".p", "rb" ) )
 #pdb.set_trace()
 #sisson_resampled = resample_for_plotting(simulation_sisson['particles'][:,:,-1], simulation_sisson['weights'][:,:,-1])
-#rqmc_resampled = resample_for_plotting(simulation_RQMC['particles'][:,:,-1], simulation_RQMC['weights'][:,:,-1])
+
 rqmc_resampled = resample_for_plotting(simulation_RQMC['particles'][:,:,simulation_RQMC["T_max"]-1], simulation_RQMC['weights'][:,:,simulation_RQMC["T_max"]-1])
-#mc_resampled = resample_for_plotting(simulation_MC['particles'][:,:,-1], simulation_MC['weights'][:,:,-1])
+mc_resampled = resample_for_plotting(simulation_MC['particles'][:,:,simulation_MC["T_max"]-1], simulation_MC['weights'][:,:,simulation_MC["T_max"]-1])
+
 #pdb.set_trace()
-#simulation_RQMC['weights'][:,:,-1]
-#simulation_RQMC['particles'][:,:,-1]
-#plt.scatter(simulation_RQMC['particles'][1,:,-1], simulation_RQMC['particles'][0,:,-1])
 #x1_sisson = pd.Series(sisson_resampled[0,:], name="$X_1$")
 #x2_sisson = pd.Series(sisson_resampled[1,:], name="$X_2$")
 #sns.jointplot(x1_sisson, x2_sisson, kind="kde")
-sns.kdeplot(rqmc_resampled.flatten())
+
+
+#pdb.set_trace()
+precomputed_data = simulation_parameters_model.functions_model.load_precomputed_data(simulation_parameters_model.dim_particles, simulation_parameters_model.functions_model.exponent)
+precalculated_particles = precomputed_data['theta_values']
+precalculated_auxialiary_particles = precomputed_data['y_diff_values']
+#pdb.set_trace()
+AR_posterior_particles = f_accept_reject_precalculated_particles(precalculated_particles, precalculated_auxialiary_particles,  simulation_parameters_model.epsilon_target)
+
+g = sns.distplot(AR_posterior_particles[0,:], label="AR")
+plt.subplots_adjust(top=0.9)
+plt.title(('epsilon = %s, \n  N_AR = %d, N = %d')% (simulation_parameters_model.epsilon_target, AR_posterior_particles.shape[1], simulation_RQMC['N']))
+sns.kdeplot(rqmc_resampled.flatten(), label="RQMC")
+sns.kdeplot(mc_resampled.flatten(), label="MC")
 plt.show()
 
+sum(simulation_RQMC['M_list'])*simulation_RQMC['N']
+#sum(simulation_MC['M_list'])*simulation_MC['N']
+#simulation_MC['means_particles']
 #x1_rqmc = pd.Series(rqmc_resampled[0,:], name="$X_1$")
 #x2_rqmc = pd.Series(rqmc_resampled[1,:], name="$X_2$")
 #sns.jointplot(x1_rqmc, x2_rqmc, kind="kde")

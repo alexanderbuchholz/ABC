@@ -365,7 +365,7 @@ class smc_sampler(object):
         if resample==True:
             self.resample_particles(current_t = current_t)
         self.sampling_counter = self.N_particles*sum(self.M_list)
-
+   
     def iterate_smc(self, resample=False, save=False, filename='', modified_sampling=''):
         """
         """
@@ -434,13 +434,13 @@ if __name__ == '__main__':
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
     #import functions_mixture_model_2 as functions_mixture_model
-    import functions_toggle_switch_model as functions_mixture_model
-    #import functions_mixture_model
+    #import functions_toggle_switch_model as functions_mixture_model
+    import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 200
-    dim_particles = 7
+    dim_particles = 1
     Time = 20
-    dim_auxiliary_var = 1
+    dim_auxiliary_var = 10
     augment_M = True
     target_ESS_ratio_reweighter = 0.4
     target_ESS_ratio_resampler = 0.5
@@ -515,7 +515,7 @@ if __name__ == '__main__':
                                                                             target_ESS_ratio = target_ESS_ratio_reweighter,
                                                                             kernel = kernel, 
                                                                             epsilon_target = epsilon_target)
-    epsilon = np.linspace(1, epsilon_target, Time)
+    epsilon = np.linspace(10, epsilon_target, Time)
     #np.arange(Time+1,0,-1)/5.
     test_sampler.setEpsilonSchedule(epsilon)
     #test_sampler.setEpsilonSchedule(np.ones(Time)*200)
@@ -523,7 +523,7 @@ if __name__ == '__main__':
     #test_sampler.reweight_particles(0)
     resampler = functions_propagate_reweight_resample.resampler_particles(N_particles)
     test_sampler.setResampleFunction(resampler.f_resampling)
-    if True:
+    if False:
         precomputed_data = functions_mixture_model.load_precomputed_data(dim_particles, functions_mixture_model.exponent)
         precalculated_particles = precomputed_data['theta_values']
         precalculated_auxialiary_particles = precomputed_data['y_diff_values']
@@ -538,8 +538,17 @@ if __name__ == '__main__':
         plt.close('all')
 
     #pdb.set_trace()
+    
+    #resample=resample
+    #save=save
+    #modified_sampling=propagation_mechanism
+    pdb.set_trace()
+    #profile.runctx('test_sampler.iterate_smc()', globals(), locals())
+    import yappi
+    yappi.start()
     test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)
-    #pdb.set_trace()
+    yappi.get_func_stats().print_all()
+    pdb.set_trace()
     if True:
         select_component = 0
         #lim = (-0.5, 0.5)
