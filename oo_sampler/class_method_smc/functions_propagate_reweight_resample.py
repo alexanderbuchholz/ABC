@@ -239,34 +239,48 @@ def calculate_weights_del_moral(epsilon, particles_preweights, aux_particles, we
     """
     the function that calculates the weights in the approach of del moral
     """
-    weights_next = np.ones(particles_preweights.shape)
-    N_particles = particles_preweights.shape[1] # the shape of the weights is (1,N) !!!!!
-    # loop over particles
-    for i_particle in range(N_particles):
-        # procedure for del moral
-        density_aux_nominator = np.mean(gaussian_densities_etc.f_kernel_value(epsilon, aux_particles[:,i_particle], kernel))
-        density_aux_denominator = np.mean(gaussian_densities_etc.f_kernel_value(previous_epsilon, aux_particles[:,i_particle], kernel))
-        weight_inter = density_aux_nominator/density_aux_denominator
-        if np.isnan(weight_inter).any():
-            weight_inter = 0.
-        weights_next[:, i_particle] = weight_inter*weights_before[:, i_particle]
-        gaussian_densities_etc.break_if_nan(weights_next)
+    # weights_next_old = np.ones(particles_preweights.shape)
+    # N_particles = particles_preweights.shape[1] # the shape of the weights is (1,N) !!!!!
+    # # loop over particles
+    # for i_particle in range(N_particles):
+    #     # procedure for del moral
+    #     density_aux_nominator = np.mean(gaussian_densities_etc.f_kernel_value(epsilon, aux_particles[:,i_particle], kernel))
+    #     density_aux_denominator = np.mean(gaussian_densities_etc.f_kernel_value(previous_epsilon, aux_particles[:,i_particle], kernel))
+    #     weight_inter = density_aux_nominator/density_aux_denominator
+    #     if np.isnan(weight_inter).any():
+    #         weight_inter = 0.
+    #     weights_next_old[:, i_particle] = weight_inter*weights_before[:, i_particle]
+
+    density_aux_nominator = gaussian_densities_etc.f_kernel_value(epsilon, aux_particles, kernel).mean(axis=0)
+    density_aux_denominator = gaussian_densities_etc.f_kernel_value(previous_epsilon, aux_particles, kernel).mean(axis=0)
+    weights_inter = density_aux_nominator/density_aux_denominator
+    weights_next = weights_inter*weights_before
+    eliminator = np.isnan(weights_next)
+    weights_next[eliminator] = 0.
+    gaussian_densities_etc.break_if_nan(weights_next)
     #pdb.set_trace()
     return weights_next
 
 def accept_reject_del_moral(epsilon, aux_particles_new, aux_particles_old, kernel=gaussian_densities_etc.uniform_kernel):
     N_particles = aux_particles_new.shape[1] # the shape of the weights is (1,N) !!!!!
-    weights_next = np.ones((1, N_particles))
-    # loop over particles
-    for i_particle in range(N_particles):
-        # procedure for del moral
-        #pdb.set_trace()
-        density_aux_nominator = np.mean(gaussian_densities_etc.f_kernel_value(epsilon, aux_particles_new[:, i_particle], kernel))
-        density_aux_denominator = np.mean(gaussian_densities_etc.f_kernel_value(epsilon, aux_particles_old[:, i_particle], kernel))
-        weight_inter = density_aux_nominator/density_aux_denominator
-        if np.isnan(weight_inter).any():
-            weight_inter = 0.
-        weights_next[:, i_particle] = weight_inter
+    # weights_next = np.ones((1, N_particles))
+    # # loop over particles
+    # for i_particle in range(N_particles):
+    #     # procedure for del moral
+    #     #pdb.set_trace()
+    #     density_aux_nominator = np.mean(gaussian_densities_etc.f_kernel_value(epsilon, aux_particles_new[:, i_particle], kernel))
+    #     density_aux_denominator = np.mean(gaussian_densities_etc.f_kernel_value(epsilon, aux_particles_old[:, i_particle], kernel))
+    #     weight_inter = density_aux_nominator/density_aux_denominator
+    #     if np.isnan(weight_inter).any():
+    #         weight_inter = 0.
+    #     weights_next[:, i_particle] = weight_inter
+
+    density_aux_nominator = gaussian_densities_etc.f_kernel_value(epsilon, aux_particles_new, kernel).mean(axis=0)
+    density_aux_denominator = gaussian_densities_etc.f_kernel_value(epsilon, aux_particles_old, kernel).mean(axis=0)
+    weights_next = density_aux_nominator/density_aux_denominator
+    eliminator = np.isnan(weights_next)
+    weights_next[eliminator] = 0.
+
     gaussian_densities_etc.break_if_nan(weights_next)
     #pdb.set_trace()
     probabilities = np.random.uniform(size=N_particles)
