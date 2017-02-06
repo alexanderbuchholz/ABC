@@ -99,6 +99,7 @@ class smc_sampler(object):
     def setEpsilonSchedule(self, epsilon):
         self.epsilon = epsilon # override epsilon
         if len(epsilon) != self.T:
+            
             raise ValueError('Epsilon schedule does not correspond to time steps !')
 
     def __initialize_sampler(self, *args, **kwargs):

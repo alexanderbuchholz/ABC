@@ -24,6 +24,7 @@ dim_particles = 1
 target_ESS_ratio_resampler = 0.4
 target_ESS_ratio_reweighter = 0.4
 epsilon_target = 0.025
+epsilon_start = 4
 kwargs = {'N_particles_list': [500],#,750,1000, 1500, 2000, 2500, 3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
@@ -45,7 +46,7 @@ kwargs = {'N_particles_list': [500],#,750,1000, 1500, 2000, 2500, 3000, 4000, 50
             'save':True,
             'mixture_components' : 10,
             'y_star' : functions_model.f_y_star(dim_particles),
-            'epsilon': np.linspace(1, epsilon_target, Time),
+            'epsilon': np.linspace(epsilon_start, epsilon_target, Time),
             'kernel' : gaussian_densities_etc.gaussian_kernel,
             'move_particle' : gaussian_densities_etc.gaussian_move,
             'inititation_particles' : functions_model.theta_sampler_rqmc,
@@ -66,13 +67,13 @@ if __name__ == '__main__':
     os.chdir(path)
     filenames_list = [filename+str(k) for k in K_repetitions]
 
-    if False: 
+    if True: 
     # simulation RQMC
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
         for i_simulation in filenames_list:
             partial_parallel_smc(i_simulation)
 
-    if False: 
+    if True: 
         # Simulation MC
         kwargs['inititation_particles'] = functions_model.theta_sampler_mc
         kwargs['sampler_type'] = 'MC'
@@ -93,7 +94,7 @@ if __name__ == '__main__':
         kwargs['augment_M'] = False
         kwargs['covar_factor'] = 2
 
-        #del partial_parallel_smc
+        del partial_parallel_smc
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
         for i_simulation in filenames_list:
             partial_parallel_smc(i_simulation)
@@ -103,7 +104,7 @@ if __name__ == '__main__':
         kwargs['propagation_mechanism'] = 'true_sisson'
         kwargs['autochoose_eps'] = ''
         kwargs['dim_auxiliary_var'] = 1
-        kwargs['epsilon'] =  np.linspace(4, epsilon_target, Time),
+        #kwargs['epsilon'] =  np.linspace(epsilon_start, epsilon_target, Time),
         
         del partial_parallel_smc
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
