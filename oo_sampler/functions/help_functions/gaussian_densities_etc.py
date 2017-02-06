@@ -24,7 +24,7 @@ def gaussian(u, mu=0, sigma=np.array([1])):
     # calculate the cholesky decomposition
     #pdb.set_trace()
     if len(sigma.shape) != 1:
-        œsigmaL = np.linalg.cholesky(np.atleast_2d(sigma))
+        sigmaL = np.linalg.cholesky(np.atleast_2d(sigma))
     else : sigmaL = np.diag(np.ones(u.shape)*np.sqrt(sigma))
     if np.all(mu==0):
         mu = np.zeros(u.shape)
