@@ -208,9 +208,11 @@ class smc_sampler(object):
             raise ValueError('simulator of y needs to return only one value!')
         if current_t==0:
             self.__initialize_sampler() # TODO: not correct, change this !
+            self.M_list.append(self.N_particles)
         else:
             particles_var = np.atleast_2d(2*np.cov(self.particles[:,:,current_t-1], aweights=np.squeeze(self.weights[:,:,current_t-1])))
             #particles_next = np.zeros(self.particles[:,:,current_t-1].shape)
+            counter_M = 0.
             for index_particle in xrange(self.N_particles):
                 # TODO: chose ancestor
                 u = nr.uniform()
@@ -218,13 +220,17 @@ class smc_sampler(object):
                 center = self.particles[:, ancestor, current_t-1]
                 dist = 100000000000.
                 #pdb.set_trace()
+                
                 while dist> self.epsilon[current_t]: # this amounts to a uniform acceptance
                     #pdb.set_trace()
                     proposal = gaussian_densities_etc.gaussian_standard(center, particles_var)[:,np.newaxis]
                     dist = self.class_auxialiary_sampler.f_auxialiary_sampler(proposal)
-                    self.sampling_counter = self.sampling_counter+1
+                    self.sampling_counter += 1.
+                    counter_M += 1.
                 self.particles[:,index_particle, current_t] = proposal.squeeze()
                 self.auxialiary_particles[:,index_particle, current_t] = dist
+
+            self.M_list.append(counter_M)
             for i_particle in xrange(self.N_particles):
                 # TODO: calc preweights
                 #pdb.set_trace()
@@ -390,10 +396,10 @@ class smc_sampler(object):
             if current_t == 1:
                 end = time.time()
                 print ("Estimated time for the simulation in minutes %s" % ((end-start)*self.T/60.))
-            if (self.epsilon_target >= self.epsilon[current_t]) or (self.epsilon[current_t]==self.epsilon[current_t-10]):
-                self.break_routine(current_t)
-                print "break simulation since we cannot reduce epsilon anymore or target has been reached"
-                break
+            #if (self.epsilon_target >= self.epsilon[current_t]) or (self.epsilon[current_t]==self.epsilon[current_t-10]):
+            #    self.break_routine(current_t)
+            #    print "break simulation since we cannot reduce epsilon anymore or target has been reached"
+            #    break
         end_sim = time.time()
         self.simulation_time = end_sim-start_sim
         #pdb.set_trace()
@@ -434,17 +440,17 @@ if __name__ == '__main__':
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
     #import functions_mixture_model_2 as functions_mixture_model
-    #import functions_toggle_switch_model as functions_mixture_model
-    import functions_mixture_model
+    import functions_toggle_switch_model as functions_mixture_model
+    #import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 200
-    dim_particles = 1
-    Time = 20
+    dim_particles = 7
+    Time = 3
     dim_auxiliary_var = 10
     augment_M = True
     target_ESS_ratio_reweighter = 0.4
     target_ESS_ratio_resampler = 0.5
-    epsilon_target = 1
+    epsilon_target = 0.1
     contracting_AIS = False
     M_increase_until_acceptance = True
     M_target_multiple_N = 1
@@ -516,9 +522,7 @@ if __name__ == '__main__':
                                                                             kernel = kernel, 
                                                                             epsilon_target = epsilon_target)
     epsilon = np.linspace(10, epsilon_target, Time)
-    #np.arange(Time+1,0,-1)/5.
     test_sampler.setEpsilonSchedule(epsilon)
-    #test_sampler.setEpsilonSchedule(np.ones(Time)*200)
     test_sampler.setReweightFunction(reweighter.f_reweight)
     #test_sampler.reweight_particles(0)
     resampler = functions_propagate_reweight_resample.resampler_particles(N_particles)
@@ -537,13 +541,8 @@ if __name__ == '__main__':
         #plt.show()
         plt.close('all')
 
-    #pdb.set_trace()
-    
-    #resample=resample
-    #save=save
-    #modified_sampling=propagation_mechanism
+
     pdb.set_trace()
-    #profile.runctx('test_sampler.iterate_smc()', globals(), locals())
     import yappi
     yappi.start()
     test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)

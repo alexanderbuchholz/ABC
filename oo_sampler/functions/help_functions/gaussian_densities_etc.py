@@ -11,6 +11,7 @@ from scipy.stats import t as t_student
 import ipdb as pdb
 
 pi = math.pi
+#from numba import jit
 
 
 def gaussian(u, mu=0, sigma=np.array([1])):
