@@ -401,10 +401,10 @@ class smc_sampler(object):
             if current_t == 1:
                 end = time.time()
                 print ("Estimated time for the simulation in minutes %s" % ((end-start)*self.T/60.))
-            #if (self.epsilon_target >= self.epsilon[current_t]) or (self.epsilon[current_t]==self.epsilon[current_t-10]):
-            #    self.break_routine(current_t)
-            #    print "break simulation since we cannot reduce epsilon anymore or target has been reached"
-            #    break
+            if (self.epsilon_target >= self.epsilon[current_t]) or (self.epsilon[current_t]==self.epsilon[current_t-10]):
+                self.break_routine(current_t)
+                print "break simulation since we cannot reduce epsilon anymore or target has been reached"
+                break
         end_sim = time.time()
         self.simulation_time = end_sim-start_sim
         #pdb.set_trace()
@@ -451,16 +451,16 @@ if __name__ == '__main__':
     N_particles = 500
     dim_particles = 7
     Time = 10
-    dim_auxiliary_var = 1
-    augment_M = True
+    dim_auxiliary_var = 10
+    augment_M = False
     target_ESS_ratio_reweighter = 0.5
     target_ESS_ratio_resampler = 0.5
     epsilon_target = 0.1
     contracting_AIS = False
-    M_increase_until_acceptance = True
+    M_increase_until_acceptance = False
     M_target_multiple_N = 1
     covar_factor = 1.5
-    propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 
+    propagation_mechanism = 'Del_Moral'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 
     sampler_type = 'MC'
     ancestor_sampling = False#"Hilbert"
     resample = True
