@@ -26,7 +26,7 @@ class simulator_sampler():
     """
     class that is responsible for the simulation
     """
-    def __init__(self, simulator, y_star, delta, exclude_theta, M_simulator, parallelize=False):
+    def __init__(self, simulator, y_star, delta, exclude_theta, M_simulator, parallelize=True):
         self.simulator = simulator
         self.y_star = y_star
         self.delta = delta

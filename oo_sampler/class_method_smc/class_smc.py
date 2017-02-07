@@ -445,21 +445,21 @@ if __name__ == '__main__':
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
     #import functions_mixture_model_2 as functions_mixture_model
-    #import functions_toggle_switch_model as functions_mixture_model
-    import functions_mixture_model
+    import functions_toggle_switch_model as functions_mixture_model
+    #import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 500
-    dim_particles = 3
+    dim_particles = 7
     Time = 10
-    dim_auxiliary_var = 10
+    dim_auxiliary_var = 1
     augment_M = True
     target_ESS_ratio_reweighter = 0.5
     target_ESS_ratio_resampler = 0.5
     epsilon_target = 0.1
-    contracting_AIS = True
+    contracting_AIS = False
     M_increase_until_acceptance = True
     M_target_multiple_N = 1
-    covar_factor = 2
+    covar_factor = 1.5
     propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 
     sampler_type = 'MC'
     ancestor_sampling = False#"Hilbert"
