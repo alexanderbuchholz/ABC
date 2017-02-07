@@ -4,6 +4,7 @@ Created on Wed Nov 23 17:44:54 2016
 
 @author: alex
 """
+from __future__ import print_function
 import numpy as np
 import numpy.random as nr
 import pickle
@@ -172,22 +173,26 @@ class smc_sampler(object):
                 kwargs = self.parameters_AuxialiarySampler
                 #pdb.set_trace()
                 if self.M_increase_until_acceptance == True:
-                    y_alive = 0
-                    auxiliary_particles_new = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:,:,current_t], **kwargs)
+                    auxiliary_particles_new = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:, :, current_t], **kwargs)
                     M_simulator_inter = self.class_auxialiary_sampler.M_simulator
                     self.class_auxialiary_sampler.M_simulator = 1
                     auxiliary_particles_list_length = len(self.auxialiary_particles_list)
                     self.auxialiary_particles_list.append(auxiliary_particles_new)
+                    #pdb.set_trace()
+                    y_alive = np.sum((auxiliary_particles_new < self.epsilon[current_t]).flatten())
                     counter_M_simulations = 0
                     while y_alive<self.N_particles*self.M_target_multiple_N:
-                        auxiliary_particles_inter = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:,:,current_t], **kwargs)
+                        print('Successfull simulations y = %s of in total M*target= %s, number of tries M %s' % (y_alive, self.N_particles*self.M_target_multiple_N, counter_M_simulations), end='\r')
+                        auxiliary_particles_inter = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:, : ,current_t], **kwargs)
                         auxiliary_particles_new = np.vstack((auxiliary_particles_new, auxiliary_particles_inter))
-                        y_alive = y_alive+np.sum((auxiliary_particles_new < self.epsilon[current_t]).flatten())
+                        y_alive = np.sum((auxiliary_particles_new < self.epsilon[current_t-1]).flatten())
                         self.auxialiary_particles_list[auxiliary_particles_list_length] = auxiliary_particles_new
-                        counter_M_simulations +=1
+                        counter_M_simulations += 1
+                    print('\n')
+                    #pdb.set_trace()
                     self.class_auxialiary_sampler.M_simulator = M_simulator_inter+counter_M_simulations
                 else: 
-                    auxiliary_particles_new = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:,:,current_t], **kwargs)
+                    auxiliary_particles_new = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:, :, current_t], **kwargs)
                     self.auxialiary_particles_list.append(auxiliary_particles_new)
                 #import matplotlib.pyplot as plt
                 #X =  self.auxialiary_particles_list[-1].mean(axis=0)
@@ -341,7 +346,7 @@ class smc_sampler(object):
         if (self.ESS[current_t] < self.ESS_treshold_incrementer) or (self.epsilon[current_t]==self.epsilon[current_t-1]):
             if (self.augment_M):
                 # first check whether increase M is true
-                print "Increase M"
+                print("Increase M")
                 self.class_auxialiary_sampler.M_simulator += self.M_incrementer
             if (not self.contracting_AIS):
                 self.flag_failed_ESS = True
@@ -362,7 +367,7 @@ class smc_sampler(object):
         if (self.ESS[current_t] < self.ESS_treshold_incrementer) or (self.epsilon[current_t]==self.epsilon[current_t-1]):
             if (self.augment_M):
                 # first check whether increase M is true
-                print "Increase M"
+                print("Increase M")
                 self.class_auxialiary_sampler.M_simulator += self.M_incrementer
             if (not self.contracting_AIS):
                 self.flag_failed_ESS = True
@@ -383,7 +388,7 @@ class smc_sampler(object):
         for current_t in range(0,self.T):
             if current_t == 1:
                 start = time.time()
-            print "now sampling for time step %d of in total %d" %(current_t,self.T)
+            print("now sampling for time step %d of in total %d" %(current_t,self.T))
             ## handle true sission(self.class_auxialiary_sampler.M_simulator)
             if modified_sampling == "true_sisson":
                 self.iterator_true_sisson(current_t)
@@ -440,21 +445,21 @@ if __name__ == '__main__':
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
     #import functions_mixture_model_2 as functions_mixture_model
-    import functions_toggle_switch_model as functions_mixture_model
-    #import functions_mixture_model
+    #import functions_toggle_switch_model as functions_mixture_model
+    import functions_mixture_model
     model_description = functions_mixture_model.model_string
-    N_particles = 200
-    dim_particles = 7
-    Time = 3
+    N_particles = 500
+    dim_particles = 3
+    Time = 10
     dim_auxiliary_var = 10
     augment_M = True
-    target_ESS_ratio_reweighter = 0.4
+    target_ESS_ratio_reweighter = 0.5
     target_ESS_ratio_resampler = 0.5
     epsilon_target = 0.1
-    contracting_AIS = False
+    contracting_AIS = True
     M_increase_until_acceptance = True
     M_target_multiple_N = 1
-    covar_factor = 1.5
+    covar_factor = 2
     propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 
     sampler_type = 'MC'
     ancestor_sampling = False#"Hilbert"
@@ -466,7 +471,7 @@ if __name__ == '__main__':
     model_description = model_description+'_'+sampler_type+'_'+propagation_mechanism
     save = False
     mixture_components = 10
-    kernel = gaussian_densities_etc.uniform_kernel
+    kernel = gaussian_densities_etc.gaussian_kernel
     move_particle =gaussian_densities_etc.gaussian_move
     y_star = functions_mixture_model.f_y_star(dim_particles)
 
@@ -542,11 +547,11 @@ if __name__ == '__main__':
         plt.close('all')
 
 
-    pdb.set_trace()
-    import yappi
-    yappi.start()
+    #pdb.set_trace()
+    #import yappi
+    #yappi.start()
     test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)
-    yappi.get_func_stats().print_all()
+    #yappi.get_func_stats().print_all()
     pdb.set_trace()
     if True:
         select_component = 0
