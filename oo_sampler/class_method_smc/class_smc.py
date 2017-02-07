@@ -179,7 +179,7 @@ class smc_sampler(object):
                     auxiliary_particles_list_length = len(self.auxialiary_particles_list)
                     self.auxialiary_particles_list.append(auxiliary_particles_new)
                     #pdb.set_trace()
-                    y_alive = np.sum((auxiliary_particles_new < self.epsilon[current_t]).flatten())
+                    y_alive = np.sum((auxiliary_particles_new < self.epsilon[current_t-1]).flatten())
                     counter_M_simulations = 0
                     while y_alive<self.N_particles*self.M_target_multiple_N:
                         print('Successfull simulations y = %s of in total M*target= %s, number of tries M %s' % (y_alive, self.N_particles*self.M_target_multiple_N, counter_M_simulations), end='\r')
@@ -401,9 +401,10 @@ class smc_sampler(object):
             if current_t == 1:
                 end = time.time()
                 print ("Estimated time for the simulation in minutes %s" % ((end-start)*self.T/60.))
-            if (self.epsilon_target >= self.epsilon[current_t]) or (self.epsilon[current_t]==self.epsilon[current_t-10]):
+            if (self.epsilon_target >= self.epsilon[current_t]) or (self.epsilon[current_t]==self.epsilon[current_t-9]):
+                #pdb.set_trace()
                 self.break_routine(current_t)
-                print "break simulation since we cannot reduce epsilon anymore or target has been reached"
+                print("break simulation since we cannot reduce epsilon anymore or target has been reached")
                 break
         end_sim = time.time()
         self.simulation_time = end_sim-start_sim
@@ -445,22 +446,22 @@ if __name__ == '__main__':
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
     #import functions_mixture_model_2 as functions_mixture_model
-    import functions_toggle_switch_model as functions_mixture_model
-    #import functions_mixture_model
+    #import functions_toggle_switch_model as functions_mixture_model
+    import functions_mixture_model
     model_description = functions_mixture_model.model_string
-    N_particles = 500
-    dim_particles = 7
-    Time = 10
-    dim_auxiliary_var = 10
-    augment_M = False
-    target_ESS_ratio_reweighter = 0.5
-    target_ESS_ratio_resampler = 0.5
-    epsilon_target = 0.1
+    N_particles = 1000
+    dim_particles = 4
+    Time = 50
+    dim_auxiliary_var = 20
+    augment_M = True
+    target_ESS_ratio_reweighter = 0.1
+    target_ESS_ratio_resampler = 0.1
+    epsilon_target = 0.01
     contracting_AIS = False
-    M_increase_until_acceptance = False
-    M_target_multiple_N = 1
-    covar_factor = 1.5
-    propagation_mechanism = 'Del_Moral'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 
+    M_increase_until_acceptance = True
+    M_target_multiple_N = target_ESS_ratio_reweighter
+    covar_factor = 1.
+    propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 
     sampler_type = 'MC'
     ancestor_sampling = False#"Hilbert"
     resample = True

@@ -20,6 +20,7 @@ from simulator_p import simulator
 randtoolbox = rpackages.importr('randtoolbox')
 StableEstim = rpackages.importr('StableEstim')
 
+model_string = "tuberculosis_model"
 import cython
 #@jit
 @cython.wraparound(False)
@@ -214,6 +215,7 @@ def complete_theta(theta_prop):
     return(np.hstack((theta_prop, 1-sum(theta_prop))))
 #N = 10 # number of particles
 #initial_particles_mc = np.array([ theta_sampler_mc(0) for i in range(N)])
+
 y_star = np.array([[1, 282],
                    [2, 20],
                    [3, 13],
@@ -224,6 +226,12 @@ y_star = np.array([[1, 282],
                    [15, 1],
                    [23, 1],
                    [30, 1]], dtype=float)
+
+def f_y_star(dim=None):
+    if dim != 2:
+        raise ValueError('dimension needs to be 2')
+    return y_star
+
 #y = simulator(initial_particles_mc[0,:,:])
 #[simulator(initial_particles_mc[i,:,:]) for i in range(N)]
 

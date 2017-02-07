@@ -60,7 +60,7 @@ class vb_sampler():
         #                                covariance_type='full', weight_concentration_prior_type='dirichlet_distribution',
         #                                weight_concentration_prior = None, n_init = 5, init_params='random', max_iter=800,verbose=1
         #                                ).fit(X.transpose())
-        dpgmm = mixture.BayesianGaussianMixture(n_components=self.n_components, max_iter=1000, verbose = 0, verbose_interval = 50, n_init = 5).fit(X.transpose())
+        dpgmm = mixture.BayesianGaussianMixture(n_components=self.n_components, max_iter=1000, verbose = 1, verbose_interval = 50, n_init = 5).fit(X.transpose())
         cluster_selector = dpgmm.weights_>self.weight_treshold
         self.means = dpgmm.means_[cluster_selector,:]
         self.covariances = dpgmm.covariances_[cluster_selector,:,:]
@@ -216,7 +216,7 @@ if __name__ == '__main__':
     n2 = 100
     n3 = 100
     n = n1 + n2+n3
-    dim = 2
+    dim = 4
     i = 0
     simulations = 10000
     #u = np.random.random(size=(n,dim+1))
@@ -225,10 +225,10 @@ if __name__ == '__main__':
     test2 = np.random.normal(size=(n2, dim))*1# + np.array([2,2])
     test3 = np.random.normal(size=(n3, dim))*1# + np.array([-1,2])
     #proposal_values = np.vstack((test1, test2, test3))
-    from scipy.stats import t as student
-    proposal_values = np.reshape(student.rvs(5, size=simulations*dim), (simulations, dim))*2
-    #proposal_values = np.random.normal(size=(10000, dim))*2
-    #pdb.set_trace()
+    #from scipy.stats import t as student
+    #proposal_values = np.reshape(student.rvs(5, size=simulations*dim), (simulations, dim))*2
+    proposal_values = np.random.normal(size=(simulations, dim))*2
+    pdb.set_trace()
     def f_weights_mixture(x, target_only=False, dim=2):
         """
         importance sampling for the gaussian mixture model
@@ -240,7 +240,7 @@ if __name__ == '__main__':
             #pdb.set_trace()      
             weight_mixture = 0.5*gaussian_densities_etc.gaussian_density(x[i, :], mu, sigma) +0.5*gaussian_densities_etc.gaussian_density(x[i, :], mu, 0.01*sigma)
             if target_only == False:
-                weight_student = gaussian_densities_etc.student_density(x[i, :], mu, sigma*2)
+                weight_student = gaussian_densities_etc.gaussian_density(x[i, :], mu, sigma*2)
                 weights[i] = weight_mixture/weight_student
             else: 
                 weights[i] = weight_mixture

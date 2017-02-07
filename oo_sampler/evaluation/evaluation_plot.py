@@ -24,32 +24,36 @@ import simulation_parameters_mixture_model_5_2_17 as simulation_parameters_model
 #import a20_1_17_simulation_parameters_tuberculosis_model as simulation_parameters_mixture_model
 import f_rand_seq_gen
 import gaussian_densities_etc
-def f_summary_stats(parameters, sample_method = "MC", particles=500):
-    parameters.repetitions = 2
-    final_means = np.zeros((parameters.kwargs["dim_particles"],parameters.repetitions))
-    final_ESS = np.zeros((1,parameters.repetitions))
-    final_epsilon = np.zeros((1,parameters.repetitions))
-    final_simulation_time = np.zeros((1,parameters.repetitions))
-    final_number_simulations = np.zeros((1,parameters.repetitions))
+def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation_method = 'AIS'):
+    #parameters.repetitions = 2
+    #pdb.set_trace()
+    final_means = np.zeros((parameters.kwargs["dim_particles"], parameters.repetitions))
+    final_ESS = np.zeros((1, parameters.repetitions))
+    final_epsilon = np.zeros((1, parameters.repetitions))
+    final_simulation_time = np.zeros((1, parameters.repetitions))
+    final_number_simulations = np.zeros((1, parameters.repetitions))
 
     means = np.zeros((parameters.kwargs["dim_particles"], parameters.Time, parameters.repetitions))
     epsilons = np.zeros((1, parameters.Time, parameters.repetitions))
     for i_simulation in range(parameters.repetitions):
-        simulation = pickle.load( open( parameters.filename+str(i_simulation)+"_"+sample_method+str(parameters.kwargs["dim_auxiliary_var"])+"_AIS_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.Time)+".p", "rb" ) )
+        simulation = pickle.load( open( parameters.filename+str(i_simulation)+"_"+sample_method+str(parameters.kwargs["dim_auxiliary_var"])+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+'_'+str(parameters.Time)+".p", "rb" ) )
         final_means[:, i_simulation] = simulation["means_particles"][:, -1]
         #pdb.set_trace()
         means[:, :simulation['T_max'], i_simulation] = simulation["means_particles"]
         final_ESS[:,i_simulation] = simulation["ESS"][-1]
         final_epsilon[:,i_simulation] = simulation["epsilon"][-1]
-        epsilons[:,:,i_simulation] = simulation["epsilon"]
+        epsilons[:,:len(simulation["epsilon"]),i_simulation] = simulation["epsilon"]
         final_simulation_time[:,i_simulation] = simulation["simulation_time"]
-        if parameters.kwargs["propagation_mechanism"] == 'AIS':
+        if propagation_method == 'AIS':
+            #pdb.set_trace()
             final_number_simulations[:,i_simulation]=sum(simulation["M_list"])*simulation['N']
-        elif parameters.kwargs["propagation_mechanism"] == "true sisson":
+        elif propagation_method == 'Del_Moral':
+            final_number_simulations[:,i_simulation]= simulation["M"]*simulation['N']*simulation['T_max']
+        else:
             final_number_simulations[:,i_simulation]= simulation['sampling_counter']
     #pdb.set_trace()
-    means_means = final_means.mean(axis=1)
-    means_var = final_means.var(axis=1)
+    means_means = np.nanmean(final_means, axis=1)
+    means_var = np.nanvar(final_means, axis=1)
     #means_var = (final_means**2).mean(axis=1) # use this for the MSE
     ESS_mean = final_ESS.mean()
     epsilon_mean = final_epsilon.mean()
@@ -60,20 +64,27 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500):
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+pdb.set_trace()
 #sisson_simulation_results = f_summary_stats(sisson_simulation_parameters_mixture_model, sample_method = "MC", particles=100)
-#MC_simulation_results = f_summary_stats(simulation_parameters_mixture_model, sample_method = "MC", particles=100)
-#RQMC_simulation_results = f_summary_stats(simulation_parameters_mixture_model, sample_method = "RQMC", particles=750)
-
-#print sisson_simulation_results[0]
-#print MC_simulation_results[0]
-#print RQMC_simulation_results[0]
 if False:
-    N_particles_list = [500,1000, 1500, 2000, 3000, 4000, 5000]
+    for N_particles in simulation_parameters_model.kwargs['N_particles_list']:
+        MC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'AIS')
+        RQMC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, propagation_method = 'AIS')
+        del_moral_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral')
+    #print sisson_simulation_results[0]
+        print MC_simulation_results[0]
+        print RQMC_simulation_results[0]
+        print del_moral_simulation_results[0]
+        print '\n'
+    pdb.set_trace()
+if True:
+    N_particles_list = simulation_parameters_model.kwargs['N_particles_list']
     MC_var = []
     RQMC_var = []
     for N_particles in N_particles_list:
         MC_results =  f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles)
         RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles)
+        pdb.set_trace()
         MC_var.append(MC_results[1].mean())
         RQMC_var.append(RQMC_results[1].mean())
     sns.set_style("darkgrid")
@@ -85,7 +96,7 @@ if False:
     plt.show()
     plt.plot(N_particles_list, np.array(MC_var)/np.array(RQMC_var), color='blue', lw=2)
     plt.show()
-
+pdb.set_trace()
 
 if False:
     dim = 1

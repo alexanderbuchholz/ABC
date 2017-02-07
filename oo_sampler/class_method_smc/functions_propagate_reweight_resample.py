@@ -112,9 +112,9 @@ class propagater_particles():
         particles_resampled = np.zeros(particles.shape)
         # implement residual resampling
         ancestors = resampling.residual_resample(np.squeeze(weights))
-        for i_particle in range(self.N_particles):
-            particles_resampled[:, i_particle] = particles[:, ancestors[i_particle]] # define the old value ( ancestor )
-
+        #for i_particle in range(self.N_particles):
+        #    particles_resampled[:, i_particle] = particles[:, ancestors[i_particle]] # define the old value ( ancestor )
+        particles_resampled = particles[:, ancestors] # define the old value ( ancestor )
         vb_sampler = function_vb_class_sampler.vb_sampler(n_components = self.mixture_components, covar_factor=self.covar_factor)
 
         if flag_failed_ESS == True and len(information_components) != 0:
@@ -127,8 +127,9 @@ class propagater_particles():
 
         else:
             vb_sampler.f_estimate_vb(particles_resampled)
-        #pdb.set_trace()
+        
         particles_next, information_components = vb_sampler.f_vb_sampler(particles.shape, random_sequence)
+        #pdb.set_trace()
         particles_preweights_proposal = vb_sampler.f_weight_particles(particles_next)
         prior = 1.
         particles_preweights = prior/particles_preweights_proposal
@@ -209,10 +210,11 @@ class propagater_particles():
                 pdb.set_trace()
                 import matplotlib.pyplot as plt
                 import seaborn as sns
-                test = particles
-                sns.distplot(particles[0, :])
-                sns.kdeplot(particles_next[0, :])
-                plt.show()
+                for dim in range(7):    
+                    sns.distplot(particles[dim, :], label='current')
+                    sns.kdeplot(particles_next[dim, :], label='next')
+                    plt.show()
+                pdb.set_trace()
         #########################################################################################
 
         #########################################################################################
@@ -456,16 +458,16 @@ class reweighter_particles():
             epsilon_current = f_dichotomic_search_ESS(previous_epsilon, partial_f_ESS, target_ESS)
             if epsilon_current < self.epsilon_target:
                 epsilon_current = self.epsilon_target
-            #pdb.set_trace()
+            
             if False:
                 import matplotlib.pyplot as plt
-                epsilon_values = np.linspace(0.05, 10, num=100)
+                epsilon_values = np.linspace(0.05, 100, num=100)
                 ESS_values = np.zeros(epsilon_values.shape)
                 for i in range(len(epsilon_values)):
                     ESS_values[i] = partial_f_ESS(epsilon_values[i])
                 plt.plot(epsilon_values, ESS_values)
                 plt.show()
-
+            #pdb.set_trace()
         else:
             epsilon_current = epsilon[current_t]
 
