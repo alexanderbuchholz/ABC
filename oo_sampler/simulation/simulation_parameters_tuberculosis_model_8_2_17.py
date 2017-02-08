@@ -98,7 +98,7 @@ if __name__ == '__main__':
         for i_simulation in filenames_list:
             partial_parallel_smc(i_simulation)
 
-    if True: 
+    if False: 
         # simulation Sisson
         kwargs['propagation_mechanism'] = 'true_sisson'
         kwargs['autochoose_eps'] = ''
