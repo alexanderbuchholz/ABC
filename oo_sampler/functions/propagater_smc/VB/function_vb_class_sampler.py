@@ -60,7 +60,7 @@ class vb_sampler():
         #                                covariance_type='full', weight_concentration_prior_type='dirichlet_distribution',
         #                                weight_concentration_prior = None, n_init = 5, init_params='random', max_iter=800,verbose=1
         #                                ).fit(X.transpose())
-        dpgmm = mixture.BayesianGaussianMixture(n_components=self.n_components, max_iter=1000, verbose = 1, verbose_interval = 50, n_init = 5).fit(X.transpose())
+        dpgmm = mixture.BayesianGaussianMixture(n_components=self.n_components, max_iter=1000, verbose = 0, verbose_interval = 50, n_init = 5).fit(X.transpose())
         cluster_selector = dpgmm.weights_>self.weight_treshold
         self.means = dpgmm.means_[cluster_selector,:]
         self.covariances = dpgmm.covariances_[cluster_selector,:,:]

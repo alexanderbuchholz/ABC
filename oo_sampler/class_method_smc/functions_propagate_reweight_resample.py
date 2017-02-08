@@ -327,11 +327,12 @@ def reweight_particles(epsilon, f_calculate_weights, particles_next, particles_p
 
     weights_next = f_calculate_weights(epsilon, particles_preweights, aux_particles, weights_before, kernel, previous_epsilon)
 
-    #pdb.set_trace()
+    
     weights_normalized = weights_next/np.sum(weights_next)
     gaussian_densities_etc.break_if_nan(weights_normalized)
     gaussian_densities_etc.break_if_negative(weights_normalized)
     ESS = 1/(weights_normalized**2).sum()
+    #pdb.set_trace()
 
     particles_mean_next = np.average(particles_next, axis=1, weights=np.squeeze(weights_normalized))
     particles_var_next = covar_factor*np.cov(particles_next, aweights=np.squeeze(weights_normalized))

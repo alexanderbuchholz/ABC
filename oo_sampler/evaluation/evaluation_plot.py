@@ -72,30 +72,48 @@ if False:
         RQMC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, propagation_method = 'AIS')
         del_moral_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral')
     #print sisson_simulation_results[0]
+        print N_particles
         print MC_simulation_results[0]
         print RQMC_simulation_results[0]
         print del_moral_simulation_results[0]
         print '\n'
     pdb.set_trace()
+simulation = pickle.load( open( "mixture_gaussians_diff_variance_adaptive_M_autochoose_eps_gaussian_kernel10_MC10_AIS_2500_simulation_abc_epsilon_0.025_40.p", "rb" ) )
+
+def function_flatten_results(_results, dim):
+    _means_inter = _results[1][0][dim, :, :].flatten()
+    _epsilons_inter = _results[1][1].flatten()
+    _means_inter = _means_inter[_epsilons_inter > 0.]
+    _epsilons_inter = _epsilons_inter[_epsilons_inter > 0.]
+    return _means_inter, _epsilons_inter
+
 if True:
     N_particles_list = simulation_parameters_model.kwargs['N_particles_list']
-    MC_var = []
-    RQMC_var = []
+    MC_means = []
+    RQMC_means = []
     for N_particles in N_particles_list:
         MC_results =  f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles)
         RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles)
-        pdb.set_trace()
-        MC_var.append(MC_results[1].mean())
-        RQMC_var.append(RQMC_results[1].mean())
-    sns.set_style("darkgrid")
-    plt.subplot(1,1,1)
-    pdb.set_trace()
-    plt.plot(N_particles_list, MC_var, color='blue', lw=2)
-    plt.plot(N_particles_list, RQMC_var, color='green', lw=2)
-    plt.yscale('log')
-    plt.show()
-    plt.plot(N_particles_list, np.array(MC_var)/np.array(RQMC_var), color='blue', lw=2)
-    plt.show()
+        Del_Moral_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral')
+        #pdb.set_trace()
+        print('code works for one dimension only!')
+        MC_means_inter, MC_epsilons_inter = function_flatten_results(MC_results, 0)
+        RQMC_means_inter, RQMC_epsilons_inter = function_flatten_results(RQMC_results, 0)
+        Del_Moral_means_inter, Del_Moral_epsilons_inter = function_flatten_results(Del_Moral_results, 0)
+
+        sns.set_style("darkgrid")
+        #sns.tsplot(time=MC_epsilons_inter, data=MC_means_inter, color='blue')
+        #sns.tsplot(time=RQMC_epsilons_inter, data=RQMC_means_inter, color='green')
+        #sns.tsplot(time=Del_Moral_epsilons_inter, data=Del_Moral_means_inter, color='red')
+        #plt.subplot(1,1,1)
+        #pdb.set_trace()
+        
+        plt.scatter(MC_epsilons_inter, MC_means_inter, color='blue', lw=1)
+        plt.scatter(RQMC_epsilons_inter, RQMC_means_inter, color='green', lw=1)
+        plt.scatter(Del_Moral_epsilons_inter, Del_Moral_means_inter, color='red', lw=1)
+        #plt.yscale('log')
+        plt.xscale('log')
+        plt.show()
 pdb.set_trace()
 
 if False:

@@ -25,7 +25,7 @@ target_ESS_ratio_resampler = 0.4
 target_ESS_ratio_reweighter = 0.4
 epsilon_target = 0.025
 epsilon_start = 4
-kwargs = {'N_particles_list': [500,750,1000, 1500, 2000, 2500], #3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
+kwargs = {'N_particles_list': [500,750,1000, 1500, 2000, 2500],#, 3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
@@ -36,7 +36,7 @@ kwargs = {'N_particles_list': [500,750,1000, 1500, 2000, 2500], #3000, 4000, 500
             'epsilon_target' : epsilon_target,
             'contracting_AIS' : False,
             'M_increase_until_acceptance' : True,
-            'M_target_multiple_N' : 3,
+            'M_target_multiple_N' : 1,
             'covar_factor' : 1.5,
             'propagation_mechanism' : 'AIS',
             'sampler_type' : 'RQMC',
@@ -56,8 +56,8 @@ kwargs = {'N_particles_list': [500,750,1000, 1500, 2000, 2500], #3000, 4000, 500
             }
 
 K_repetitions = range(repetitions)
+#filename = functions_model.model_string+'_dim_'+str(dim_particles)+'_adaptive_M_autochoose_eps_gaussian_kernel'
 filename = functions_model.model_string+'_adaptive_M_autochoose_eps_gaussian_kernel'
-
 if __name__ == '__main__':
     import parallel_simulation
     from functools import partial
