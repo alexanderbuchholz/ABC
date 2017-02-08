@@ -14,8 +14,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/class_method_smc")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
 import gaussian_densities_etc
-#import functions_tuberculosis_model as functions_model
-import functions_mixture_model_2 as functions_mixture_model
+import functions_tuberculosis_model as functions_model
 
 
 Time = 40
@@ -47,7 +46,7 @@ kwargs = {'N_particles_list': [100,200,300,400,500,750,1000],
             'y_star' : functions_model.f_y_star(dim_particles),
             'epsilon': np.linspace(1, epsilon_target, Time),
             'kernel' : gaussian_densities_etc.gaussian_kernel,
-            'move_theta' : gaussian_densities_etc.gaussian_move,
+            'move_particle' : gaussian_densities_etc.gaussian_move,
             'inititation_particles' : functions_model.theta_sampler_rqmc,
             'simulator' : functions_model.simulator,
             'delta' : functions_model.delta,
