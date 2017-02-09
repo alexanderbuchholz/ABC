@@ -220,6 +220,8 @@ class propagater_particles():
             random_sequence = f_rand_seq_gen.random_sequence_mc
         elif self.sampler_type=="RQMC":
             random_sequence = f_rand_seq_gen.random_sequence_rqmc
+        else: 
+            raise ValueError("sampler type not specified or unavailable")
         # generate the random sequence
         # choose which sample mechanism to choose
         #########################################################################################

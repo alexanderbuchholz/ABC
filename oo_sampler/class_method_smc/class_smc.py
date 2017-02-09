@@ -40,11 +40,11 @@ class smc_sampler(object):
         else:
             self.ESS_treshold_incrementer = ESS_treshold_incrementer
         # defining the interior data structure
-        self.particles = np.zeros(shape=(self.dim_particles, self.N_particles, self.T+1))
-        self.particles_before_resampling = np.zeros(shape=(self.dim_particles, self.N_particles, self.T+1))
-        self.particles_preweights = np.zeros(shape=(1, self.N_particles, self.T+1))
+        self.particles = np.zeros(shape=(self.dim_particles, self.N_particles, self.T))
+        self.particles_before_resampling = np.zeros(shape=(self.dim_particles, self.N_particles, self.T))
+        self.particles_preweights = np.zeros(shape=(1, self.N_particles, self.T))
         #self.particles_resampled = np.zeros(shape=(self.dim_particles, self.N_particles, self.T))
-        self.weights = np.ones(shape=(1, self.N_particles, self.T+1))*1./self.N_particles
+        self.weights = np.ones(shape=(1, self.N_particles, self.T))*1./self.N_particles
         self.sampling_counter = 0.
         self.information_components = []
         self.augment_M = augment_M
@@ -59,18 +59,18 @@ class smc_sampler(object):
             self.auxialiary_particles_list = []
             self.auxialiary_particles = np.zeros(shape=(self.dim_auxiliary_var,
                                                         self.N_particles,
-                                                        self.T+1))
-            self.auxialiary_weights = np.ones(shape=(1, self.N_particles, self.T+1))*1./self.N_particles
+                                                        self.T))
+            self.auxialiary_weights = np.ones(shape=(1, self.N_particles, self.T))*1./self.N_particles
 
         else:
             self.dim_auxiliary_var = 0
         self.epsilon = None
-        self.ESS = np.ones(self.T+1)
-        self.variance_normalisation_constant = np.zeros(self.T+1)
+        self.ESS = np.ones(self.T)
+        self.variance_normalisation_constant = np.zeros(self.T)
         self.ESS[0] = self.N_particles
-        self.ESS_before_reweighting = np.ones(self.T+1)
-        self.mean_particles = np.zeros((self.dim_particles, self.T+1))
-        self.var_particles = np.zeros((self.dim_particles, self.dim_particles, self.T+1))
+        self.ESS_before_reweighting = np.ones(self.T)
+        self.mean_particles = np.zeros((self.dim_particles, self.T))
+        self.var_particles = np.zeros((self.dim_particles, self.dim_particles, self.T))
 
     def setParameters(self, parameters):
         self.parameters = parameters
@@ -308,7 +308,8 @@ class smc_sampler(object):
         self.particles[:,:,current_t] = (particles_new*accept_reject_indicator)+(particles_old*np.logical_not(accept_reject_indicator))
 
     def break_routine(self, current_t):
-        self.T_max = current_t+1
+        self.T_max = current_t
+        # need current_t + 1 in order to have the last element of the array
         self.particles = self.particles[:,:,:current_t+1]
         self.particles_before_resampling = self.particles_before_resampling[:,:,:current_t+1]
         self.weights = self.weights[:,:,:current_t+1]
@@ -388,6 +389,7 @@ class smc_sampler(object):
         self.flag_failed_ESS = False
         self.T_max = self.T
         start_sim = time.time()
+        current_t_dist = np.min((self.T-1, 10))
         for current_t in range(0,self.T):
             if current_t == 1:
                 start = time.time()
@@ -404,7 +406,8 @@ class smc_sampler(object):
             if current_t == 1:
                 end = time.time()
                 print ("Estimated time for the simulation in minutes %s" % ((end-start)*self.T/60.))
-            if (self.epsilon_target >= self.epsilon[current_t]) or (self.epsilon[current_t]==self.epsilon[current_t-9]):
+            
+            if (self.epsilon_target >= self.epsilon[current_t]) or (self.epsilon[current_t]==self.epsilon[current_t-current_t_dist]):
                 #pdb.set_trace()
                 self.break_routine(current_t)
                 print("break simulation since we cannot reduce epsilon anymore or target has been reached")
@@ -454,20 +457,20 @@ if __name__ == '__main__':
     import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 1000
-    dim_particles = 3
-    Time = 100
+    dim_particles = 2
+    Time = 40
     dim_auxiliary_var = 20
     augment_M = True
     M_incrementer = 1
     target_ESS_ratio_reweighter = 0.3
     target_ESS_ratio_resampler = 0.31
-    epsilon_target = 0.3
+    epsilon_target = 0.01
     contracting_AIS = True
     M_increase_until_acceptance = True
     M_target_multiple_N = 1
     covar_factor = 1.5
     propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 
-    sampler_type = 'RQ  MC'
+    sampler_type = 'RQMC'
     ancestor_sampling = False#"Hilbert"
     resample = True
     autochoose_eps = 'ess_based' # ''ess_based quantile_based
@@ -543,15 +546,15 @@ if __name__ == '__main__':
         precomputed_data = functions_mixture_model.load_precomputed_data(dim_particles, functions_mixture_model.exponent)
         precalculated_particles = precomputed_data['theta_values']
         precalculated_auxialiary_particles = precomputed_data['y_diff_values']
-        pdb.set_trace()
+        #pdb.set_trace()
         AR_posterior_particles = test_sampler.f_accept_reject_precalculated_particles(precalculated_particles, precalculated_auxialiary_particles, epsilon_target)
-        
-        g = sns.distplot(AR_posterior_particles[0,:])
-        plt.subplots_adjust(top=0.9)
-        plt.title(('epsilon = %s \n and N = %d')% (epsilon_target, AR_posterior_particles.shape[1]))
-        #plt.savefig("univariate_iteration_accept_reject"+model_description+".png")
-        plt.show()
-        #plt.close('all')
+        if False: 
+            g = sns.distplot(AR_posterior_particles[0,:])
+            plt.subplots_adjust(top=0.9)
+            plt.title(('epsilon = %s \n and N = %d')% (epsilon_target, AR_posterior_particles.shape[1]))
+            #plt.savefig("univariate_iteration_accept_reject"+model_description+".png")
+            plt.show()
+            #plt.close('all')
 
 
     #pdb.set_trace()
