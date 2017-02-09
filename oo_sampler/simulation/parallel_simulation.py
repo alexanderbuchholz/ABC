@@ -27,6 +27,7 @@ def set_up_parallel_abc_sampler(filename, **kwargs):
                                 Time, 
                                 dim_auxiliary_var=dim_auxiliary_var, 
                                 augment_M = augment_M, 
+                                M_incrementer = M_incrementer,
                                 ESS_treshold_resample=N_particles*(target_ESS_ratio_resampler), 
                                 ESS_treshold_incrementer = N_particles*(target_ESS_ratio_reweighter),
                                 epsilon_target=epsilon_target, 

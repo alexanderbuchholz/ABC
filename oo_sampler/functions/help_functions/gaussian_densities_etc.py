@@ -44,6 +44,7 @@ def gaussian_density(x, mu, sigma):
     """
     return the value of the gaussian density
     """
+    #pdb.set_trace()
     size = len(x)
     if size == len(mu) and (size, size) == sigma.shape:
         det = np.linalg.det(sigma)

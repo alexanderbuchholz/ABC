@@ -66,6 +66,7 @@ class smc_sampler(object):
             self.dim_auxiliary_var = 0
         self.epsilon = None
         self.ESS = np.ones(self.T+1)
+        self.variance_normalisation_constant = np.zeros(self.T+1)
         self.ESS[0] = self.N_particles
         self.ESS_before_reweighting = np.ones(self.T+1)
         self.mean_particles = np.zeros((self.dim_particles, self.T+1))
@@ -190,7 +191,7 @@ class smc_sampler(object):
                         counter_M_simulations += 1
                     print('\n')
                     #pdb.set_trace()
-                    self.class_auxialiary_sampler.M_simulator = M_simulator_inter+counter_M_simulations
+                    self.class_auxialiary_sampler.M_simulator = counter_M_simulations
                 else: 
                     auxiliary_particles_new = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:, :, current_t], **kwargs)
                     self.auxialiary_particles_list.append(auxiliary_particles_new)
@@ -260,7 +261,7 @@ class smc_sampler(object):
                 previous_ESS = self.N_particles
             else:
                 previous_ESS = self.ESS[current_t-1]
-            weights, particles_mean, particles_var, ESS, epsilon_current, ESS_before_reweighting = self.f_weight_particles(self.particles[:,:,current_t],
+            weights, particles_mean, particles_var, ESS, epsilon_current, ESS_before_reweighting, variance_normalisation_constant = self.f_weight_particles(self.particles[:,:,current_t],
                                                                                                     self.particles_preweights[:,:,current_t],
                                                                                                     current_t,
                                                                                                     #aux_particles=self.auxialiary_particles[:,:,current_t],
@@ -274,6 +275,7 @@ class smc_sampler(object):
         self.var_particles[:,:,current_t] = particles_var
         self.ESS[current_t] = ESS
         self.ESS_before_reweighting[current_t] = ESS_before_reweighting
+        self.variance_normalisation_constant[current_t] = variance_normalisation_constant
         #pdb.set_trace()
         self.epsilon[current_t] = epsilon_current
         gaussian_densities_etc.break_if_nan(self.particles)
@@ -311,6 +313,7 @@ class smc_sampler(object):
         self.particles_before_resampling = self.particles_before_resampling[:,:,:current_t+1]
         self.weights = self.weights[:,:,:current_t+1]
         self.ESS = self.ESS[:current_t+1]
+        self.variance_normalisation_constant = self.variance_normalisation_constant[:current_t+1]
         self.ESS_before_reweighting = self.ESS_before_reweighting[:current_t+1]
         self.mean_particles = self.mean_particles[:, :current_t+1]
         self.var_particles = self.var_particles[:,:, :current_t+1]
@@ -428,7 +431,8 @@ class smc_sampler(object):
                       'information_components': self.information_components,
                       'auxiliary_particles_list': self.auxialiary_particles_list,
                       'M_list': self.M_list,
-                      'T_max': self.T_max}
+                      'T_max': self.T_max,
+                      'variance_normalisation_constant' : self.variance_normalisation_constant}
             pickle.dump(output, open(filename+'_'+str(self.sampler_type)+str(self.dim_auxiliary_var)+'_'+str(self.propagation_mechanism)+'_'+str(self.N_particles)+"_simulation_abc_epsilon_"+str(self.epsilon_target)+"_"+str(self.T)+".p", "wb") )
 
 
@@ -446,23 +450,24 @@ if __name__ == '__main__':
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
     #import functions_mixture_model_2 as functions_mixture_model
-    import functions_toggle_switch_model as functions_mixture_model
-    #import functions_mixture_model
+    #import functions_toggle_switch_model as functions_mixture_model
+    import functions_mixture_model
     model_description = functions_mixture_model.model_string
-    N_particles = 100
-    dim_particles = 4
+    N_particles = 1000
+    dim_particles = 3
     Time = 100
     dim_auxiliary_var = 20
     augment_M = True
+    M_incrementer = 1
     target_ESS_ratio_reweighter = 0.3
-    target_ESS_ratio_resampler = 0.3
-    epsilon_target = 0.01
+    target_ESS_ratio_resampler = 0.31
+    epsilon_target = 0.3
     contracting_AIS = True
     M_increase_until_acceptance = True
     M_target_multiple_N = 1
-    covar_factor = 1.
+    covar_factor = 1.5
     propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 
-    sampler_type = 'MC'
+    sampler_type = 'RQ  MC'
     ancestor_sampling = False#"Hilbert"
     resample = True
     autochoose_eps = 'ess_based' # ''ess_based quantile_based
@@ -483,7 +488,8 @@ if __name__ == '__main__':
                                 dim_particles, 
                                 Time, 
                                 dim_auxiliary_var=dim_auxiliary_var, 
-                                augment_M = augment_M, 
+                                augment_M = augment_M,
+                                M_incrementer = M_incrementer,  
                                 ESS_treshold_resample=N_particles*(target_ESS_ratio_resampler), 
                                 ESS_treshold_incrementer = N_particles*(target_ESS_ratio_reweighter),
                                 epsilon_target=epsilon_target, 
@@ -533,7 +539,7 @@ if __name__ == '__main__':
     #test_sampler.reweight_particles(0)
     resampler = functions_propagate_reweight_resample.resampler_particles(N_particles)
     test_sampler.setResampleFunction(resampler.f_resampling)
-    if False:
+    if True:
         precomputed_data = functions_mixture_model.load_precomputed_data(dim_particles, functions_mixture_model.exponent)
         precalculated_particles = precomputed_data['theta_values']
         precalculated_auxialiary_particles = precomputed_data['y_diff_values']
@@ -543,9 +549,9 @@ if __name__ == '__main__':
         g = sns.distplot(AR_posterior_particles[0,:])
         plt.subplots_adjust(top=0.9)
         plt.title(('epsilon = %s \n and N = %d')% (epsilon_target, AR_posterior_particles.shape[1]))
-        plt.savefig("univariate_iteration_accept_reject"+model_description+".png")
-        #plt.show()
-        plt.close('all')
+        #plt.savefig("univariate_iteration_accept_reject"+model_description+".png")
+        plt.show()
+        #plt.close('all')
 
 
     #pdb.set_trace()
@@ -568,7 +574,8 @@ if __name__ == '__main__':
                 plt.subplots_adjust(top=0.9)
                 g.fig.suptitle(('epsilon = %s \n and N = %d')% (test_sampler.epsilon[i], test_sampler.N_particles))
                 #pdb.set_trace()
-                plt.savefig("bivariate_iteration_%s_%s.png"%(i, model_description))
+                #plt.savefig("bivariate_iteration_%s_%s.png"%(i, model_description))
+                plt.show()
                 plt.close('all')
             
             

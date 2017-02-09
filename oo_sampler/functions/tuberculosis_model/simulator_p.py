@@ -3,7 +3,7 @@ import numpy.random as nr
 import numpy as np
 from scipy.stats import itemfreq, gamma, norm
 import random
-import cProfile
+#import cProfile
 #from numba import jit
 #from numba import autojit
 #from numba import float64, int32
@@ -197,5 +197,8 @@ if __name__ == "__main__":
 	#multinomial_sample(np.ones(2)/2)
 	#inner_while(theta_cum,G, X, death_counter, icounter, N_alive, X_cum, W_cum)
 	#loop(theta,10000)
-	cProfile.run('simulator(theta)')
+	#cProfile.run('simulator(theta)')
+        import yappi
+        yappi.start()
 	repeat_simulation(simulator, theta, 10)
+        yappi.get_func_stats().print_all()

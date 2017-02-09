@@ -109,32 +109,56 @@ class propagater_particles():
         """
         propagation of type ais
         """
-        particles_resampled = np.zeros(particles.shape)
-        # implement residual resampling
-        ancestors = resampling.residual_resample(np.squeeze(weights))
-        #for i_particle in range(self.N_particles):
-        #    particles_resampled[:, i_particle] = particles[:, ancestors[i_particle]] # define the old value ( ancestor )
-        particles_resampled = particles[:, ancestors] # define the old value ( ancestor )
-        vb_sampler = function_vb_class_sampler.vb_sampler(n_components = self.mixture_components, covar_factor=self.covar_factor)
-
-        if flag_failed_ESS == True and len(information_components) != 0:
-            # use the old values of the previous iteration
+        if self.mixture_components == 1:
             #pdb.set_trace()
-            vb_sampler.weights = information_components[-1]["weights"]
-            vb_sampler.means = information_components[-1]["means"]
-            vb_sampler.covariances = information_components[-1]["covariances"]
-            vb_sampler.vb_estimated = True
+            particles_var = np.atleast_2d(self.covar_factor*np.cov(particles, aweights=np.squeeze(weights)))
+            particles_mean = np.average(particles, weights=np.squeeze(weights), axis=1)
+            
+            u = random_sequence(self.dim_particles+1, i=0, n=self.N_particles)
 
-        else:
-            vb_sampler.f_estimate_vb(particles_resampled)
-        
-        particles_next, information_components = vb_sampler.f_vb_sampler(particles.shape, random_sequence)
-        #pdb.set_trace()
-        particles_preweights_proposal = vb_sampler.f_weight_particles(particles_next)
-        prior = 1.
-        particles_preweights = prior/particles_preweights_proposal
-        # TODO: a real prior is missing !
-        return particles_next, particles_preweights, information_components
+            particles_next = np.zeros(particles.shape)
+            particles_preweights = np.ones(weights.shape)
+
+            for i_particle in range(self.N_particles):
+                # resampling first, to pick the ancestors
+                particles_next[:,i_particle] = self.move_particle(particles_mean, u[i_particle,:-1], particles_var) # move the particle$
+                # calculate the weights
+                #pdb.set_trace()
+                density_particle = np.array([gaussian_densities_etc.gaussian_density(particles_next[:,i_particle], particles_mean, particles_var)])
+                density_prior = 1 # TODO: add real prior
+                weight_inter = density_prior/density_particle
+                if np.isnan(weight_inter).any():
+                    raise ValueError('some particles is Nan!')
+                    weight_inter = 0.
+                particles_preweights[:,i_particle] = weight_inter
+            return particles_next, particles_preweights, information_components.append([particles_mean, particles_var])
+        else: 
+            particles_resampled = np.zeros(particles.shape)
+            # implement residual resampling
+            ancestors = resampling.residual_resample(np.squeeze(weights))
+            #for i_particle in range(self.N_particles):
+            #    particles_resampled[:, i_particle] = particles[:, ancestors[i_particle]] # define the old value ( ancestor )
+            particles_resampled = particles[:, ancestors] # define the old value ( ancestor )
+            vb_sampler = function_vb_class_sampler.vb_sampler(n_components = self.mixture_components, covar_factor=self.covar_factor)
+
+            if flag_failed_ESS == True and len(information_components) != 0:
+                # use the old values of the previous iteration
+                #pdb.set_trace()
+                vb_sampler.weights = information_components[-1]["weights"]
+                vb_sampler.means = information_components[-1]["means"]
+                vb_sampler.covariances = information_components[-1]["covariances"]
+                vb_sampler.vb_estimated = True
+
+            else:
+                vb_sampler.f_estimate_vb(particles_resampled)
+            
+            particles_next, information_components = vb_sampler.f_vb_sampler(particles.shape, random_sequence)
+            #pdb.set_trace()
+            particles_preweights_proposal = vb_sampler.f_weight_particles(particles_next)
+            prior = 1.
+            particles_preweights = prior/particles_preweights_proposal
+            # TODO: a real prior is missing !
+            return particles_next, particles_preweights, information_components
 
     def f_propagate_nonparametric(self, particles, weights, u, *args, **kwargs):
         """
@@ -475,7 +499,8 @@ class reweighter_particles():
         ESS_before_reweighting = partial_f_ESS(previous_epsilon)
         if ESS_before_reweighting < self.target_ESS_reweighter:
             print 'ESS breakdown!'
-            #pdb.set_trace()
+        #pdb.set_trace()
+        variance_normalisation_constant = gaussian_densities_etc.f_kernel_value(epsilon_current, aux_particles, self.kernel).var(axis=0).mean()
         weights_next, particles_mean, particles_var, ESS = reweight_particles(epsilon_current,
                                                                                       f_calculate_weights = calculate_weights,
                                                                                       particles_next = particles_next,
@@ -486,7 +511,7 @@ class reweighter_particles():
                                                                                       kernel = self.kernel,
                                                                                       previous_epsilon = None)
         print "ESS = %s, ESS before reweighting = %s, current epsilon = %s" %(ESS, ESS_before_reweighting, epsilon_current)
-        return weights_next, particles_mean, particles_var, ESS, epsilon_current, ESS_before_reweighting
+        return weights_next, particles_mean, particles_var, ESS, epsilon_current, ESS_before_reweighting, variance_normalisation_constant
 ###########################################################################################################################
 class resampler_particles():
     """

@@ -22,7 +22,7 @@ randtoolbox = rpackages.importr('randtoolbox')
 StableEstim = rpackages.importr('StableEstim')
 
 model_string = "mixture_gaussians_diff_variance"
-dim = 1
+dim = 3
 exponent = 6
 #path_archive_simulations = '/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model'
 path_archive_simulations = '/home/alex/python_programming/ABC_results_storage/models_information'
@@ -126,6 +126,8 @@ def precompute_save_data(exponent, dim):
         #pdb.set_trace()
         y_diff_array[i] = delta(y_star, simulator(theta_array[:, i]))
     precomputed_data = {'theta_values': theta_array, 'y_diff_values': y_diff_array}
+    import os
+    os.chdir(path_archive_simulations)
     with open(model_string+'_dim_'+str(dim)+'_npower_'+str(exponent)+'.p', 'wb') as handle:
         pickle.dump(precomputed_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
