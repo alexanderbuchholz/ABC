@@ -19,7 +19,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_fun
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
 #import sisson_simulation_parameters_mixture_model
 #import simulation_parameters_mixture_model_3_2_17 as simulation_parameters_model
-import simulation_parameters_mixture_model_5_2_17 as simulation_parameters_model
+import simulation_parameters_mixture_model_9_2_17 as simulation_parameters_model
 #import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
 #import a20_1_17_simulation_parameters_tuberculosis_model as simulation_parameters_mixture_model
 import f_rand_seq_gen

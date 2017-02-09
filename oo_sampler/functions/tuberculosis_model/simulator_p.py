@@ -106,7 +106,7 @@ def inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
 		    #X_cum = update_cum_sum_mutation(X_cum, selector_geneotype, select_index)
 		    W_cum = X_cum/N_alive
 
-            icounter = icounter+1
+            icounter += 1
 	    return G, X, death_counter, icounter, N_alive, X_cum, W_cum
 #@jit()
 def loop(theta, N):
@@ -121,8 +121,10 @@ def loop(theta, N):
 	theta_cum = np.cumsum(theta)/np.sum(theta)
         icounter = 1
         death_counter = 0
-        while icounter < N:
-		 G, X, death_counter, icounter, N_alive, X_cum, W_cum = inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
+	for i in xrange(N):
+		G, X, death_counter, icounter, N_alive, X_cum, W_cum = inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
+        #while icounter < N:
+	#	 G, X, death_counter, icounter, N_alive, X_cum, W_cum = inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
 	return X
 
 #@jit()
@@ -196,9 +198,11 @@ if __name__ == "__main__":
 	#cProfile.run('inner_while(theta_cum,G, X, death_counter, icounter, N_alive, X_cum, W_cum)')
 	#multinomial_sample(np.ones(2)/2)
 	#inner_while(theta_cum,G, X, death_counter, icounter, N_alive, X_cum, W_cum)
-	#loop(theta,10000)
-	#cProfile.run('simulator(theta)')
         import yappi
+	yappi.start()
+	loop(theta,10000)
+	yappi.get_func_stats().print_all()
+	#cProfile.run('simulator(theta)')
         yappi.start()
 	repeat_simulation(simulator, theta, 10)
         yappi.get_func_stats().print_all()
