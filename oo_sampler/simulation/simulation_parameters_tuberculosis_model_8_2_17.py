@@ -18,16 +18,16 @@ import functions_tuberculosis_model as functions_model
 
 
 Time = 40
-repetitions = 20
+repetitions = 10
 dim_particles = 2
-target_ESS_ratio_resampler = 0.4
-target_ESS_ratio_reweighter = 0.4
-epsilon_target = 0.025
-kwargs = {'N_particles_list': [100,200,300,400,500,750,1000],
+target_ESS_ratio_resampler = 0.3
+target_ESS_ratio_reweighter = 0.3
+epsilon_target = 0.01
+kwargs = {'N_particles_list': [100,200,300,400,500] ,#,750,1000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
-            'dim_auxiliary_var' : 10,
+            'dim_auxiliary_var' : 1,
             'augment_M' : True,
             'M_incrementer' : 1,
             'target_ESS_ratio_reweighter' : target_ESS_ratio_resampler,
@@ -43,7 +43,7 @@ kwargs = {'N_particles_list': [100,200,300,400,500,750,1000],
             'resample' : True, #True,
             'autochoose_eps' : 'ess_based',
             'save':True,
-            'mixture_components' : 10,
+            'mixture_components' : 1,
             'y_star' : functions_model.f_y_star(dim_particles),
             'epsilon': np.linspace(1, epsilon_target, Time),
             'kernel' : gaussian_densities_etc.gaussian_kernel,
@@ -92,6 +92,7 @@ if __name__ == '__main__':
         kwargs['M_increase_until_acceptance'] = False
         kwargs['augment_M'] = False
         kwargs['covar_factor'] = 2
+        kwargs['dim_auxiliary_var'] = 5
 
         del partial_parallel_smc
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
