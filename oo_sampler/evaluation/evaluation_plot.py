@@ -93,7 +93,7 @@ if True:
     plt.yscale('log')
     plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
     plt.show()
-simulation = pickle.load( open( "mixture_gaussians_diff_variance_adaptive_M_autochoose_eps_gaussian_kernel10_MC10_AIS_2500_simulation_abc_epsilon_0.025_40.p", "rb" ) )
+#simulation = pickle.load( open( "mixture_gaussians_diff_variance_adaptive_M_autochoose_eps_gaussian_kernel10_MC10_AIS_2500_simulation_abc_epsilon_0.025_40.p", "rb" ) )
 
 def function_flatten_results(_results, dim):
     _means_inter = _results[1][0][dim, :, :].flatten()
@@ -102,7 +102,7 @@ def function_flatten_results(_results, dim):
     _epsilons_inter = _epsilons_inter[_epsilons_inter > 0.]
     return _means_inter, _epsilons_inter
 
-if False:
+if True:
     N_particles_list = simulation_parameters_model.kwargs['N_particles_list']
     MC_means = []
     RQMC_means = []
@@ -131,7 +131,7 @@ if False:
         plt.show()
 pdb.set_trace()
 
-if True:
+if False:
     dim = 1
     mean_values_sisson = sisson_simulation_results[1][0]
     epsilon_values_sisson = sisson_simulation_results[1][1]

@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 import numpy.random as nr
 import numpy as np
 from scipy.stats import itemfreq, gamma, norm
 import random
-#import cProfile
+import cProfile
+import bisect
 #from numba import jit
-#from numba import autojit
+from numba import autojit
 #from numba import float64, int32
 import pdb
+import line_profiler
 
 #@jit()
 def multinomial_sample(weights):
@@ -15,26 +18,30 @@ def multinomial_sample(weights):
                 
         """
         weights = np.add.accumulate(weights)
-        u = nr.random()
-        position = np.searchsorted(weights, u)
+        u = random.random()
+        position = bisect.bisect_left(weights, u)
 	#N = weights.shape[0]
         #position_vec = np.zeros(N)
         #position_vec[position] = 1
         return(position)
 
 #@jit(int32(float64[:]))
+
+#@autojit
 def multinomial_sample_cum(cum_weights):
         """
                 
         """
-        u = nr.random()
-        position = np.searchsorted(cum_weights, u)
+        u = random.random()
+        #position = np.searchsorted(cum_weights, u)
+        position = bisect.bisect_left(cum_weights, u)
         return(position)
+
 def multinomial_sample_cum2(cum_weights):
         """
                 
         """
-        u = nr.random()
+        u = random.random()
         position = np.searchsorted(cum_weights, u)
 	#N = weights.shape[0]
         #position_vec = np.zeros(N)
@@ -62,8 +69,13 @@ def calc_W_cum(X_cum, N_alive):
 #@autojit()
 def inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum):
 	    # sample position
-            selector_geneotype = multinomial_sample_cum(W_cum)
-            selector_event = multinomial_sample_cum(theta_cum)
+            u = random.random()
+            selector_geneotype = bisect.bisect_left(W_cum, u)
+
+            u = random.random()
+            selector_event = bisect.bisect_left(theta_cum, u)
+            #selector_geneotype = multinomial_sample_cum(W_cum)
+            #selector_event = multinomial_sample_cum(theta_cum)
 
             # birth procedure
             if selector_event==0:
@@ -71,10 +83,10 @@ def inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
 		    N_alive += 1.
 		    X_cum[selector_geneotype:] +=1.
 		    #X_cum = update_cum_sum_birth(X_cum, selector_geneotype)
-		    W_cum = X_cum/N_alive
+		    W_cum = (1./N_alive)*X_cum
 
             # death procedure
-            if selector_event==1:
+            elif selector_event==1:
                     death_counter = death_counter+1
                     # check whether we do not kill the single individual
                     if (N_alive-1.)>0:
@@ -82,7 +94,7 @@ def inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
 		        N_alive -= 1.
 			X_cum[selector_geneotype:] -= 1.
 			#X_cum = update_cum_sum_death(X_cum, selector_geneotype)
-		        W_cum = X_cum /N_alive
+		        W_cum = (1./N_alive)*X_cum
 
                         if X[selector_geneotype]==0:
 				G[selector_geneotype] -= 1.0
@@ -90,9 +102,9 @@ def inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
                         icounter = icounter-1
 
 	    # mutation procedure
-            if selector_event==2:
+            elif selector_event==2:
                     # mutation : delete current value
-                    select_index = np.argmin(X) # needs to be done before modifying the list !
+                    select_index = X.argmin() # needs to be done before modifying the list !
                     #pdb.set_trace()
                     #print select_index
 		    X[selector_geneotype] -= 1.0
@@ -104,12 +116,12 @@ def inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
                     X[select_index] += 1.0
 		    X_cum[selector_geneotype:select_index] -= 1.
 		    #X_cum = update_cum_sum_mutation(X_cum, selector_geneotype, select_index)
-		    W_cum = X_cum/N_alive
+		    W_cum = (1./N_alive)*X_cum
 
             icounter += 1
 	    return G, X, death_counter, icounter, N_alive, X_cum, W_cum
 #@jit()
-def loop(theta, N):
+'''def loop(theta, N):
         X = np.zeros(N) # number of geneotypes vector (pop size)
 	X_cum = np.ones(N)
         G = np.zeros(N) # geneotypes vector
@@ -121,11 +133,84 @@ def loop(theta, N):
 	theta_cum = np.cumsum(theta)/np.sum(theta)
         icounter = 1
         death_counter = 0
-	for i in xrange(N):
-		G, X, death_counter, icounter, N_alive, X_cum, W_cum = inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
-        #while icounter < N:
-	#	 G, X, death_counter, icounter, N_alive, X_cum, W_cum = inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
+	#for i in xrange(N):
+	#	G, X, death_counter, icounter, N_alive, X_cum, W_cum = inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
+        while icounter < N:
+		 G, X, death_counter, icounter, N_alive, X_cum, W_cum = inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
 	return X
+'''
+#@profile
+def loop(theta, N):
+        X = np.zeros(N) # number of geneotypes vector (pop size)
+	X_cum = np.ones(N, dtype=np.float)
+        G = np.zeros(N) # geneotypes vector
+        X[0] = 1
+        G[0] =  1
+	N_alive = np.array([1.])
+        #W = X/X.sum(axis=1) # population weight vector
+        W_cum = np.copy(X_cum)
+	theta_cum = np.cumsum(theta)/np.sum(theta)
+        icounter = 1
+        death_counter = 0
+	#for i in xrange(N):
+	#	G, X, death_counter, icounter, N_alive, X_cum, W_cum = inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
+        while icounter < N:
+###################################
+                u = random.random()
+                selector_geneotype = bisect.bisect_left(W_cum, u)
+
+                u = random.random()
+                selector_event = bisect.bisect_left(theta_cum, u)
+                #selector_geneotype = multinomial_sample_cum(W_cum)
+                #selector_event = multinomial_sample_cum(theta_cum)
+
+                # birth procedure
+                if selector_event==0:
+                        X[selector_geneotype] += 1.0
+                        N_alive += 1.
+                        X_cum[selector_geneotype:] +=1.
+                        #X_cum = update_cum_sum_birth(X_cum, selector_geneotype)
+                        W_cum = (1./N_alive)*X_cum
+
+                # death procedure
+                elif selector_event==1:
+                        death_counter = death_counter+1
+                        # check whether we do not kill the single individual
+                        if (N_alive-1.)>0:
+                                X[selector_geneotype] -= 1.0
+                                N_alive -= 1.
+                                X_cum[selector_geneotype:] -= 1.
+                                #X_cum = update_cum_sum_death(X_cum, selector_geneotype)
+                                W_cum = (1./N_alive)*X_cum
+                                
+                                if X[selector_geneotype]==0:
+                                        G[selector_geneotype] -= 1.0
+                        else:
+                                icounter = icounter-1
+
+                # mutation procedure
+                elif selector_event==2:
+                        # mutation : delete current value
+                        select_index = X.argmin() # needs to be done before modifying the list !
+                        #pdb.set_trace()
+                        #print select_index
+                        X[selector_geneotype] -= 1.0
+                        if X[selector_geneotype]==0:
+                                        G[selector_geneotype] -= 1.0
+
+                        # mutation : addd new geneotype
+                        G[select_index] += 1.0 # add geneotype
+                        X[select_index] += 1.0
+                        X_cum[selector_geneotype:select_index] -= 1.
+                        #X_cum = update_cum_sum_mutation(X_cum, selector_geneotype, select_index)
+                        W_cum = (1./N_alive)*X_cum
+
+                icounter += 1
+#################################
+		 
+	return X
+
+
 
 #@jit()
 #@profile
@@ -198,6 +283,7 @@ if __name__ == "__main__":
 	#cProfile.run('inner_while(theta_cum,G, X, death_counter, icounter, N_alive, X_cum, W_cum)')
 	#multinomial_sample(np.ones(2)/2)
 	#inner_while(theta_cum,G, X, death_counter, icounter, N_alive, X_cum, W_cum)
+        #cProfile.run('loop(theta,10000)')
         import yappi
 	yappi.start()
 	loop(theta,10000)
