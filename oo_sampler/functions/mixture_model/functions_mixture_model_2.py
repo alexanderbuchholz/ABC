@@ -11,14 +11,12 @@ import numpy.random as nr
 import numpy as np
 import random
 #import matplotlib.pyplot as plt
-import pdb
+import ipdb as pdb
 #import rpy2.robjects as robjects
 import rpy2.robjects.packages as rpackages
 import rpy2.robjects as robjects
-from scipy.stats import itemfreq, gamma, norm
 #from numba import jit
 randtoolbox = rpackages.importr('randtoolbox')
-StableEstim = rpackages.importr('StableEstim')
 
 model_string = "mixture_gaussians_bimodal"
 dim = 1
@@ -133,8 +131,17 @@ def precompute_save_data(exponent, dim):
     with open(model_string+'_dim_'+str(dim)+'_npower_'+str(exponent)+'.p', 'wb') as handle:
         pickle.dump(precomputed_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+def epsilon_target(dim):
+    if dim == 1:
+        return 0.005    # corresponds to the 0.05 percentile (0.0005) of 10**6 simulations 
+                        # we keep 200 observations
+    else:
+        raise ValueError('epsilon target not available')
 
 if __name__ == '__main__':
-    precompute_values = True
+    precompute_values = False
     if precompute_values:
         precompute_save_data(exponent, dim)
+    if True:
+        test = load_precomputed_data(1,6)
+        pdb.set_trace()

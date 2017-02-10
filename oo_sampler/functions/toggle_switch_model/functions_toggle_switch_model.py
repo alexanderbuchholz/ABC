@@ -160,7 +160,7 @@ def f_y_star(dim=7):
     return y_star
 
 
-def load_precomputed_data(dim, exponent):
+def load_precomputed_data(exponent, dim):
     import os
     current_path = os.getcwd()
     os.chdir(path_archive_simulations)
@@ -181,6 +181,12 @@ def precompute_save_data(exponent, dim):
     with open(model_string+'_dim_'+str(dim)+'_npower_'+str(exponent)+'.p', 'wb') as handle:
         pickle.dump(precomputed_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+def epsilon_target(dim):
+    if dim == 7:
+        return 3.5
+    else:
+        raise ValueError('epsilon_target not available for the chosen dimension')
+    
 
 if __name__ == '__main__':
     #pdb.set_trace()
@@ -189,7 +195,11 @@ if __name__ == '__main__':
     y_star = f_y_star()
     print delta(y,y_star)
     # save the true data
-    precompute_values = True
+    if False:
+        test = load_precomputed_data(exponent,dim)
+        import pdb; pdb.set_trace()
+
+    precompute_values = False
     if precompute_values:
         precompute_save_data(exponent, dim)
     if False:

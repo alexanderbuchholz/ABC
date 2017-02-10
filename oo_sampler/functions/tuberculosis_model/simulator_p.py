@@ -227,9 +227,10 @@ def simulator(theta):
         np.random.seed(seed=random_seed)
 
         # Normalize theta
+        #import pdb; pdb.set_trace()
         if len(theta)<3:
                 theta3 = 1-np.sum(theta)
-                theta3 = theta3.reshape((1,1))
+                theta3 = theta3.reshape((1))
                 theta = np.append(theta,theta3, axis = 0)
         theta = theta/np.sum(theta)
         # defining the intial probabilities for the events

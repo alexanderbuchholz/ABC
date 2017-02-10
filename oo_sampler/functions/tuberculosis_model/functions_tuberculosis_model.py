@@ -1,9 +1,10 @@
-# -*- coding: utf-8 -*-
 """
+# -*- coding: utf-8 -*-
 Created on Fri Aug 12 10:31:59 2016
      functions for the tuberculosis model
 @author: alex
 """
+from __future__ import print_function
 import cProfile
 import numpy.random as nr
 #import matplotlib
@@ -21,6 +22,11 @@ randtoolbox = rpackages.importr('randtoolbox')
 StableEstim = rpackages.importr('StableEstim')
 
 model_string = "tuberculosis_model"
+
+dim = 2
+exponent = 4
+path_archive_simulations = '/home/alex/python_programming/ABC_results_storage/models_information'
+
 import cython
 #@jit
 @cython.wraparound(False)
@@ -197,7 +203,7 @@ def exclude_theta(theta_prop):
     """
     """
     if len(theta_prop)>3:
-        print theta_prop
+        print(theta_prop)
         raise ValueError('theta is not consistent, size too large')
     if np.array([theta_prop[0]<theta_prop[1] , theta_prop[0]<0 , theta_prop[1]<0 , sum(theta_prop)>1]).any():
         return(0)
@@ -232,10 +238,43 @@ def f_y_star(dim=None):
         raise ValueError('dimension needs to be 2')
     return y_star
 
-#y = simulator(initial_particles_mc[0,:,:])
-#[simulator(initial_particles_mc[i,:,:]) for i in range(N)]
 
+
+def load_precomputed_data(exponent, dim):
+    import os
+    current_path = os.getcwd()
+    os.chdir(path_archive_simulations)
+    with open(model_string+'_dim_'+str(dim)+'_npower_'+str(exponent)+'.p', 'rb') as handle:
+        precomputed_data = pickle.load(handle)
+    os.chdir(current_path)
+    return precomputed_data
+
+def precompute_save_data(exponent, dim):
+    n = 10**exponent
+    y_star = f_y_star(dim)
+    theta_array = theta_sampler_rqmc(i=0, dim=dim, n=n)
+    y_diff_array = np.zeros(n)
+    for i in xrange(n):
+        print('simulation i = %s of in n= %s, percentage %s' % (i, n, 100.*i/n), end='\r')
+        y_diff_array[i] = delta(y_star, simulator(theta_array[:, i]))
+    precomputed_data = {'theta_values': theta_array, 'y_diff_values': y_diff_array}
+    with open(model_string+'_dim_'+str(dim)+'_npower_'+str(exponent)+'.p', 'wb') as handle:
+        pickle.dump(precomputed_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+def epsilon_target(dim):
+    if dim == 2:
+        return 3.5
+    else:
+        raise ValueError('epsilon_target not available for the chosen dimension')
+    
 if __name__ == '__main__':
+    if False:
+        test = load_precomputed_data(exponent,dim)
+        import pdb; pdb.set_trace()
+
+    precompute_values = True
+    if precompute_values:
+        precompute_save_data(exponent, dim)
     #test = sample_function_test([1,0.1,1], n_star=None)
     #print test
     #print delta(1, test)

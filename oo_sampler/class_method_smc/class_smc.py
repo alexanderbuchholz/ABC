@@ -457,16 +457,16 @@ if __name__ == '__main__':
     import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 1000
-    dim_particles = 2
+    dim_particles = 1
     Time = 40
-    dim_auxiliary_var = 20
+    dim_auxiliary_var = 10
     augment_M = True
-    M_incrementer = 1
+    M_incrementer = 5
     target_ESS_ratio_reweighter = 0.3
-    target_ESS_ratio_resampler = 0.31
-    epsilon_target = 0.01
+    target_ESS_ratio_resampler = 0.3
+    epsilon_target = functions_mixture_model.epsilon_target(dim_particles)
     contracting_AIS = True
-    M_increase_until_acceptance = True
+    M_increase_until_acceptance = False
     M_target_multiple_N = 1
     covar_factor = 1.5
     propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 

@@ -16,10 +16,8 @@ import ipdb as pdb
 import rpy2.robjects.packages as rpackages
 import rpy2.robjects as robjects
 
-from scipy.stats import itemfreq, gamma, norm
 #from numba import jit
 randtoolbox = rpackages.importr('randtoolbox')
-StableEstim = rpackages.importr('StableEstim')
 
 model_string = "mixture_gaussians_diff_variance"
 dim = 3
@@ -28,25 +26,25 @@ exponent = 6
 path_archive_simulations = '/home/alex/python_programming/ABC_results_storage/models_information'
 
 def simulator(theta):
-        """
-        Function that samples according to the birth death mutation process of Takana et al.
-        :param theta: proposed parameter, obtained from the prior distribution simulation
-        :param n_star: number of generated samples, in this function equal to one
-        :return: freq_distinct_all : statistic for the observed genotype combination
-        """
-        # add random seed
-        random_seed = random.randrange(10**9)
-        np.random.seed(seed=random_seed)
-        if False:
-            #pdb.set_trace()
+    """
+    Function that samples according to the birth death mutation process of Takana et al.
+    :param theta: proposed parameter, obtained from the prior distribution simulation
+    :param n_star: number of generated samples, in this function equal to one
+    :return: freq_distinct_all : statistic for the observed genotype combination
+    """
+    # add random seed
+    random_seed = random.randrange(10**9)
+    np.random.seed(seed=random_seed)
+    if False:
+        #pdb.set_trace()
+        y = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = np.identity(theta.shape[0]))
+    else:
+        unif_random = np.random.rand()
+        if unif_random < 0.5:
             y = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = np.identity(theta.shape[0]))
-        else :
-            u = np.random.rand()
-            if u < 0.5:
-                y = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = np.identity(theta.shape[0]))
-            else:
-                y = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = np.identity(theta.shape[0]))
-        return y
+        else:
+            y = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = np.identity(theta.shape[0]))
+    return y
 
 
 
@@ -131,9 +129,25 @@ def precompute_save_data(exponent, dim):
     with open(model_string+'_dim_'+str(dim)+'_npower_'+str(exponent)+'.p', 'wb') as handle:
         pickle.dump(precomputed_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+def epsilon_target(dim):
+    if dim == 1:
+        return 0.005    # corresponds to the 0.05 percentile (0.0005) of 10**6 simulations 
+                        # we keep 200 observations
+    elif dim == 2:
+        return 0.25
+    elif dim == 3:
+        return 1
+    else:
+        raise ValueError('epsilon target not available')
+    
+
 
 if __name__ == '__main__':
-    precompute_values = True
+    precompute_values = False
     if precompute_values:
         precompute_save_data(exponent, dim)
+    if False: 
+        test = load_precomputed_data(1, 6)
+        pdb.set_trace()
+
 
