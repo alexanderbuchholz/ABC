@@ -18,14 +18,14 @@ import gaussian_densities_etc
 import functions_mixture_model as functions_model
 
 
-Time = 60
-repetitions = 15
+Time = 600
+repetitions = 1
 dim_particles = 1
 target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
-epsilon_target = functions_model.epsilon_target(dim_particles) #0.001 #0.25
+epsilon_target = 0 #functions_model.epsilon_target(dim_particles) #0.001 #0.25
 epsilon_start = 4
-kwargs = {'N_particles_list': [500, 750, 1000, 1500, 2000, 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
+kwargs = {'N_particles_list': [1000],#, 500 750, 1000, 1500, 2000, 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
@@ -45,7 +45,7 @@ kwargs = {'N_particles_list': [500, 750, 1000, 1500, 2000, 2500, 3000, 4000, 500
             'resample' : True, #True,
             'autochoose_eps' : 'ess_based',
             'save':True,
-            'mixture_components' : 1,
+            'mixture_components' : 10,
             'y_star' : functions_model.f_y_star(dim_particles),
             'epsilon': np.linspace(epsilon_start, epsilon_target, Time),
             'kernel' : gaussian_densities_etc.gaussian_kernel,
@@ -95,7 +95,7 @@ if __name__ == '__main__':
         kwargs['M_increase_until_acceptance'] = False
         kwargs['augment_M'] = False
         kwargs['covar_factor'] = 2
-
+        
         del partial_parallel_smc
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
         for i_simulation in filenames_list:

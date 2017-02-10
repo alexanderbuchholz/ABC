@@ -72,7 +72,7 @@ class smc_sampler(object):
         self.mean_particles = np.zeros((self.dim_particles, self.T))
         self.var_particles = np.zeros((self.dim_particles, self.dim_particles, self.T))
         if computational_budget is not None: 
-            self.computational_budget = computational_budget
+            self.computational_budget = computational_budget*self.N_particles
         else: 
             self.computational_budget = 10**20
 
@@ -416,10 +416,19 @@ class smc_sampler(object):
                 end = time.time()
                 print ("Estimated time for the simulation in minutes %s" % ((end-start)*self.T/60.))
             
-            if (self.epsilon_target >= self.epsilon[current_t]) or (self.epsilon[current_t]==self.epsilon[current_t-current_t_dist]) or (self.sampling_counter > self.computational_budget):
-                #pdb.set_trace()
+            if (self.epsilon_target >= self.epsilon[current_t]):
                 self.break_routine(current_t)
-                print("break simulation since we cannot reduce epsilon anymore or target has been reached")
+                print("break simulation since the target has been reached")
+                print('total number of simulations: %s percent of budget'%(100*self.sampling_counter/self.computational_budget) )
+                break
+            if (self.epsilon[current_t]==self.epsilon[current_t-current_t_dist]):
+                self.break_routine(current_t)
+                print("break simulation since we cannot reduce epsilon anymore")
+                print('total number of simulations: %s percent of budget'%(100*self.sampling_counter/self.computational_budget) )
+                break
+            if (self.sampling_counter > self.computational_budget):
+                self.break_routine(current_t)
+                print("break simulation since the computational budget has been reached")
                 break
         end_sim = time.time()
         self.simulation_time = end_sim-start_sim

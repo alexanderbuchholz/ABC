@@ -33,7 +33,8 @@ def set_up_parallel_abc_sampler(filename, **kwargs):
                                 epsilon_target=epsilon_target, 
                                 contracting_AIS=contracting_AIS,
                                 M_increase_until_acceptance=M_increase_until_acceptance,
-                                M_target_multiple_N = M_target_multiple_N)
+                                M_target_multiple_N = M_target_multiple_N,
+                                computational_budget = computational_budget)
         test_sampler.setInitiationFunction(inititation_particles)
         test_sampler.propagation_mechanism = propagation_mechanism
         test_sampler.sampler_type = sampler_type
