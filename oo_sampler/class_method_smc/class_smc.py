@@ -23,7 +23,7 @@ class smc_sampler(object):
             (dim_particles, N_particles, T_time)
 
     """
-    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1.):
+    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None):
         """
             set the data structures of the class
             set the random generator that will drive the stochastic propagation
@@ -71,6 +71,10 @@ class smc_sampler(object):
         self.ESS_before_reweighting = np.ones(self.T)
         self.mean_particles = np.zeros((self.dim_particles, self.T))
         self.var_particles = np.zeros((self.dim_particles, self.dim_particles, self.T))
+        if computational_budget is not None: 
+            self.computational_budget = computational_budget
+        else: 
+            self.computational_budget = 10**20
 
     def setParameters(self, parameters):
         self.parameters = parameters
@@ -189,6 +193,8 @@ class smc_sampler(object):
                         y_alive = np.sum((auxiliary_particles_new < self.epsilon[current_t-1]).flatten())
                         self.auxialiary_particles_list[current_t] = auxiliary_particles_new
                         counter_M_simulations += 1
+                        if (self.sampling_counter+counter_M_simulations*self.N_particles)>self.computational_budget:
+                            break
                     print('\n')
                     #pdb.set_trace()
                     self.class_auxialiary_sampler.M_simulator = counter_M_simulations
@@ -338,6 +344,7 @@ class smc_sampler(object):
         #pdb.set_trace()
         self.propagate_particles(current_t+1)
         self.metropolis_hasting_accept_reject(current_t+1)
+        self.sampling_counter = self.sampling_counter + self.dim_auxiliary_var*self.N_particles
 
     def iterator_ais(self, current_t, resample=False, **kwargs):
         """
@@ -359,6 +366,8 @@ class smc_sampler(object):
         if resample==True:
             self.resample_particles(current_t = current_t)
         self.sampling_counter = self.N_particles*sum(self.M_list)
+        
+            
 
     def iterator_nonparametric(self, current_t, resample=False, **kwargs):
         """
@@ -407,7 +416,7 @@ class smc_sampler(object):
                 end = time.time()
                 print ("Estimated time for the simulation in minutes %s" % ((end-start)*self.T/60.))
             
-            if (self.epsilon_target >= self.epsilon[current_t]) or (self.epsilon[current_t]==self.epsilon[current_t-current_t_dist]):
+            if (self.epsilon_target >= self.epsilon[current_t]) or (self.epsilon[current_t]==self.epsilon[current_t-current_t_dist]) or (self.sampling_counter > self.computational_budget):
                 #pdb.set_trace()
                 self.break_routine(current_t)
                 print("break simulation since we cannot reduce epsilon anymore or target has been reached")
@@ -474,6 +483,7 @@ if __name__ == '__main__':
     ancestor_sampling = False#"Hilbert"
     resample = True
     autochoose_eps = 'ess_based' # ''ess_based quantile_based
+    computational_budget = 10**4
 
 
 
@@ -498,7 +508,8 @@ if __name__ == '__main__':
                                 epsilon_target=epsilon_target, 
                                 contracting_AIS=contracting_AIS,
                                 M_increase_until_acceptance=M_increase_until_acceptance,
-                                M_target_multiple_N = M_target_multiple_N)
+                                M_target_multiple_N = M_target_multiple_N,
+                                computational_budget = computational_budget)
     test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_mc)
     test_sampler.propagation_mechanism = propagation_mechanism
     test_sampler.sampler_type = sampler_type
