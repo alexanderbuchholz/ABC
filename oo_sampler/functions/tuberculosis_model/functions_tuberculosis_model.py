@@ -11,6 +11,7 @@ import numpy.random as nr
 import numpy as np
 #import matplotlib.pyplot as plt
 import pdb
+import pickle
 #import rpy2.robjects as robjects
 import rpy2.robjects.packages as rpackages
 import rpy2.robjects as robjects
@@ -250,6 +251,8 @@ def load_precomputed_data(exponent, dim):
     return precomputed_data
 
 def precompute_save_data(exponent, dim):
+    import os
+    os.chdir(path_archive_simulations)
     n = 10**exponent
     y_star = f_y_star(dim)
     theta_array = theta_sampler_rqmc(i=0, dim=dim, n=n)
@@ -263,25 +266,26 @@ def precompute_save_data(exponent, dim):
 
 def epsilon_target(dim):
     if dim == 2:
-        return 3.5
+        return 0.01
     else:
         raise ValueError('epsilon_target not available for the chosen dimension')
     
 if __name__ == '__main__':
-    if False:
+    if True:
         test = load_precomputed_data(exponent,dim)
         import pdb; pdb.set_trace()
 
-    precompute_values = True
+    precompute_values = False
     if precompute_values:
         precompute_save_data(exponent, dim)
     #test = sample_function_test([1,0.1,1], n_star=None)
     #print test
     #print delta(1, test)
-    import cProfile
-    theta = np.array([[0.5],[0.1],[0.4]])
-    cProfile.run('simulator(theta)')
-    cProfile.run('simulator2(theta)')
+    if False:
+        import cProfile
+        theta = np.array([[0.5],[0.1],[0.4]])
+        cProfile.run('simulator(theta)')
+        cProfile.run('simulator2(theta)')
 
     #unif_sample = first_fold(second_fold(unif_sample))
     #plt.plot(unif_sample[:,0],unif_sample[:,1], 'ro')

@@ -22,7 +22,7 @@ repetitions = 10
 dim_particles = 2
 target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
-epsilon_target = 0.01
+epsilon_target = functions_model.epsilon_target(dim_particles)
 kwargs = {'N_particles_list': [100,200,300,400,500] ,#,750,1000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
