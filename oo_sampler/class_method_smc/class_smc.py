@@ -411,6 +411,8 @@ class smc_sampler(object):
             elif modified_sampling == "nonparametric":
                 self.iterator_ais(current_t, resample=resample)
             elif modified_sampling == "Del_Moral":
+                if current_t == self.T-1: # break due to forward propagation of del moral
+                    break
                 self.iterator_del_moral(current_t)
             if current_t == 1:
                 end = time.time()
@@ -421,11 +423,11 @@ class smc_sampler(object):
                 print("break simulation since the target has been reached")
                 print('total number of simulations: %s percent of budget'%(100*self.sampling_counter/self.computational_budget) )
                 break
-            if (self.epsilon[current_t]==self.epsilon[current_t-current_t_dist]):
-                self.break_routine(current_t)
-                print("break simulation since we cannot reduce epsilon anymore")
-                print('total number of simulations: %s percent of budget'%(100*self.sampling_counter/self.computational_budget) )
-                break
+            #if (self.epsilon[current_t]==self.epsilon[current_t-current_t_dist]):
+            #    self.break_routine(current_t)
+            #    print("break simulation since we cannot reduce epsilon anymore")
+            #    print('total number of simulations: %s percent of budget'%(100*self.sampling_counter/self.computational_budget) )
+            #    break
             if (self.sampling_counter > self.computational_budget):
                 self.break_routine(current_t)
                 print("break simulation since the computational budget has been reached")

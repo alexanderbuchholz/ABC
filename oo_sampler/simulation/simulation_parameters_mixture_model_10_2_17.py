@@ -19,19 +19,19 @@ import functions_mixture_model as functions_model
 
 
 Time = 600
-repetitions = 1
-dim_particles = 1
+repetitions = 15
+dim_particles = 2   
 target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
 epsilon_target = 0 #functions_model.epsilon_target(dim_particles) #0.001 #0.25
 epsilon_start = 4
-kwargs = {'N_particles_list': [1000],#, 500 750, 1000, 1500, 2000, 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
+kwargs = {'N_particles_list': [500, 750, 1000, 1500, 2000, 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
             'dim_auxiliary_var' : 10,
             'augment_M' : True,
-            'M_incrementer' : 5,
+            'M_incrementer' : 2,
             'target_ESS_ratio_reweighter' : target_ESS_ratio_resampler,
             'target_ESS_ratio_resampler' : target_ESS_ratio_reweighter,
             'epsilon_target' : epsilon_target,
@@ -59,7 +59,7 @@ kwargs = {'N_particles_list': [1000],#, 500 750, 1000, 1500, 2000, 2500, 3000, 4
 
 K_repetitions = range(repetitions)
 #filename = functions_model.model_string+'_dim_'+str(dim_particles)+'_adaptive_M_autochoose_eps_gaussian_kernel'
-filename = functions_model.model_string+'_adaptive_M_autochoose_eps_gaussian_kernel_1_VB_component'
+filename = functions_model.model_string+'_adaptive_M_autochoose_eps_gaussian_kernel_10_VB_component_fixed_budget'
 if __name__ == '__main__':
     import parallel_simulation
     from functools import partial

@@ -23,7 +23,7 @@ repetitions = 15
 dim_particles = 1
 target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
-epsilon_target = functions_model.epsilon_target(dim_particles) #0.001 #0.25
+epsilon_target = 0.001 #0.25 functions_model.epsilon_target(dim_particles) #
 epsilon_start = 4
 kwargs = {'N_particles_list': [500, 750, 1000, 1500, 2000, 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
@@ -54,7 +54,7 @@ kwargs = {'N_particles_list': [500, 750, 1000, 1500, 2000, 2500, 3000, 4000, 500
             'simulator' : functions_model.simulator,
             'delta' : functions_model.delta,
             'exclude_theta' : functions_model.exclude_theta,
-            'computational_budget' : 10**3,
+            'computational_budget' : None,
             }
 
 K_repetitions = range(repetitions)
@@ -69,13 +69,13 @@ if __name__ == '__main__':
     os.chdir(path)
     filenames_list = [filename+str(k) for k in K_repetitions]
 
-    if True: 
+    if False: 
     # simulation RQMC
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
         for i_simulation in filenames_list:
             partial_parallel_smc(i_simulation)
 
-    if True: 
+    if False: 
         # Simulation MC
         kwargs['inititation_particles'] = functions_model.theta_sampler_mc
         kwargs['sampler_type'] = 'MC'
@@ -96,7 +96,7 @@ if __name__ == '__main__':
         kwargs['augment_M'] = False
         kwargs['covar_factor'] = 2
 
-        del partial_parallel_smc
+        #del partial_parallel_smc
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
         for i_simulation in filenames_list:
             partial_parallel_smc(i_simulation)
