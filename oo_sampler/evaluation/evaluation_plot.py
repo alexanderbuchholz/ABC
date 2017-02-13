@@ -19,7 +19,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_fun
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
 #import sisson_simulation_parameters_mixture_model
 #import simulation_parameters_mixture_model_3_2_17 as simulation_parameters_model
-import simulation_parameters_mixture_model_10_2_17 as simulation_parameters_model
+import simulation_parameters_mixture_model_13_2_17 as simulation_parameters_model
 #import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
 #import a20_1_17_simulation_parameters_tuberculosis_model as simulation_parameters_mixture_model
 import f_rand_seq_gen
@@ -36,12 +36,17 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
     means = np.zeros((parameters.kwargs["dim_particles"], parameters.Time, parameters.repetitions))
     epsilons = np.zeros((1, parameters.Time, parameters.repetitions))
     for i_simulation in range(parameters.repetitions):
-        simulation = pickle.load( open( parameters.filename+str(i_simulation)+"_"+sample_method+str(parameters.kwargs["dim_auxiliary_var"])+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+'_'+str(parameters.Time)+".p", "rb" ) )
+    #for i_simulation in range(35):
+        if propagation_method == 'true_sisson':
+            simulation = pickle.load( open( parameters.filename+str(i_simulation)+"_"+sample_method+str(1)+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+'_'+str(parameters.Time)+".p", "rb" ) )
+        else:
+            simulation = pickle.load( open( parameters.filename+str(i_simulation)+"_"+sample_method+str(parameters.kwargs["dim_auxiliary_var"])+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+'_'+str(parameters.Time)+".p", "rb" ) )
         #pdb.set_trace()
         selector = np.min((simulation['T_max'], parameters.Time))
         #pdb.set_trace()
         if propagation_method == 'Del_Moral':
             selector = selector - 2
+        #pdb.set_trace()
         final_means[:, i_simulation] = simulation["means_particles"][:, selector] # TODO: error here ? is the range correct?
         means[:, :selector, i_simulation] = simulation["means_particles"][:, :selector]
         final_ESS[:,i_simulation] = simulation["ESS"][selector]
@@ -57,8 +62,8 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
             final_number_simulations[:,i_simulation]= simulation['sampling_counter']
     #pdb.set_trace()
     means_means = np.nanmean(final_means, axis=1)
-    means_var = np.nanvar(final_means, axis=1)
-    #means_var = (final_means**2).mean(axis=1) # use this for the MSE
+    #means_var = np.nanvar(final_means, axis=1)
+    means_var = (final_means**2).mean(axis=1) # use this for the MSE
     ESS_mean = final_ESS.mean()
     epsilon_mean = final_epsilon.mean()
     time_mean = final_simulation_time.mean()
@@ -70,22 +75,25 @@ import seaborn as sns
 import pandas as pd
 #pdb.set_trace()
 #sisson_simulation_results = f_summary_stats(sisson_simulation_parameters_mixture_model, sample_method = "MC", particles=100)
-if False:
-    var_different_methods = np.zeros((3,len(simulation_parameters_model.kwargs['N_particles_list'])))
+if True:
+    var_different_methods = np.zeros((4,len(simulation_parameters_model.kwargs['N_particles_list'])))
     counter = 0
     for N_particles in simulation_parameters_model.kwargs['N_particles_list']:
         MC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'AIS')
         RQMC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, propagation_method = 'AIS')
         del_moral_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral')
+        true_sisson_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson')
         #print sisson_simulation_results[0]
         
         print N_particles
         print MC_simulation_results[0]
         print RQMC_simulation_results[0]
         print del_moral_simulation_results[0]
+        print true_sisson_simulation_results[0]
         var_different_methods[0,counter] = MC_simulation_results[0][1][0]
         var_different_methods[1,counter] = RQMC_simulation_results[0][1][0]
         var_different_methods[2,counter] = del_moral_simulation_results[0][1][0]
+        var_different_methods[3,counter] = true_sisson_simulation_results[0][1][0]
         counter += 1
         print '\n'
     sns.set_style("darkgrid")
@@ -93,6 +101,7 @@ if False:
     plt.plot(simulation_parameters_model.kwargs['N_particles_list'], var_different_methods[0,:], label="MC")
     plt.plot(simulation_parameters_model.kwargs['N_particles_list'], var_different_methods[1,:], label="RQMC")
     plt.plot(simulation_parameters_model.kwargs['N_particles_list'], var_different_methods[2,:], label="Del Moral")
+    plt.plot(simulation_parameters_model.kwargs['N_particles_list'], var_different_methods[3,:], label="Sisson")
     plt.yscale('log')
     plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
     plt.show()
@@ -105,7 +114,7 @@ def function_flatten_results(_results, dim):
     _epsilons_inter = _epsilons_inter[_epsilons_inter > 0.]
     return _means_inter, _epsilons_inter
 
-if True:
+if False:
     N_particles_list = simulation_parameters_model.kwargs['N_particles_list']
     MC_means = []
     RQMC_means = []

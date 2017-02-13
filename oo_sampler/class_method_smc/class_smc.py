@@ -403,7 +403,7 @@ class smc_sampler(object):
         start_sim = time.time()
         current_t_dist = np.min((self.T-1, 10))
         for current_t in range(0,self.T):
-            print("current computational budget in percent: %s"%(self.sampling_counter/self.computational_budget*100)  )
+            print("current computational budget in percent: %s"%(100.*self.sampling_counter/self.computational_budget)  )
             if current_t == 1:
                 start = time.time()
             print("now sampling for time step %d of in total %d" %(current_t,self.T))
@@ -483,8 +483,8 @@ if __name__ == '__main__':
     N_particles = 1000
     dim_particles = 1
     Time = 10
-    dim_auxiliary_var = 1
-    augment_M = False
+    dim_auxiliary_var = 10
+    augment_M = True
     M_incrementer = 5
     target_ESS_ratio_reweighter = 0.3
     target_ESS_ratio_resampler = 0.3
@@ -493,13 +493,13 @@ if __name__ == '__main__':
     M_increase_until_acceptance = False
     M_target_multiple_N = 1
     covar_factor = 1.5
-    propagation_mechanism = 'true_sisson'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 
+    propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 
     sampler_type = 'MC'
     ancestor_sampling = False#"Hilbert"
     resample = False
-    autochoose_eps = 'quantile_based' # ''ess_based quantile_based
+    autochoose_eps = 'ess_based' # ''ess_based quantile_based
     computational_budget = 10**2
-    parallelize = False
+    parallelize = True
 
 
 
@@ -586,10 +586,10 @@ if __name__ == '__main__':
 
 
     #pdb.set_trace()
-    import yappi
-    yappi.start()
+    #import yappi
+    #yappi.start()
     test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)
-    yappi.get_func_stats().print_all()
+    #yappi.get_func_stats().print_all()
     pdb.set_trace()
     if True:
         select_component = 0
@@ -621,7 +621,7 @@ if __name__ == '__main__':
             if i > 0:
                 sns.kdeplot(test_sampler.particles[select_component,:,i-1], label="particles previous iteration")
             sns.kdeplot(test_sampler.particles_before_resampling[select_component,:,i], label="particles before resampling")
-            plt.savefig("univariate_iteration_%s_%s_dim_%s.png"%(i, model_description, dim_particles))
+            #plt.savefig("univariate_iteration_%s_%s_dim_%s.png"%(i, model_description, dim_particles))
             plt.show()
             plt.close()
             #plt.show()

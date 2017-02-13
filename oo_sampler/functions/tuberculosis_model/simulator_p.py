@@ -231,7 +231,8 @@ def simulator(theta):
         if len(theta)<3:
                 theta3 = 1-np.sum(theta)
                 theta3 = theta3.reshape((1))
-                theta = np.append(theta,theta3, axis = 0)
+                #import pdb; pdb.set_trace()
+                theta = np.append(theta,np.atleast_2d(theta3), axis = 0)
         theta = theta/np.sum(theta)
         # defining the intial probabilities for the events
         N = 10000 # number of simulated events

@@ -17,7 +17,18 @@ randtoolbox = rpackages.importr('randtoolbox')
 
 
 
-
+def random_sequence_qmc(size_mv, i, n=1):
+    """
+    generates QMC random sequence for the movement of particles
+    still needs to be done
+    """
+    size_mv = np.int(size_mv)
+    n = np.int(n)
+    random_seed = random.randrange(10**9)
+    u = np.array(randtoolbox.sobol(n=n, dim=size_mv, init=(i==0), scrambling=0, seed=random_seed)).reshape((n,size_mv))
+    # randtoolbox for sobol sequence
+    #pdb.set_trace()
+    return(u)
 
 
 

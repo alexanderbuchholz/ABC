@@ -114,14 +114,14 @@ class propagater_particles():
             particles_var = np.atleast_2d(self.covar_factor*np.cov(particles, aweights=np.squeeze(weights)))
             particles_mean = np.average(particles, weights=np.squeeze(weights), axis=1)
             
-            u = random_sequence(self.dim_particles+1, i=0, n=self.N_particles)
+            u = random_sequence(self.dim_particles, i=0, n=self.N_particles)
 
             particles_next = np.zeros(particles.shape)
             particles_preweights = np.ones(weights.shape)
 
             for i_particle in range(self.N_particles):
                 # resampling first, to pick the ancestors
-                particles_next[:,i_particle] = self.move_particle(particles_mean, u[i_particle,:-1], particles_var) # move the particle$
+                particles_next[:,i_particle] = self.move_particle(particles_mean, u[i_particle,:], particles_var) # move the particle$
                 # calculate the weights
                 #pdb.set_trace()
                 density_particle = np.array([gaussian_densities_etc.gaussian_density(particles_next[:,i_particle], particles_mean, particles_var)])
@@ -220,6 +220,8 @@ class propagater_particles():
             random_sequence = f_rand_seq_gen.random_sequence_mc
         elif self.sampler_type=="RQMC":
             random_sequence = f_rand_seq_gen.random_sequence_rqmc
+        elif self.sampler_type=="QMC":
+            random_sequence = f_rand_seq_gen.random_sequence_qmc
         else: 
             raise ValueError("sampler type not specified or unavailable")
         # generate the random sequence
@@ -529,20 +531,9 @@ class resampler_particles():
         particles_resampled = np.zeros(particles_current.shape)
         if ESS < ESS_treshold:
             print "Resample since ESS %d is smaller than treshold %d" %(ESS, ESS_treshold)
-            #if self.sampler_type=="MC":
-            #    u_new =f_rand_seq_gen.random_sequence_mc(1, i=0, n=self.N_particles)
-            #elif self.sampler_type=="RQMC":
-            #    u_new =f_rand_seq_gen.random_sequence_rqmc(1, i=0, n=self.N_particles)
             ancestors = resampling.residual_resample(np.squeeze(weights_current))
             particles_resampled = particles_current[:, ancestors]
-            #for i_particle in range(self.N_particles):
-                # resampling to get the ancestors
-                # TODO: Implement Hilber sampling
-                #ancestor_new = gaussian_densities_etc.weighted_choice( weights_current[0,:], u_new[i_particle]) # get the ancestor
-            #    particles_resampled[:,i_particle] = particles_current[:, ancestors[i_particle]] # save the particles
-        # resampling done, update the weights
             gaussian_densities_etc.break_if_nan(particles_resampled)
-            #pdb.set_trace()
             return particles_resampled, np.ones(weights_current.shape)/self.N_particles
         else:
             return particles_current, weights_current

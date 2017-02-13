@@ -12,26 +12,26 @@ import ipdb as pdb
 
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/class_method_smc")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
+sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
 import gaussian_densities_etc
-#import functions_tuberculosis_model as functions_model
-import functions_mixture_model as functions_model
+import functions_tuberculosis_model as functions_model
+#import functions_mixture_model as functions_model
 
 
 Time = 600
-repetitions = 40
-dim_particles = 1
+repetitions = 20
+dim_particles = 2
 target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
 epsilon_target = 0 #functions_model.epsilon_target(dim_particles) #0.001 #0.25
 epsilon_start = 4
-kwargs = {'N_particles_list': [500, 750, 1000, 1500, 2000],# 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
+kwargs = {'N_particles_list': [100,200, 300, 400, 500], #750, 1000, 1500, 2000],# 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
-            'dim_auxiliary_var' : 10,
+            'dim_auxiliary_var' : 5,
             'augment_M' : True,
-            'M_incrementer' : 2,
+            'M_incrementer' : 1,
             'target_ESS_ratio_reweighter' : target_ESS_ratio_resampler,
             'target_ESS_ratio_resampler' : target_ESS_ratio_reweighter,
             'epsilon_target' : epsilon_target,
@@ -54,7 +54,7 @@ kwargs = {'N_particles_list': [500, 750, 1000, 1500, 2000],# 2500, 3000, 4000, 5
             'simulator' : functions_model.simulator,
             'delta' : functions_model.delta,
             'exclude_theta' : functions_model.exclude_theta,
-            'computational_budget' : 10**2,
+            'computational_budget' : 50,
             'parallelize' : True
             }
 
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         for i_simulation in filenames_list:
             partial_parallel_smc(i_simulation)
 
-    if False: 
+    if True: 
         # Simulation MC
         kwargs['inititation_particles'] = functions_model.theta_sampler_mc
         kwargs['sampler_type'] = 'MC'
@@ -87,7 +87,7 @@ if __name__ == '__main__':
             partial_parallel_smc(i_simulation)
 
 
-    if False: 
+    if True: 
         # simulation Del Moral
         kwargs['inititation_particles'] = functions_model.theta_sampler_mc
         kwargs['sampler_type'] = 'MC'
@@ -102,7 +102,7 @@ if __name__ == '__main__':
         for i_simulation in filenames_list:
             partial_parallel_smc(i_simulation)
 
-    if False: 
+    if True: 
         # simulation Sisson
         kwargs['propagation_mechanism'] = 'true_sisson'
         kwargs['autochoose_eps'] = 'quantile_based'
