@@ -19,7 +19,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_fun
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
 #import sisson_simulation_parameters_mixture_model
 #import simulation_parameters_mixture_model_3_2_17 as simulation_parameters_model
-import simulation_parameters_mixture_model_9_2_17 as simulation_parameters_model
+import simulation_parameters_mixture_model_10_2_17 as simulation_parameters_model
 #import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
 #import a20_1_17_simulation_parameters_tuberculosis_model as simulation_parameters_mixture_model
 import f_rand_seq_gen
@@ -39,10 +39,13 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
         simulation = pickle.load( open( parameters.filename+str(i_simulation)+"_"+sample_method+str(parameters.kwargs["dim_auxiliary_var"])+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+'_'+str(parameters.Time)+".p", "rb" ) )
         #pdb.set_trace()
         selector = np.min((simulation['T_max'], parameters.Time))
-        final_means[:, i_simulation] = simulation["means_particles"][:, (selector-1)] # TODO: error here ? is the range correct?
+        #pdb.set_trace()
+        if propagation_method == 'Del_Moral':
+            selector = selector - 2
+        final_means[:, i_simulation] = simulation["means_particles"][:, selector] # TODO: error here ? is the range correct?
         means[:, :selector, i_simulation] = simulation["means_particles"][:, :selector]
-        final_ESS[:,i_simulation] = simulation["ESS"][selector-1]
-        final_epsilon[:,i_simulation] = simulation["epsilon"][selector-1]
+        final_ESS[:,i_simulation] = simulation["ESS"][selector]
+        final_epsilon[:,i_simulation] = simulation["epsilon"][selector]
         epsilons[:,:len(simulation["epsilon"]),i_simulation] = simulation["epsilon"]
         final_simulation_time[:,i_simulation] = simulation["simulation_time"]
         if propagation_method == 'AIS':
@@ -67,7 +70,7 @@ import seaborn as sns
 import pandas as pd
 #pdb.set_trace()
 #sisson_simulation_results = f_summary_stats(sisson_simulation_parameters_mixture_model, sample_method = "MC", particles=100)
-if True:
+if False:
     var_different_methods = np.zeros((3,len(simulation_parameters_model.kwargs['N_particles_list'])))
     counter = 0
     for N_particles in simulation_parameters_model.kwargs['N_particles_list']:
@@ -109,12 +112,12 @@ if True:
     for N_particles in N_particles_list:
         MC_results =  f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles)
         RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles)
-        #Del_Moral_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral')
+        Del_Moral_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral')
         #pdb.set_trace()
         print('code works for one dimension only!')
         MC_means_inter, MC_epsilons_inter = function_flatten_results(MC_results, 0)
         RQMC_means_inter, RQMC_epsilons_inter = function_flatten_results(RQMC_results, 0)
-        #Del_Moral_means_inter, Del_Moral_epsilons_inter = function_flatten_results(Del_Moral_results, 0)
+        Del_Moral_means_inter, Del_Moral_epsilons_inter = function_flatten_results(Del_Moral_results, 0)
 
         sns.set_style("darkgrid")
         #sns.tsplot(time=MC_epsilons_inter, data=MC_means_inter, color='blue')
@@ -125,7 +128,7 @@ if True:
         
         plt.scatter(MC_epsilons_inter, MC_means_inter, color='blue', lw=1)
         plt.scatter(RQMC_epsilons_inter, RQMC_means_inter, color='green', lw=1)
-        #plt.scatter(Del_Moral_epsilons_inter, Del_Moral_means_inter, color='red', lw=1)
+        plt.scatter(Del_Moral_epsilons_inter, Del_Moral_means_inter, color='red', lw=1)
         #plt.yscale('log')
         plt.xscale('log')
         plt.show()
@@ -164,13 +167,17 @@ if False:
 def resample_for_plotting(particles, weights):
     particles_resampled = np.zeros(particles.shape)
     N_particles = particles.shape[1]
-    u_new =f_rand_seq_gen.random_sequence_mc(1, i=0, n=N_particles)
-    for i_particle in range(N_particles):
-        # resampling to get the ancestors
-        # TODO: Implement Hilber sampling
-        ancestor_new = gaussian_densities_etc.weighted_choice( weights[0,:], u_new[i_particle]) # get the ancestor
-        particles_resampled[:,i_particle] = particles[:, ancestor_new] # save the particles
+    import resampling
+    #u_new =f_rand_seq_gen.random_sequence_mc(1, i=0, n=N_particles)
+    #for i_particle in range(N_particles):
+    #    # resampling to get the ancestors
+    #    # TODO: Implement Hilber sampling
+    #    ancestor_new = gaussian_densities_etc.weighted_choice( weights[0,:], u_new[i_particle]) # get the ancestor
+    #    particles_resampled[:,i_particle] = particles[:, ancestor_new] # save the particles
     # resampling done, update the weights
+    #pdb.set_trace()
+    ancestors = resampling.stratified_resample(weights.squeeze())
+    particles_resampled = particles[:, ancestors]
     gaussian_densities_etc.break_if_nan(particles_resampled)
     #pdb.set_trace()
     return particles_resampled
@@ -180,8 +187,8 @@ def f_accept_reject_precalculated_particles(precalculated_particles, precalculat
     accept_reject_selector = precalculated_auxialiary_particles < epsilon_target_accept_reject
     return precalculated_particles[:, accept_reject_selector]
 
-simulation_RQMC = pickle.load( open("mixture_gaussians_diff_variance_adaptive_M_autochoose_eps_gaussian_kernel1_RQMC1_AIS_4000_simulation_abc_epsilon_40.p", "rb"))
-simulation_MC = pickle.load( open("mixture_gaussians_diff_variance_adaptive_M_autochoose_eps_gaussian_kernel0_RQMC1_true_sisson_500_simulation_abc_epsilon_0.025_40.p", "rb"))
+simulation_RQMC = pickle.load( open("mixture_gaussians_diff_variance_adaptive_M_autochoose_eps_gaussian_kernel_1_VB_component14_RQMC10_AIS_750_simulation_abc_epsilon_0.001_60.p", "rb"))
+simulation_MC = pickle.load( open("mixture_gaussians_diff_variance_adaptive_M_autochoose_eps_gaussian_kernel_1_VB_component14_MC10_AIS_750_simulation_abc_epsilon_0.001_60.p", "rb"))
 os.chdir(path2)
 #simulation_sisson = pickle.load( open("tuberculosis_true_sission17_MC1_AIS_200_simulation_abc_epsilon_24.p", "rb"))
 
@@ -191,8 +198,8 @@ os.chdir(path2)
 #pdb.set_trace()
 #sisson_resampled = resample_for_plotting(simulation_sisson['particles'][:,:,-1], simulation_sisson['weights'][:,:,-1])
 
-rqmc_resampled = resample_for_plotting(simulation_RQMC['particles'][:,:,simulation_RQMC["T_max"]-1], simulation_RQMC['weights'][:,:,simulation_RQMC["T_max"]-1])
-mc_resampled = resample_for_plotting(simulation_MC['particles'][:,:,simulation_MC["T_max"]-1], simulation_MC['weights'][:,:,simulation_MC["T_max"]-1])
+rqmc_resampled = resample_for_plotting(simulation_RQMC['particles'][:,:,simulation_RQMC["T_max"]], simulation_RQMC['weights'][:,:,simulation_RQMC["T_max"]])
+mc_resampled = resample_for_plotting(simulation_MC['particles'][:,:,simulation_MC["T_max"]], simulation_MC['weights'][:,:,simulation_MC["T_max"]])
 
 #pdb.set_trace()
 #x1_sisson = pd.Series(sisson_resampled[0,:], name="$X_1$")

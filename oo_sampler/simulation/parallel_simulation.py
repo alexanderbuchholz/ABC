@@ -45,7 +45,8 @@ def set_up_parallel_abc_sampler(filename, **kwargs):
                                      y_star,
                                      delta,
                                      exclude_theta,
-                                     M_simulator = dim_auxiliary_var)
+                                     M_simulator = dim_auxiliary_var,
+                                     parallelize = parallelize)
         test_sampler.setAuxialiarySampler(simulator_mm)
 
         propagater = functions_propagate_reweight_resample.propagater_particles(dim_particles,

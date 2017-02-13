@@ -26,7 +26,7 @@ class simulator_sampler():
     """
     class that is responsible for the simulation
     """
-    def __init__(self, simulator, y_star, delta, exclude_theta, M_simulator, parallelize=True):
+    def __init__(self, simulator, y_star, delta, exclude_theta, M_simulator, parallelize=False):
         self.simulator = simulator
         self.y_star = y_star
         self.delta = delta
@@ -474,7 +474,7 @@ class reweighter_particles():
             #pdb.set_trace()
             M = aux_particles.shape[0]
             #aux_particles_means =  aux_particles.mean(axis=0)
-            quantile_index = np.round(M*self.N_particles*0.8)
+            quantile_index = np.round(M*self.N_particles*0.9)
             
             #epsilon_proposed = np.sort(aux_particles_means)[quantile_index]
             epsilon_proposed = np.sort(aux_particles.flatten())[quantile_index]

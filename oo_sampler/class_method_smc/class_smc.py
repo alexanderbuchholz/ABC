@@ -10,7 +10,7 @@ import numpy.random as nr
 import pickle
 import ipdb as pdb
 import time
-
+from scipy.stats import multivariate_normal
 import sys
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
 import gaussian_densities_etc
@@ -228,12 +228,13 @@ class smc_sampler(object):
             for index_particle in xrange(self.N_particles):
                 # TODO: chose ancestor
                 u = nr.uniform()
+                #ancestor = resample.multinomial(np.squeeze(self.weights[:,:,current_t-1]))
                 ancestor = gaussian_densities_etc.weighted_choice(np.squeeze(self.weights[:,:,current_t-1]),u)
                 center = self.particles[:, ancestor, current_t-1]
                 dist = 100000000000.
                 #pdb.set_trace()
                 
-                while dist> self.epsilon[current_t]: # this amounts to a uniform acceptance
+                while dist> self.epsilon[current_t-1]: # this amounts to a uniform acceptance
                     #pdb.set_trace()
                     proposal = gaussian_densities_etc.gaussian_standard(center, particles_var)[:,np.newaxis]
                     dist = self.class_auxialiary_sampler.f_auxialiary_sampler(proposal)
@@ -246,7 +247,9 @@ class smc_sampler(object):
             for i_particle in xrange(self.N_particles):
                 # TODO: calc preweights
                 #pdb.set_trace()
-                self.particles_preweights[:,i_particle,current_t] = np.array([self.weights[:,i_former_particle,current_t-1]*gaussian_densities_etc.gaussian_density(self.particles[:,i_particle,current_t], self.particles[:,i_former_particle,current_t], particles_var) for i_former_particle in range(self.N_particles)]).sum()
+                #self.particles_preweights[:,i_particle,current_t] = np.array([self.weights[:,i_former_particle,current_t-1]*gaussian_densities_etc.gaussian_density(self.particles[:,i_particle,current_t], self.particles[:,i_former_particle,current_t], particles_var) for i_former_particle in range(self.N_particles)]).sum()
+                self.particles_preweights[:,i_particle,current_t] = (self.weights[:,:,current_t-1]*multivariate_normal.pdf(self.particles[:,:,current_t].transpose(), mean=self.particles[:,i_particle,current_t], cov=particles_var)).sum()
+                #gaussian_densities_etc.gaussian_density(self.particles[:,i_particle,current_t], self.particles[:,i_former_particle,current_t], particles_var) for i_former_particle in range(self.N_particles)]).sum()
             self.auxialiary_particles_list.append(self.auxialiary_particles[:,:, current_t])
             self.particles_before_resampling[:, :, current_t] = self.particles[:, :, current_t]
 
@@ -400,6 +403,7 @@ class smc_sampler(object):
         start_sim = time.time()
         current_t_dist = np.min((self.T-1, 10))
         for current_t in range(0,self.T):
+            print("current computational budget in percent: %s"%(self.sampling_counter/self.computational_budget*100)  )
             if current_t == 1:
                 start = time.time()
             print("now sampling for time step %d of in total %d" %(current_t,self.T))
@@ -478,9 +482,9 @@ if __name__ == '__main__':
     model_description = functions_mixture_model.model_string
     N_particles = 1000
     dim_particles = 1
-    Time = 40
-    dim_auxiliary_var = 10
-    augment_M = True
+    Time = 10
+    dim_auxiliary_var = 1
+    augment_M = False
     M_incrementer = 5
     target_ESS_ratio_reweighter = 0.3
     target_ESS_ratio_resampler = 0.3
@@ -489,24 +493,25 @@ if __name__ == '__main__':
     M_increase_until_acceptance = False
     M_target_multiple_N = 1
     covar_factor = 1.5
-    propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 
-    sampler_type = 'RQMC'
+    propagation_mechanism = 'true_sisson'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 
+    sampler_type = 'MC'
     ancestor_sampling = False#"Hilbert"
-    resample = True
-    autochoose_eps = 'ess_based' # ''ess_based quantile_based
-    computational_budget = 10**4
+    resample = False
+    autochoose_eps = 'quantile_based' # ''ess_based quantile_based
+    computational_budget = 10**2
+    parallelize = False
 
 
 
     model_description = model_description+'_'+sampler_type+'_'+propagation_mechanism
     save = False
     mixture_components = 1
-    kernel = gaussian_densities_etc.gaussian_kernel
+    kernel = gaussian_densities_etc.uniform_kernel
     move_particle =gaussian_densities_etc.gaussian_move
     y_star = functions_mixture_model.f_y_star(dim_particles)
 
-    if autochoose_eps != '' and propagation_mechanism=='true_sisson':
-        raise ValueError('if true sisson, then no autochoose_eps allowed!')
+    if autochoose_eps == 'ess_based' and propagation_mechanism=='true_sisson':
+        raise ValueError('if true sisson, then no ess_based autochoose_eps allowed!')
 
     test_sampler = smc_sampler(N_particles, 
                                 dim_particles, 
@@ -531,7 +536,8 @@ if __name__ == '__main__':
                                      y_star,
                                      functions_mixture_model.delta,
                                      functions_mixture_model.exclude_theta,
-                                     M_simulator = dim_auxiliary_var)
+                                     M_simulator = dim_auxiliary_var,
+                                     parallelize = parallelize)
     #print simulator_mm.f_auxialiary_sampler(theta)
     test_sampler.setAuxialiarySampler(simulator_mm)
     #test_sampler.initialize_sampler()
@@ -580,10 +586,10 @@ if __name__ == '__main__':
 
 
     #pdb.set_trace()
-    #import yappi
-    #yappi.start()
+    import yappi
+    yappi.start()
     test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)
-    #yappi.get_func_stats().print_all()
+    yappi.get_func_stats().print_all()
     pdb.set_trace()
     if True:
         select_component = 0
