@@ -115,7 +115,7 @@ class propagater_particles():
             particles_mean = np.average(particles, weights=np.squeeze(weights), axis=1)
             
             u = random_sequence(self.dim_particles, i=0, n=self.N_particles)
-
+            #pdb.set_trace()
             particles_next = np.zeros(particles.shape)
             particles_preweights = np.ones(weights.shape)
 

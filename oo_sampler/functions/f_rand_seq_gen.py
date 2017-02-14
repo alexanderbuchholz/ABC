@@ -4,7 +4,7 @@ import numpy.random as nr
 #import matplotlib
 import numpy as np
 #import matplotlib.pyplot as plt
-import pdb
+import ipdb as pdb
 #import rpy2.robjects as robjects
 import rpy2.robjects.packages as rpackages
 import rpy2.robjects as robjects
