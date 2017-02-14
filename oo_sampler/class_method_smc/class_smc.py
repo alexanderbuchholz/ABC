@@ -23,7 +23,7 @@ class smc_sampler(object):
             (dim_particles, N_particles, T_time)
 
     """
-    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None):
+    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small'):
         """
             set the data structures of the class
             set the random generator that will drive the stochastic propagation
@@ -75,6 +75,7 @@ class smc_sampler(object):
             self.computational_budget = computational_budget*self.N_particles
         else: 
             self.computational_budget = 10**20
+        self.save_size = save_size
 
     def setParameters(self, parameters):
         self.parameters = parameters
@@ -456,10 +457,14 @@ class smc_sampler(object):
                       'covar_factor': self.covar_factor,
                       'sampling_counter': self.sampling_counter,
                       'information_components': self.information_components,
-                      'auxiliary_particles_list': self.auxialiary_particles_list,
+                      'auxiliary_particles_list': self.auxialiary_particles_list[-1],
                       'M_list': self.M_list,
                       'T_max': self.T_max,
                       'variance_normalisation_constant' : self.variance_normalisation_constant}
+            if self.save_size == 'large':
+                output['auxiliary_particles_list'] = self.auxialiary_particles_list
+            else:
+                pass
             pickle.dump(output, open(filename+'_'+str(self.sampler_type)+str(self.dim_auxiliary_var)+'_'+str(self.propagation_mechanism)+'_'+str(self.N_particles)+"_simulation_abc_epsilon_"+str(self.epsilon_target)+".p", "wb") )
 
 
