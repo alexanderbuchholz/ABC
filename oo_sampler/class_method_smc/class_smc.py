@@ -417,6 +417,7 @@ class smc_sampler(object):
                 self.iterator_ais(current_t, resample=resample)
             elif modified_sampling == "Del_Moral":
                 if current_t == self.T-1: # break due to forward propagation of del moral
+                    self.break_routine(current_t)
                     break
                 self.iterator_del_moral(current_t)
             if current_t == 1:
