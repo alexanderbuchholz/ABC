@@ -62,7 +62,7 @@ kwargs = {'N_particles_list': [500, 750, 1000], #750, 1000, 1500, 2000],# 2500, 
 K_repetitions = range(repetitions)
 #filename = functions_model.model_string+'_dim_'+str(dim_particles)+'_adaptive_M_autochoose_eps_gaussian_kernel'
 #filename = functions_model.model_string+'_adaptive_M_autochoose_eps_gaussian_kernel_1_VB_component_small_fixed_budget'
-filename = functions_model.model_string+'_adaptive_M_autochoose_eps_gaussian_kernel_1_VB_component_fixed_epsilon_schedule'
+filename = functions_model.model_string+'_adaptive_M_autochoose_eps_gaussian_kernel_1_VB_component_fixed_epsilon_schedule_del_moral'
 if __name__ == '__main__':
     import parallel_simulation
     from functools import partial
