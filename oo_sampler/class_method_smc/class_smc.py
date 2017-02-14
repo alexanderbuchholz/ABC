@@ -460,7 +460,7 @@ class smc_sampler(object):
                       'M_list': self.M_list,
                       'T_max': self.T_max,
                       'variance_normalisation_constant' : self.variance_normalisation_constant}
-            pickle.dump(output, open(filename+'_'+str(self.sampler_type)+str(self.dim_auxiliary_var)+'_'+str(self.propagation_mechanism)+'_'+str(self.N_particles)+"_simulation_abc_epsilon_"+str(self.epsilon_target)+"_"+str(self.T)+".p", "wb") )
+            pickle.dump(output, open(filename+'_'+str(self.sampler_type)+str(self.dim_auxiliary_var)+'_'+str(self.propagation_mechanism)+'_'+str(self.N_particles)+"_simulation_abc_epsilon_"+str(self.epsilon_target)+".p", "wb") )
 
 
 if __name__ == '__main__':
