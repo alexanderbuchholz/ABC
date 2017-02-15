@@ -15,18 +15,17 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_fun
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
-#import functions_mixture_model_3 as functions_model
-import functions_mixture_model as functions_model
+import functions_mixture_model_3 as functions_model
 
 
 Time = 600
-repetitions = 20
+repetitions = 40
 dim_particles = 2
 target_ESS_ratio_resampler = 0.5
 target_ESS_ratio_reweighter = 0.5
 epsilon_target = 1 #functions_model.epsilon_target(dim_particles) #0.001 #0.25
 epsilon_start = 4
-kwargs = {'N_particles_list': [500, 750, 1000], #750, 1000, 1500, 2000],# 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
+kwargs = {'N_particles_list': [500, 750, 1000], #1500, 2000, 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
@@ -76,7 +75,7 @@ if __name__ == '__main__':
 
 
 
-    if False: 
+    if True: 
         # simulation Del Moral
         kwargs['inititation_particles'] = functions_model.theta_sampler_mc
         kwargs['sampler_type'] = 'MC'
@@ -99,7 +98,7 @@ if __name__ == '__main__':
         kwargs['inititation_particles'] = functions_model.theta_sampler_rqmc
         kwargs['kernel'] = gaussian_densities_etc.gaussian_kernel
         kwargs['covar_factor'] = 1.2
-        #del partial_parallel_smc
+        del partial_parallel_smc
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
         for i_simulation in filenames_list:
             partial_parallel_smc(i_simulation)
@@ -125,7 +124,7 @@ if __name__ == '__main__':
             partial_parallel_smc(i_simulation)
 
 
-    if False: 
+    if True: 
         # simulation Sisson
         kwargs['propagation_mechanism'] = 'true_sisson'
         kwargs['autochoose_eps'] = 'quantile_based'

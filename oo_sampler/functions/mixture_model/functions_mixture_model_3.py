@@ -20,7 +20,7 @@ import rpy2.robjects as robjects
 randtoolbox = rpackages.importr('randtoolbox')
 
 model_string = "single_gaussian"
-dim = 3
+dim = 1
 exponent = 6
 #path_archive_simulations = '/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model'
 path_archive_simulations = '/home/alex/python_programming/ABC_results_storage/models_information'

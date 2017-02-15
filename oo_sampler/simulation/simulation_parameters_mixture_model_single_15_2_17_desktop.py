@@ -15,18 +15,18 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_fun
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
-#import functions_mixture_model_3 as functions_model
-import functions_mixture_model as functions_model
+import functions_mixture_model_3 as functions_model
+#import functions_mixture_model as functions_model
 
 
 Time = 600
-repetitions = 20
-dim_particles = 2
+repetitions = 40
+dim_particles = 1
 target_ESS_ratio_resampler = 0.5
 target_ESS_ratio_reweighter = 0.5
-epsilon_target = 1 #functions_model.epsilon_target(dim_particles) #0.001 #0.25
+epsilon_target = functions_model.epsilon_target(dim_particles) #0.001 #0.25
 epsilon_start = 4
-kwargs = {'N_particles_list': [500, 750, 1000], #750, 1000, 1500, 2000],# 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
+kwargs = {'N_particles_list': [500, 750, 1000, 1500, 2000],# 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
@@ -57,13 +57,14 @@ kwargs = {'N_particles_list': [500, 750, 1000], #750, 1000, 1500, 2000],# 2500, 
             'exclude_theta' : functions_model.exclude_theta,
             'computational_budget' : 10**10,
             'parallelize' : False,
-            'fixed_epsilon_schedule': True
+            'fixed_epsilon_schedule': True,
+            'algorithm_only_schedule': True
             }
 
 K_repetitions = range(repetitions)
 #filename = functions_model.model_string+'_dim_'+str(dim_particles)+'_adaptive_M_autochoose_eps_gaussian_kernel'
 #filename = functions_model.model_string+'_adaptive_M_autochoose_eps_gaussian_kernel_1_VB_component_small_fixed_budget'
-filename = functions_model.model_string+'_adaptive_M_autochoose_eps_gaussian_kernel_1_VB_component_fixed_epsilon_schedule_del_moral'
+filename = functions_model.model_string+'_adaptive_M_autochoose_eps_gaussian_kernel_1_VB_component_fixed_epsilon_schedule_algo_only'
 if __name__ == '__main__':
     import parallel_simulation
     from functools import partial
@@ -76,7 +77,7 @@ if __name__ == '__main__':
 
 
 
-    if False: 
+    if True: 
         # simulation Del Moral
         kwargs['inititation_particles'] = functions_model.theta_sampler_mc
         kwargs['sampler_type'] = 'MC'
@@ -125,7 +126,7 @@ if __name__ == '__main__':
             partial_parallel_smc(i_simulation)
 
 
-    if False: 
+    if True: 
         # simulation Sisson
         kwargs['propagation_mechanism'] = 'true_sisson'
         kwargs['autochoose_eps'] = 'quantile_based'
