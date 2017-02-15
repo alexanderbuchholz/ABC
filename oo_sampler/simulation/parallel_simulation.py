@@ -15,7 +15,7 @@ import pickle
 
 NUM_PROCESSES = 2
 import ipdb as pdb
-def set_up_parallel_abc_sampler(filename, fixed_epsilon_schedule=False, **kwargs):
+def set_up_parallel_abc_sampler(filename, fixed_epsilon_schedule=False, algorithm_only_schedule=False, **kwargs):
     '''
         function responsible for setting up the sampler and launching the simulation
     '''
@@ -24,6 +24,9 @@ def set_up_parallel_abc_sampler(filename, fixed_epsilon_schedule=False, **kwargs
         autochoose_eps_inter = globals()['autochoose_eps']
         autochoose_eps = autochoose_eps_inter
         filename_inter = filename[:-1]
+        #pdb.set_trace()
+        if algorithm_only_schedule == True:
+            filename_inter = filename_inter+globals()['propagation_mechanism']
     else:
         autochoose_eps = globals()['autochoose_eps']
         

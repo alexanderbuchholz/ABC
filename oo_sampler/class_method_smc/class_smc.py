@@ -349,6 +349,7 @@ class smc_sampler(object):
         self.propagate_particles(current_t+1)
         self.metropolis_hasting_accept_reject(current_t+1)
         self.sampling_counter = self.sampling_counter + self.dim_auxiliary_var*self.N_particles
+        self.M_list.append(self.dim_auxiliary_var)
 
     def iterator_ais(self, current_t, resample=False, **kwargs):
         """
