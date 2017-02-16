@@ -52,6 +52,7 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
         means[:, :selector, i_simulation] = simulation["means_particles"][:, :selector]
         final_ESS[:,i_simulation] = simulation["ESS"][selector-1]
         final_epsilon[:,i_simulation] = simulation["epsilon"][selector-1]
+        #pdb.set_trace()
         epsilons[:,:len(simulation["epsilon"]),i_simulation] = simulation["epsilon"]
         final_simulation_time[:,i_simulation] = simulation["simulation_time"]
         if propagation_method == 'AIS':
@@ -101,7 +102,7 @@ if True:
         del_moral_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral')
         true_sisson_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson')
         #print sisson_simulation_results[0]
-        
+        print simulation_parameters_model.filename
         print N_particles
         print MC_simulation_results[0]
         print QMC_simulation_results[0]
@@ -155,6 +156,7 @@ if True:
         QMC_results =  f_summary_stats(simulation_parameters_model, sample_method = "QMC", particles=N_particles, cum_sum=cum_sum)
         RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, cum_sum=cum_sum)
         Del_Moral_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral', cum_sum=cum_sum)
+        #pdb.set_trace()
         Sisson_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson', cum_sum=cum_sum)
         #pdb.set_trace()
         print('code works for one dimension only!')
@@ -182,24 +184,22 @@ if True:
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
         plt.ylabel('means')
-        plt.savefig(str(N_particles)+'N_means_epsilon.png')
+        #plt.savefig(str(N_particles)+'N_means_epsilon.png')
         plt.show()
 
         #pdb.set_trace()
         plt.title('MSE for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N:'+str(N_particles))
-        plt.plot(MC_results[1][1][0,:,0], MC_results[1][2][0,:]*MC_results[1][3].mean(axis=0), label="MC")
-        plt.plot(QMC_results[1][1][0,:,0], QMC_results[1][2][0,:]*QMC_results[1][3].mean(axis=0), label="QMC")
-        #pdb.set_trace()
-        plt.plot(RQMC_results[1][1][0,:,0], RQMC_results[1][2][0,:]*RQMC_results[1][3].mean(axis=0), label="RQMC")
-        plt.plot(Del_Moral_results[1][1][0,:-1,0], Del_Moral_results[1][2][0,:-1]*Del_Moral_results[1][3][:,:-1].mean(axis=0), label="Del Moral")
-        plt.plot(Sisson_results[1][1][0,:,0], Sisson_results[1][2][0,:]*Sisson_results[1][3].mean(axis=0), label="Sisson")
-        #plt.plot(simulation_parameters_model.kwargs['N_particles_list'], var_different_methods[4,:], label="Sisson")
+        plt.plot(MC_results[1][1][0,:-1,0], (MC_results[1][2][0,:]*MC_results[1][3].mean(axis=0))[:-1], label="MC")
+        plt.plot(QMC_results[1][1][0,:-1,0], (QMC_results[1][2][0,:]*QMC_results[1][3].mean(axis=0))[:-1], label="QMC")
+        plt.plot(RQMC_results[1][1][0,:-1,0], (RQMC_results[1][2][0,:]*RQMC_results[1][3].mean(axis=0))[:-1], label="RQMC")
+        plt.plot(Del_Moral_results[1][1][0,:,0], Del_Moral_results[1][2][0,:]*Del_Moral_results[1][3][:,:].mean(axis=0), label="Del Moral")
+        plt.plot(Sisson_results[1][1][0,:-1,0], (Sisson_results[1][2][0,:]*Sisson_results[1][3].mean(axis=0))[:-1], label="Sisson")
         plt.yscale('log')
         plt.xscale('log')
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
         plt.ylabel('variance')
-        plt.savefig(str(N_particles)+'N_variance_epsilon.png')
+        #plt.savefig(str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 
 

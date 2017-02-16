@@ -15,8 +15,8 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_fun
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
-import functions_mixture_model_3 as functions_model
-#import functions_mixture_model as functions_model
+#import functions_mixture_model_3 as functions_model
+import functions_mixture_model as functions_model
 
 
 Time = 600

@@ -66,7 +66,8 @@ class smc_sampler(object):
             self.dim_auxiliary_var = 0
         self.epsilon = None
         self.ESS = np.ones(self.T)
-        self.variance_normalisation_constant = np.zeros(self.T)
+        self.variances_normalisation_constant = np.zeros((self.N_particles, self.T))
+        self.means_normalisation_constant = np.zeros((self.N_particles, self.T))
         self.ESS[0] = self.N_particles
         self.ESS_before_reweighting = np.ones(self.T)
         self.mean_particles = np.zeros((self.dim_particles, self.T))
@@ -271,7 +272,7 @@ class smc_sampler(object):
                 previous_ESS = self.N_particles
             else:
                 previous_ESS = self.ESS[current_t-1]
-            weights, particles_mean, particles_var, ESS, epsilon_current, ESS_before_reweighting, variance_normalisation_constant = self.f_weight_particles(self.particles[:,:,current_t],
+            weights, particles_mean, particles_var, ESS, epsilon_current, ESS_before_reweighting, variances_normalisation_constant, means_normalisation_constant = self.f_weight_particles(self.particles[:,:,current_t],
                                                                                                     self.particles_preweights[:,:,current_t],
                                                                                                     current_t,
                                                                                                     #aux_particles=self.auxialiary_particles[:,:,current_t],
@@ -285,7 +286,9 @@ class smc_sampler(object):
         self.var_particles[:,:,current_t] = particles_var
         self.ESS[current_t] = ESS
         self.ESS_before_reweighting[current_t] = ESS_before_reweighting
-        self.variance_normalisation_constant[current_t] = variance_normalisation_constant
+        #pdb.set_trace()
+        self.variances_normalisation_constant[:,current_t] = variances_normalisation_constant
+        self.means_normalisation_constant[:,current_t] = means_normalisation_constant
         #pdb.set_trace()
         self.epsilon[current_t] = epsilon_current
         gaussian_densities_etc.break_if_nan(self.particles)
@@ -324,7 +327,8 @@ class smc_sampler(object):
         self.particles_before_resampling = self.particles_before_resampling[:,:,:current_t+1]
         self.weights = self.weights[:,:,:current_t+1]
         self.ESS = self.ESS[:current_t+1]
-        self.variance_normalisation_constant = self.variance_normalisation_constant[:current_t+1]
+        self.variances_normalisation_constant = self.variances_normalisation_constant[:,:current_t+1]
+        self.means_normalisation_constant = self.means_normalisation_constant[:,:current_t+1]
         self.ESS_before_reweighting = self.ESS_before_reweighting[:current_t+1]
         self.mean_particles = self.mean_particles[:, :current_t+1]
         self.var_particles = self.var_particles[:,:, :current_t+1]
@@ -462,7 +466,8 @@ class smc_sampler(object):
                       'auxiliary_particles_list': self.auxialiary_particles_list[-1],
                       'M_list': self.M_list,
                       'T_max': self.T_max,
-                      'variance_normalisation_constant' : self.variance_normalisation_constant}
+                      'variances_normalisation_constant' : self.variances_normalisation_constant,
+                      'means_normalisation_constant' : self.means_normalisation_constant}
             if self.save_size == 'large':
                 output['auxiliary_particles_list'] = self.auxialiary_particles_list
             else:
@@ -483,37 +488,37 @@ if __name__ == '__main__':
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
-    #import functions_mixture_model_2 as functions_mixture_model
+    import functions_mixture_model_3 as functions_mixture_model
     #import functions_toggle_switch_model as functions_mixture_model
-    import functions_mixture_model
+    #import functions_mixture_model
     model_description = functions_mixture_model.model_string
-    N_particles = 1000
+    N_particles = 500
     dim_particles = 1
     Time = 10
     dim_auxiliary_var = 10
-    augment_M = True
-    M_incrementer = 5
+    augment_M = False
+    M_incrementer = 2
     target_ESS_ratio_reweighter = 0.3
-    target_ESS_ratio_resampler = 0.3
+    target_ESS_ratio_resampler = 0.5
     epsilon_target = functions_mixture_model.epsilon_target(dim_particles)
     contracting_AIS = True
-    M_increase_until_acceptance = False
-    M_target_multiple_N = 1
-    covar_factor = 1.5
-    propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true sisson" 
-    sampler_type = 'MC'
+    M_increase_until_acceptance = True
+    M_target_multiple_N = target_ESS_ratio_reweighter
+    covar_factor = 1.
+    propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" 
+    sampler_type = 'QMC'
     ancestor_sampling = False#"Hilbert"
     resample = False
     autochoose_eps = 'ess_based' # ''ess_based quantile_based
-    computational_budget = 10**2
+    computational_budget = 10**5
     parallelize = True
 
 
 
     model_description = model_description+'_'+sampler_type+'_'+propagation_mechanism
     save = False
-    mixture_components = 1
-    kernel = gaussian_densities_etc.uniform_kernel
+    mixture_components = 10
+    kernel = gaussian_densities_etc.gaussian_kernel
     move_particle =gaussian_densities_etc.gaussian_move
     y_star = functions_mixture_model.f_y_star(dim_particles)
 
@@ -602,9 +607,14 @@ if __name__ == '__main__':
         select_component = 0
         #lim = (-0.5, 0.5)
         for i in range(test_sampler.T_max):
-            if False: 
-                x1_test = pd.Series(test_sampler.particles[select_component,:,i], name="$X_1$")
-                x2_test = pd.Series(test_sampler.auxialiary_particles_list[i].mean(axis=0), name="$Y$")
+            if True: 
+                x1_test = pd.Series(test_sampler.particles_before_resampling[select_component,:,i], name="$X_1$")
+                x2_test = pd.Series(test_sampler.auxialiary_particles_list[i].mean(axis=0), name="$Y_mean$")
+                x3_test = pd.Series(test_sampler.weights[0,:,i], name="$weights$")
+                x4_test = pd.Series(test_sampler.auxialiary_particles_list[i].var(axis=0), name="$Y_var$")
+                #pdb.set_trace()
+                x5_test = pd.Series(test_sampler.variances_normalisation_constant[:,i], name="$Y_kernel_var$")
+                x6_test = pd.Series(test_sampler.means_normalisation_constant[:,i], name="$Y_kernel_var$")
                 #g = sns.JointGrid(x=x1_test[x2_test<1000], y=x2_test[x2_test<1000], space=0)
                 #g = g.plot_joint(sns.kdeplot, cmap="Blues_d")
                 #g = g.plot_marginals(sns.kdeplot, shade=True)
@@ -615,15 +625,37 @@ if __name__ == '__main__':
                 #plt.savefig("bivariate_iteration_%s_%s.png"%(i, model_description))
                 plt.show()
                 plt.close('all')
+
+                plt.close('all')
+                plt.scatter(x1_test[x2_test<1000], x2_test[x2_test<1000])
+                plt.title('plot particle and mean auxiliary particle')
+                plt.show()
+
+                plt.scatter(x1_test[x2_test<1000], x4_test[x2_test<1000])
+                plt.title('plot particle and var auxiliary particle')
+                plt.show()
+
+                plt.scatter(x1_test[x3_test>10**(-10)], np.log(x3_test[x3_test>10**(-10)]))
+                plt.title('plot particle and weights')
+                #plt.yscale('log')
+                plt.show()
             
+                plt.scatter(x1_test[x3_test>10**(-10)], np.log(x5_test[x3_test>10**(-10)]))
+                plt.title('plot particle and var kernel')
+                plt.show()
+            
+                #sns.jointplot(x1_test[x3_test>10**(-10)], np.log(x5_test[x3_test>10**(-10)]), kind="kde")
+                plt.scatter(x1_test[np.log(x6_test)>-100], np.log(x6_test[np.log(x6_test)>-100]))
+                plt.title('plot particle and mean kernel')
+                plt.show()
             
             #x1_new = pd.Series(test_sampler.particles[0,:,i], name = "$X_1$")
             #x2_new = pd.Series(test_sampler.particles[1,:,i], name = "$X_2$")
 
             #sns.jointplot(x1_new, x2_new, kind = "kde")#, xlim = lim, ylim = lim)
-            g = sns.distplot(test_sampler.particles[select_component,:,i], label="model posterior")
             plt.subplots_adjust(top=0.9)
             plt.title(('epsilon = %s \n and N = %d')% (test_sampler.epsilon[i], test_sampler.N_particles))
+            sns.distplot(test_sampler.particles[select_component,:,i], label="model posterior")
             sns.kdeplot(AR_posterior_particles[select_component,], label="AR posterior")
             if i > 0:
                 sns.kdeplot(test_sampler.particles[select_component,:,i-1], label="particles previous iteration")
