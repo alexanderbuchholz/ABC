@@ -72,7 +72,7 @@ if __name__ == '__main__':
     path = "/home/alex/python_programming/ABC_results_storage/simulation_results"
     import os
     os.chdir(path)
-    filenames_list = [filename+str(k) for k in K_repetitions]
+    filenames_list = [filename+'_'+str(k) for k in K_repetitions]
     #filenames_list = filenames_list[15:]
 
 
