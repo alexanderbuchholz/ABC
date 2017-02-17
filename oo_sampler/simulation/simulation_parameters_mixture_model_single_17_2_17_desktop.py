@@ -69,7 +69,7 @@ if __name__ == '__main__':
     import parallel_simulation
     from functools import partial
 
-    path = "/home/alex/python_programming/ABC_results_storage/simulation_results"
+    path = "/home/alex/python_programming/ABC_results_storage/simulation_results_17-2-17"
     import os
     os.chdir(path)
     filenames_list = [filename+'_'+str(k) for k in K_repetitions]
