@@ -11,7 +11,7 @@ import numpy as np
 path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_14-2-17"
 path2 = "/home/alex/python_programming/ABC_results_storage/simulation_results"
 import os
-os.chdir(path2)
+os.chdir(path1)
 import sys
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/simulation")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions")
@@ -19,7 +19,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_fun
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
 #import sisson_simulation_parameters_mixture_model
 #import simulation_parameters_mixture_model_3_2_17 as simulation_parameters_model
-import simulation_parameters_mixture_model_15_2_17 as simulation_parameters_model
+import simulation_parameters_mixture_model_14_2_17_desktop as simulation_parameters_model
 #import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
 #import a20_1_17_simulation_parameters_tuberculosis_model as simulation_parameters_mixture_model
 import f_rand_seq_gen
