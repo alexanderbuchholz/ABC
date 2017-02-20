@@ -498,18 +498,18 @@ if __name__ == '__main__':
     dim_auxiliary_var = 10
     augment_M = False
     M_incrementer = 2
-    target_ESS_ratio_reweighter = 0.3
-    target_ESS_ratio_resampler = 0.5
+    target_ESS_ratio_reweighter = 0.8
+    target_ESS_ratio_resampler = 0.8
     epsilon_target = functions_mixture_model.epsilon_target(dim_particles)
     contracting_AIS = True
     M_increase_until_acceptance = True
     M_target_multiple_N = target_ESS_ratio_reweighter
     covar_factor = 1.
-    propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" 
+    propagation_mechanism = 'nonparametric'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" 
     sampler_type = 'QMC'
-    ancestor_sampling = False#"Hilbert"
-    resample = False
-    autochoose_eps = 'ess_based' # ''ess_based quantile_based
+    ancestor_sampling = "Hilbert"#False#"Hilbert"
+    resample = True
+    autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**5
     parallelize = True
 
@@ -598,16 +598,16 @@ if __name__ == '__main__':
 
 
     #pdb.set_trace()
-    #import yappi
-    #yappi.start()
+    import yappi
+    yappi.start()
     test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)
-    #yappi.get_func_stats().print_all()
+    yappi.get_func_stats().print_all()
     pdb.set_trace()
     if True:
         select_component = 0
         #lim = (-0.5, 0.5)
         for i in range(test_sampler.T_max):
-            if True: 
+            if False: 
                 x1_test = pd.Series(test_sampler.particles_before_resampling[select_component,:,i], name="$X_1$")
                 x2_test = pd.Series(test_sampler.auxialiary_particles_list[i].mean(axis=0), name="$Y_mean$")
                 x3_test = pd.Series(test_sampler.weights[0,:,i], name="$weights$")

@@ -165,8 +165,10 @@ class propagater_particles():
         propagation as done by sisson
         """
         particles_var = self.covar_factor*np.cov(particles, aweights=np.squeeze(weights))
+        particles_var = np.atleast_2d(particles_var)
         #pdb.set_trace()
         if self.ancestor_sampling == "Hilbert":
+            #pdb.set_trace()
             resampled_indices = f_hilbert_sampling(particles, weights, u)
         else:
             resampled_indices = resampling.residual_resample(np.squeeze(weights))
@@ -182,13 +184,15 @@ class propagater_particles():
             particle_prop = self.move_particle(particles_old[:,i_particle], u[i_particle,:-1], particles_var) # move the particle$
             particles_next[:,i_particle] = particle_prop # save the particles
             # calculate the weights
+            #pdb.set_trace()
             density_particle = np.array([weights[:,i_former_particle]*gaussian_densities_etc.gaussian_density(particles_next[:,i_particle], particles_old[:,i_former_particle], particles_var) for i_former_particle in range(self.N_particles)])
             density_prior = 1 # TODO: add real prior
             weight_inter = density_prior/density_particle.sum()
             if np.isnan(weight_inter).any():
-                raise ValueError('some particles is Nan!')
+                raise ValueError('some particles are Nan!')
                 weight_inter = 0.
             particles_preweights[:,i_particle] = weight_inter
+        #pdb.set_trace()
         return particles_next, particles_preweights, []
 
     def f_propagate_del_moral(self, particles, weights, u, *args, **kwargs):
@@ -476,12 +480,14 @@ class reweighter_particles():
             #pdb.set_trace()
             M = aux_particles.shape[0]
             #aux_particles_means =  aux_particles.mean(axis=0)
-            quantile_index = np.round(M*self.N_particles*0.9)
+            quantile_index = np.round(M*self.N_particles*0.8)
             
             #epsilon_proposed = np.sort(aux_particles_means)[quantile_index]
-            epsilon_proposed = np.sort(aux_particles.flatten())[quantile_index]
+            number_inadmissable_particles = sum(aux_particles.flatten()>1000)
+            epsilon_proposed = np.sort(aux_particles.flatten())[quantile_index-number_inadmissable_particles]
             epsilon_current = np.min(np.array([epsilon_proposed, previous_epsilon]))
             #pdb.set_trace()
+            
         elif self.autochoose_eps == 'ess_based':
             # routine for autochosing epsilon based on bisect search
             epsilon_current = f_dichotomic_search_ESS(previous_epsilon, partial_f_ESS, target_ESS)
