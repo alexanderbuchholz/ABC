@@ -8,10 +8,10 @@ import ipdb as pdb
 import pickle
 import numpy as np
 #if __name__ == '__main__':
-path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_14-2-17"
+path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_17-2-17"
 path2 = "/home/alex/python_programming/ABC_results_storage/simulation_results"
 import os
-os.chdir(path2)
+os.chdir(path1)
 import sys
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/simulation")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions")
@@ -19,7 +19,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_fun
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
 #import sisson_simulation_parameters_mixture_model
 #import simulation_parameters_mixture_model_3_2_17 as simulation_parameters_model
-import simulation_parameters_mixture_model_15_2_17 as simulation_parameters_model
+import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
 #import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
 #import a20_1_17_simulation_parameters_tuberculosis_model as simulation_parameters_mixture_model
 import f_rand_seq_gen
@@ -39,9 +39,16 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
     for i_simulation in range(parameters.repetitions):
     #for i_simulation in range(32):
         if propagation_method == 'true_sisson':
-            simulation = pickle.load( open( parameters.filename+str(i_simulation)+"_"+sample_method+str(1)+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+".p", "rb" ) )
+            try:
+                simulation = pickle.load( open( parameters.filename+str(i_simulation)+"_"+sample_method+str(1)+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+".p", "rb" ) )
+            except: 
+                simulation = pickle.load( open( parameters.filename+'_'+str(i_simulation)+"_"+sample_method+str(1)+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+".p", "rb" ) )
+
         else:
-            simulation = pickle.load( open( parameters.filename+str(i_simulation)+"_"+sample_method+str(parameters.kwargs["dim_auxiliary_var"])+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+".p", "rb" ) )
+            try:
+                simulation = pickle.load( open( parameters.filename+str(i_simulation)+"_"+sample_method+str(parameters.kwargs["dim_auxiliary_var"])+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+".p", "rb" ) )
+            except:
+                simulation = pickle.load( open( parameters.filename+'_'+str(i_simulation)+"_"+sample_method+str(parameters.kwargs["dim_auxiliary_var"])+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+".p", "rb" ) )
         #pdb.set_trace()
         selector = simulation["means_particles"].shape[1] #np.min((simulation['T_max'], parameters.Time))
         #pdb.set_trace()
@@ -92,7 +99,7 @@ import seaborn as sns
 import pandas as pd
 #pdb.set_trace()
 #sisson_simulation_results = f_summary_stats(sisson_simulation_parameters_mixture_model, sample_method = "MC", particles=100)
-if True:
+if False:
     var_different_methods = np.zeros((5,len(simulation_parameters_model.kwargs['N_particles_list']), simulation_parameters_model.kwargs['Time']))
     counter = 0
     for N_particles in simulation_parameters_model.kwargs['N_particles_list']:
@@ -100,7 +107,7 @@ if True:
         MC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'AIS')
         RQMC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, propagation_method = 'AIS')
         del_moral_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral')
-        true_sisson_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson')
+        #true_sisson_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson')
         #print sisson_simulation_results[0]
         print simulation_parameters_model.filename
         print N_particles
@@ -108,7 +115,7 @@ if True:
         print QMC_simulation_results[0]
         print RQMC_simulation_results[0]
         print del_moral_simulation_results[0]
-        print true_sisson_simulation_results[0]
+        #print true_sisson_simulation_results[0]
         #pdb.set_trace()
     """
         for i_epsilon in range(QMC_simulation_results[1][1].shape[1]):
@@ -146,6 +153,20 @@ def function_flatten_results(_results, dim):
     _epsilons_inter = _epsilons_inter[_epsilons_inter > 0.]
     return _means_inter, _epsilons_inter
 
+
+def plot_no_double_epsilon(results, label):
+    if label == 'Del Moral':
+        #pdb.set_trace()
+        plt.plot(results[1][1][0,:-1,0], (results[1][2][0,:]*results[1][3][:,:].mean(axis=0))[:-1], label=label)
+    elif label == 'Sisson':
+        plt.plot(results[1][1][0,:-1,0], (results[1][2][0,:]*results[1][3].mean(axis=0))[:-1], label=label)
+    else:
+        epsilon_list = results[1][1][0,:,0]
+        epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
+        var_list = (results[1][2][0,:]*results[1][3].mean(axis=0))[:]
+        #plt.plot(MC_results[1][1][0,:,0], (MC_results[1][2][0,:]*MC_results[1][3].mean(axis=0))[:], label=label)
+        plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
+
 if True:
     N_particles_list = simulation_parameters_model.kwargs['N_particles_list']
     MC_means = []
@@ -157,14 +178,14 @@ if True:
         RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, cum_sum=cum_sum)
         Del_Moral_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral', cum_sum=cum_sum)
         #pdb.set_trace()
-        Sisson_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson', cum_sum=cum_sum)
+        #Sisson_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson', cum_sum=cum_sum)
         #pdb.set_trace()
         print('code works for one dimension only!')
         MC_means_inter, MC_epsilons_inter = function_flatten_results(MC_results, 0)
         QMC_means_inter, QMC_epsilons_inter = function_flatten_results(QMC_results, 0)
         RQMC_means_inter, RQMC_epsilons_inter = function_flatten_results(RQMC_results, 0)
         Del_Moral_means_inter, Del_Moral_epsilons_inter = function_flatten_results(Del_Moral_results, 0)
-        Sisson_means_inter, Sisson_epsilons_inter = function_flatten_results(Sisson_results, 0)
+        #Sisson_means_inter, Sisson_epsilons_inter = function_flatten_results(Sisson_results, 0)
 
         sns.set_style("darkgrid")
         #sns.tsplot(time=MC_epsilons_inter, data=MC_means_inter, color='blue')
@@ -178,7 +199,7 @@ if True:
         plt.scatter(QMC_epsilons_inter, QMC_means_inter, lw=0.5, alpha=1, color='cyan', label="QMC")
         plt.scatter(RQMC_epsilons_inter, RQMC_means_inter, lw=0.5, alpha=1, color='green', label="RQMC")
         plt.scatter(Del_Moral_epsilons_inter, Del_Moral_means_inter, color='red', label='Del Moral')
-        plt.scatter(Sisson_epsilons_inter, Sisson_means_inter, color='yellow', label='Sisson')
+        #plt.scatter(Sisson_epsilons_inter, Sisson_means_inter, color='yellow', label='Sisson')
         #plt.yscale('log')
         plt.xscale('log')
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
@@ -189,11 +210,18 @@ if True:
 
         #pdb.set_trace()
         plt.title('MSE for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N:'+str(N_particles))
-        plt.plot(MC_results[1][1][0,:-1,0], (MC_results[1][2][0,:]*MC_results[1][3].mean(axis=0))[:-1], label="MC")
-        plt.plot(QMC_results[1][1][0,:-1,0], (QMC_results[1][2][0,:]*QMC_results[1][3].mean(axis=0))[:-1], label="QMC")
-        plt.plot(RQMC_results[1][1][0,:-1,0], (RQMC_results[1][2][0,:]*RQMC_results[1][3].mean(axis=0))[:-1], label="RQMC")
-        plt.plot(Del_Moral_results[1][1][0,:,0], Del_Moral_results[1][2][0,:]*Del_Moral_results[1][3][:,:].mean(axis=0), label="Del Moral")
-        plt.plot(Sisson_results[1][1][0,:-1,0], (Sisson_results[1][2][0,:]*Sisson_results[1][3].mean(axis=0))[:-1], label="Sisson")
+        plot_no_double_epsilon(MC_results, 'MC')
+        plot_no_double_epsilon(QMC_results, 'QMC')
+        plot_no_double_epsilon(RQMC_results, 'RQMC')
+        plot_no_double_epsilon(Del_Moral_results, 'Del Moral')
+        #plot_no_double_epsilon(Sisson_results, 'Sisson')
+
+        #pdb.set_trace()
+        #plt.plot(MC_results[1][1][0,:,0], (MC_results[1][2][0,:]*MC_results[1][3].mean(axis=0))[:], label="MC")
+        #plt.plot(QMC_results[1][1][0,:,0], (QMC_results[1][2][0,:]*QMC_results[1][3].mean(axis=0))[:], label="QMC")
+        #plt.plot(RQMC_results[1][1][0,:,0], (RQMC_results[1][2][0,:]*RQMC_results[1][3].mean(axis=0))[:], label="RQMC")
+        #plt.plot(Del_Moral_results[1][1][0,:,0], Del_Moral_results[1][2][0,:]*Del_Moral_results[1][3][:,:].mean(axis=0), label="Del Moral")
+        #plt.plot(Sisson_results[1][1][0,:-1,0], (Sisson_results[1][2][0,:]*Sisson_results[1][3].mean(axis=0))[:-1], label="Sisson")
         plt.yscale('log')
         plt.xscale('log')
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)

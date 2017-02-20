@@ -20,11 +20,11 @@ import functions_mixture_model_3 as functions_model
 
 
 Time = 600
-repetitions = 20
+repetitions = 40
 dim_particles = 1
 target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
-epsilon_target = 0.05#functions_model.epsilon_target(dim_particles) #0.001 #0.25
+epsilon_target = 0.005#functions_model.epsilon_target(dim_particles) #0.001 #0.25
 epsilon_start = 4
 kwargs = {'N_particles_list': [500, 750, 1000], #750, 1000, 1500, 2000],# 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     import os
     os.chdir(path)
     filenames_list = [filename+'_'+str(k) for k in K_repetitions]
-    filenames_list = filenames_list[:10]
+    #filenames_list = filenames_list[9:]
 
 
 
