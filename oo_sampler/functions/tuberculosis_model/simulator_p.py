@@ -7,10 +7,10 @@ import random
 import cProfile
 import bisect
 #from numba import jit
-from numba import autojit
+#from numba import autojit
 #from numba import float64, int32
 import pdb
-import line_profiler
+#import line_profiler
 
 #@jit()
 def multinomial_sample(weights):
