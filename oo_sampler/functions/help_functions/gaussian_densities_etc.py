@@ -171,10 +171,10 @@ def break_if_negative(myarray):
 
 if __name__ == '__main__':
     p = 5
-    n = 10
+    n = 1000
     x = np.random.normal(size = (n,p))
     mu = np.zeros(p)
-    x = np.ones(p)
+    #x = np.ones(p)
 
     sigma = np.eye(p)
     from scipy.stats import multivariate_normal

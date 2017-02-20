@@ -20,7 +20,7 @@ import resampling
 #from joblib import Parallel, delayed
 import pathos.multiprocessing as multiprocessing
 NUM_CORES = multiprocessing.cpu_count()
-
+from scipy.stats import multivariate_normal
 
 class simulator_sampler():
     """
@@ -184,8 +184,10 @@ class propagater_particles():
             particle_prop = self.move_particle(particles_old[:,i_particle], u[i_particle,:-1], particles_var) # move the particle$
             particles_next[:,i_particle] = particle_prop # save the particles
             # calculate the weights
-            #pdb.set_trace()
-            density_particle = np.array([weights[:,i_former_particle]*gaussian_densities_etc.gaussian_density(particles_next[:,i_particle], particles_old[:,i_former_particle], particles_var) for i_former_particle in range(self.N_particles)])
+        #pdb.set_trace()
+        for i_particle in range(self.N_particles):
+            #density_particle = np.array([weights[:,i_former_particle]*gaussian_densities_etc.gaussian_density(particles_next[:,i_particle], particles_old[:,i_former_particle], particles_var) for i_former_particle in range(self.N_particles)])
+            density_particle = (weights*multivariate_normal.pdf(particles_old.transpose(), mean=particles_next[:,i_particle], cov=particles_var)).transpose()
             density_prior = 1 # TODO: add real prior
             weight_inter = density_prior/density_particle.sum()
             if np.isnan(weight_inter).any():
@@ -193,6 +195,8 @@ class propagater_particles():
                 weight_inter = 0.
             particles_preweights[:,i_particle] = weight_inter
         #pdb.set_trace()
+
+        
         return particles_next, particles_preweights, []
 
     def f_propagate_del_moral(self, particles, weights, u, *args, **kwargs):

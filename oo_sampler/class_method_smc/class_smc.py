@@ -494,7 +494,7 @@ if __name__ == '__main__':
     model_description = functions_mixture_model.model_string
     N_particles = 500
     dim_particles = 1
-    Time = 10
+    Time = 100
     dim_auxiliary_var = 10
     augment_M = False
     M_incrementer = 2
