@@ -496,10 +496,10 @@ if __name__ == '__main__':
     dim_particles = 1
     Time = 100
     dim_auxiliary_var = 10
-    augment_M = False
+    augment_M = True
     M_incrementer = 2
-    target_ESS_ratio_reweighter = 0.8
-    target_ESS_ratio_resampler = 0.8
+    target_ESS_ratio_reweighter = 0.5
+    target_ESS_ratio_resampler = 0.5
     epsilon_target = functions_mixture_model.epsilon_target(dim_particles)
     contracting_AIS = True
     M_increase_until_acceptance = True
@@ -509,9 +509,9 @@ if __name__ == '__main__':
     sampler_type = 'QMC'
     ancestor_sampling = "Hilbert"#False#"Hilbert"
     resample = True
-    autochoose_eps = 'quantile_based' # ''ess_based quantile_based
+    autochoose_eps = 'ess_based' # ''ess_based quantile_based
     computational_budget = 10**5
-    parallelize = True
+    parallelize = False
 
 
 
