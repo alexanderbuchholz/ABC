@@ -26,7 +26,7 @@ repetitions = 20
 dim_particles = 2
 target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
-epsilon_target = 0.001#functions_model.epsilon_target(dim_particles) #0.001 #0.25
+epsilon_target = functions_model.epsilon_target(dim_particles) #0.001 #0.25
 epsilon_start = 4
 kwargs = {'N_particles_list': [100, 200, 300], #750, 1000, 1500, 2000],# 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
@@ -58,7 +58,7 @@ kwargs = {'N_particles_list': [100, 200, 300], #750, 1000, 1500, 2000],# 2500, 3
             'delta' : functions_model.delta,
             'exclude_theta' : functions_model.exclude_theta,
             'computational_budget' : 10**10,
-            'parallelize' : False,
+            'parallelize' : True,
             'fixed_epsilon_schedule': True,
             'algorithm_only_schedule': True
             }
