@@ -12,33 +12,35 @@ import ipdb as pdb
 
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/class_method_smc")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
+sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
+
+path = "/home/alex/python_programming/ABC_results_storage/simulation_results_20-2-17"
 import gaussian_densities_etc
-#import functions_tuberculosis_model as functions_model
-import functions_mixture_model_3 as functions_model
+import functions_tuberculosis_model as functions_model
+#import functions_mixture_model_3 as functions_model
 #import functions_mixture_model as functions_model
 
 
 Time = 600
-repetitions = 40
-dim_particles = 1
+repetitions = 10
+dim_particles = 2
 target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
-epsilon_target = 0.005#functions_model.epsilon_target(dim_particles) #0.001 #0.25
+epsilon_target = 0.05#functions_model.epsilon_target(dim_particles) #0.001 #0.25
 epsilon_start = 4
-kwargs = {'N_particles_list': [500, 750, 1000], #750, 1000, 1500, 2000],# 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
+kwargs = {'N_particles_list': [100, 200], #750, 1000, 1500, 2000],# 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
-            'dim_auxiliary_var' : 10,
+            'dim_auxiliary_var' : 5,
             'augment_M' : True,
-            'M_incrementer' : 2,
+            'M_incrementer' : 1,
             'target_ESS_ratio_reweighter' : target_ESS_ratio_resampler,
             'target_ESS_ratio_resampler' : target_ESS_ratio_reweighter,
             'epsilon_target' : epsilon_target,
             'contracting_AIS' : True,
             'M_increase_until_acceptance' : False, # False
-            'M_target_multiple_N' : 1,
+            'M_target_multiple_N' : target_ESS_ratio_reweighter,
             'covar_factor' : 1.2,
             'propagation_mechanism' : 'AIS',
             'sampler_type' : 'QMC',
@@ -56,7 +58,7 @@ kwargs = {'N_particles_list': [500, 750, 1000], #750, 1000, 1500, 2000],# 2500, 
             'delta' : functions_model.delta,
             'exclude_theta' : functions_model.exclude_theta,
             'computational_budget' : 10**10,
-            'parallelize' : False,
+            'parallelize' : True,
             'fixed_epsilon_schedule': True,
             'algorithm_only_schedule': True
             }
@@ -64,32 +66,18 @@ kwargs = {'N_particles_list': [500, 750, 1000], #750, 1000, 1500, 2000],# 2500, 
 K_repetitions = range(repetitions)
 #filename = functions_model.model_string+'_dim_'+str(dim_particles)+'_adaptive_M_autochoose_eps_gaussian_kernel'
 #filename = functions_model.model_string+'_adaptive_M_autochoose_eps_gaussian_kernel_1_VB_component_small_fixed_budget'
-filename = functions_model.model_string+'_adaptive_M_autochoose_eps_gaussian_kernel_1_VB_component_fixed_epsilon_schedule_algo_only'
+filename = functions_model.model_string+'_increasing_M_autochoose_eps_gaussian_kernel_1_VB_component_fixed_epsilon_schedule_algo_only'
 if __name__ == '__main__':
     import parallel_simulation
     from functools import partial
 
-    path = "/home/alex/python_programming/ABC_results_storage/simulation_results_17-2-17"
     import os
     os.chdir(path)
     filenames_list = [filename+'_'+str(k) for k in K_repetitions]
     #filenames_list = filenames_list[9:]
 
-    if True: 
-        # simulation nonparametric
-        kwargs['inititation_particles'] = functions_model.theta_sampler_rqmc
-        kwargs['sampler_type'] = 'QMC'
-        kwargs['kernel'] = gaussian_densities_etc.gaussian_kernel
-        kwargs['propagation_mechanism'] = 'nonparametric'
-        kwargs['M_increase_until_acceptance'] = False
-        kwargs['augment_M'] = True
-        kwargs['covar_factor'] = 2
 
-        partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
-        for i_simulation in filenames_list:
-            partial_parallel_smc(i_simulation)
 
-    pdb.set_trace()
     if True: 
         # simulation Del Moral
         kwargs['inititation_particles'] = functions_model.theta_sampler_mc
@@ -113,7 +101,8 @@ if __name__ == '__main__':
         kwargs['inititation_particles'] = functions_model.theta_sampler_rqmc
         kwargs['kernel'] = gaussian_densities_etc.gaussian_kernel
         kwargs['covar_factor'] = 1.2
-        #del partial_parallel_smc
+        kwargs['M_increase_until_acceptance'] = True
+        del partial_parallel_smc
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
         for i_simulation in filenames_list:
             partial_parallel_smc(i_simulation)
