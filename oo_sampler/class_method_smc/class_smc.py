@@ -43,6 +43,7 @@ class smc_sampler(object):
         self.particles = np.zeros(shape=(self.dim_particles, self.N_particles, self.T))
         self.particles_before_resampling = np.zeros(shape=(self.dim_particles, self.N_particles, self.T))
         self.particles_preweights = np.zeros(shape=(1, self.N_particles, self.T))
+        self.particles_preweights_neg_binomial = np.zeros(shape=(1, self.N_particles, self.T))
         #self.particles_resampled = np.zeros(shape=(self.dim_particles, self.N_particles, self.T))
         self.weights = np.ones(shape=(1, self.N_particles, self.T))*1./self.N_particles
         self.sampling_counter = 0.
@@ -256,6 +257,70 @@ class smc_sampler(object):
             self.particles_before_resampling[:, :, current_t] = self.particles[:, :, current_t]
 
 
+    def propagate_particles_neg_binomial(self, current_t, *args, **kwargs):
+        """
+        function that implements the propagation with a negative binomial distribution
+        """
+        #kwargs = self.parameters_Propagate
+        #if self.class_auxialiary_sampler.M_simulator < 2.:
+        #    raise ValueError('simulator of y needs to return only one value!')
+        if current_t==0:
+            self.__initialize_sampler() # TODO: not correct, change this !
+            self.M_list.append(self.N_particles)
+        else:
+            particles_var = np.atleast_2d(1*np.cov(self.particles[:,:,current_t-1], aweights=np.squeeze(self.weights[:,:,current_t-1])))
+            #particles_next = np.zeros(self.particles[:,:,current_t-1].shape)
+            counter_M = 0.
+            self.class_auxialiary_sampler.M_simulator = 1
+            for index_particle in xrange(self.N_particles):
+                # TODO: chose ancestor
+                u = nr.uniform()
+                #ancestor = resample.multinomial(np.squeeze(self.weights[:,:,current_t-1]))
+                ancestor = gaussian_densities_etc.weighted_choice(np.squeeze(self.weights[:,:,current_t-1]),u)
+                center = self.particles[:, ancestor, current_t-1]
+                
+                #pdb.set_trace()
+                acceptance_counter = 0
+                repetition_counter = 0
+                proposal = gaussian_densities_etc.gaussian_standard(center, particles_var)[:,np.newaxis]
+                self.particles[:,index_particle, current_t] = proposal.squeeze()
+                #pdb.set_trace()
+                break_flag = False
+                while acceptance_counter < 2.:
+                    dist = 100000000000.
+                    while dist> self.epsilon[current_t-1]: # this amounts to a uniform acceptance
+                        #pdb.set_trace()
+                    
+                        dist = self.class_auxialiary_sampler.f_auxialiary_sampler(proposal)
+
+                        self.sampling_counter += 1.
+                        counter_M += 1.
+                        repetition_counter += 1.
+                        if dist == 10**10:
+                            break_flag = True
+                            break
+                    if dist == 10**10:
+                        break_flag = True
+                        break
+                    self.auxialiary_particles[acceptance_counter,index_particle, current_t] = dist
+                    acceptance_counter += 1.
+                if break_flag:
+                    self.particles_preweights_neg_binomial[:,index_particle,current_t] = 0
+                else:
+                    self.particles_preweights_neg_binomial[:,index_particle,current_t] = (acceptance_counter-1)/(repetition_counter+acceptance_counter-1)
+
+            self.M_list.append(counter_M)
+            for i_particle in xrange(self.N_particles):
+                # TODO: calc preweights
+                #pdb.set_trace()
+                #self.particles_preweights[:,i_particle,current_t] = np.array([self.weights[:,i_former_particle,current_t-1]*gaussian_densities_etc.gaussian_density(self.particles[:,i_particle,current_t], self.particles[:,i_former_particle,current_t], particles_var) for i_former_particle in range(self.N_particles)]).sum()
+                self.particles_preweights[:,i_particle,current_t] = self.particles_preweights_neg_binomial[:,i_particle,current_t]*(self.weights[:,:,current_t-1]*multivariate_normal.pdf(self.particles[:,:,current_t].transpose(), mean=self.particles[:,i_particle,current_t], cov=particles_var)).sum()
+                #gaussian_densities_etc.gaussian_density(self.particles[:,i_particle,current_t], self.particles[:,i_former_particle,current_t], particles_var) for i_former_particle in range(self.N_particles)]).sum()
+            self.auxialiary_particles_list.append(self.auxialiary_particles[:,:, current_t])
+            self.particles_before_resampling[:, :, current_t] = self.particles[:, :, current_t]
+            #pdb.set_trace()
+
+
 
     def reweight_particles(self, current_t, *args, **kwargs):
         """
@@ -340,6 +405,12 @@ class smc_sampler(object):
         """
         self.propagate_particles_sisson(current_t=current_t)
         self.reweight_particles(current_t = current_t)
+    
+    def iterator_neg_binomial(self, current_t):
+        '''
+        '''
+        self.propagate_particles_neg_binomial(current_t=current_t)
+        self.reweight_particles(current_t = current_t)
 
     def iterator_del_moral(self, current_t, **kwargs):
         """
@@ -420,6 +491,8 @@ class smc_sampler(object):
                 self.iterator_ais(current_t, resample=resample)
             elif modified_sampling == "nonparametric":
                 self.iterator_ais(current_t, resample=resample)
+            elif modified_sampling == "neg_binomial":
+                self.iterator_neg_binomial(current_t)
             elif modified_sampling == "Del_Moral":
                 if current_t == self.T-1: # break due to forward propagation of del moral
                     self.break_routine(current_t)
@@ -495,21 +568,21 @@ if __name__ == '__main__':
     N_particles = 500
     dim_particles = 1
     Time = 100
-    dim_auxiliary_var = 10
+    dim_auxiliary_var = 2
     augment_M = True
     M_incrementer = 2
     target_ESS_ratio_reweighter = 0.5
     target_ESS_ratio_resampler = 0.5
     epsilon_target = functions_mixture_model.epsilon_target(dim_particles)
     contracting_AIS = True
-    M_increase_until_acceptance = True
+    M_increase_until_acceptance = False
     M_target_multiple_N = target_ESS_ratio_reweighter
     covar_factor = 1.
-    propagation_mechanism = 'nonparametric'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" 
-    sampler_type = 'QMC'
-    ancestor_sampling = "Hilbert"#False#"Hilbert"
+    propagation_mechanism = 'neg_binomial'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
+    sampler_type = 'MC'
+    ancestor_sampling = False #"Hilbert"#False#"Hilbert"
     resample = True
-    autochoose_eps = 'ess_based' # ''ess_based quantile_based
+    autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**5
     parallelize = False
 

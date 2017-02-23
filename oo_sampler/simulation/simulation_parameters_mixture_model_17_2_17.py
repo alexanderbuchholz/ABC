@@ -89,7 +89,7 @@ if __name__ == '__main__':
         for i_simulation in filenames_list:
             partial_parallel_smc(i_simulation)
 
-    pdb.set_trace()
+    #pdb.set_trace()
     if True: 
         # simulation Del Moral
         kwargs['inititation_particles'] = functions_model.theta_sampler_mc

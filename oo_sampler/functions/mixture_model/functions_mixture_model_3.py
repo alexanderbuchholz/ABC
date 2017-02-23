@@ -143,7 +143,7 @@ if __name__ == '__main__':
     if precompute_values:
         precompute_save_data(exponent, dim)
     if False: 
-        test = load_precomputed_data(1, 6)
+        test = load_precomputed_data(dim, exponent)
         pdb.set_trace()
 
 

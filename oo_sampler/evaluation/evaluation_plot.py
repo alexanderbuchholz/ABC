@@ -19,9 +19,9 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_fun
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
 #import sisson_simulation_parameters_mixture_model
 #import simulation_parameters_mixture_model_3_2_17 as simulation_parameters_model
-import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
+#import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
 #import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
-#import a20_1_17_simulation_parameters_tuberculosis_model as simulation_parameters_mixture_model
+import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
 import f_rand_seq_gen
 import gaussian_densities_etc
 def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation_method = 'AIS', cum_sum=False):
@@ -99,7 +99,7 @@ import seaborn as sns
 import pandas as pd
 #pdb.set_trace()
 #sisson_simulation_results = f_summary_stats(sisson_simulation_parameters_mixture_model, sample_method = "MC", particles=100)
-if False:
+if True:
     var_different_methods = np.zeros((5,len(simulation_parameters_model.kwargs['N_particles_list']), simulation_parameters_model.kwargs['Time']))
     counter = 0
     for N_particles in simulation_parameters_model.kwargs['N_particles_list']:
@@ -108,14 +108,16 @@ if False:
         RQMC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, propagation_method = 'AIS')
         del_moral_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral')
         true_sisson_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson')
-        print sisson_simulation_results[0]
+        nonparametric_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "QMC", particles=N_particles, propagation_method = 'nonparametric')
+        #print sisson_simulation_results[0]
         print simulation_parameters_model.filename
         print N_particles
         print MC_simulation_results[0]
         print QMC_simulation_results[0]
         print RQMC_simulation_results[0]
         print del_moral_simulation_results[0]
-        #print true_sisson_simulation_results[0]
+        print nonparametric_simulation_results[0]
+        print true_sisson_simulation_results[0]
         #pdb.set_trace()
     """
         for i_epsilon in range(QMC_simulation_results[1][1].shape[1]):
