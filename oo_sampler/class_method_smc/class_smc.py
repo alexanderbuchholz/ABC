@@ -23,7 +23,7 @@ class smc_sampler(object):
             (dim_particles, N_particles, T_time)
 
     """
-    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small'):
+    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small', y_simulation = 'neg_binomial'):
         """
             set the data structures of the class
             set the random generator that will drive the stochastic propagation
@@ -58,6 +58,7 @@ class smc_sampler(object):
             # the dim of the auxiliary var is the number of additional simulations
             self.dim_auxiliary_var = dim_auxiliary_var
             self.auxialiary_particles_list = []
+            self.auxialiary_particles_list_tries_until_success = [np.zeros((1, self.N_particles))]
             self.auxialiary_particles = np.zeros(shape=(self.dim_auxiliary_var,
                                                         self.N_particles,
                                                         self.T))
@@ -78,6 +79,7 @@ class smc_sampler(object):
         else: 
             self.computational_budget = 10**20
         self.save_size = save_size
+        self.y_simulation = y_simulation
 
     def setParameters(self, parameters):
         self.parameters = parameters
@@ -170,9 +172,9 @@ class smc_sampler(object):
             self.__initialize_sampler()
         else:
             self.particles[:, :, current_t], self.particles_preweights[:, :, current_t], information_components = self.f_propagate_particles(self.particles[:, :, current_t-1], 
-                                                                                                                    self.weights[:, :, current_t-1], 
-                                                                                                                    flag_failed_ESS, 
-                                                                                                                    self.information_components, 
+                                                                                                                    self.weights[:, :, current_t-1],
+                                                                                                                    flag_failed_ESS,
+                                                                                                                    self.information_components,
                                                                                                                     kwargs)
             self.particles_before_resampling[:, :, current_t] = self.particles[:, :, current_t]
             self.information_components.append(information_components)
@@ -180,30 +182,36 @@ class smc_sampler(object):
             if self.dim_auxiliary_var > 0:
                 kwargs = self.parameters_AuxialiarySampler
                 #pdb.set_trace()
-                if self.M_increase_until_acceptance == True:
-                    auxiliary_particles_new = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:, :, current_t], **kwargs)
-                    M_simulator_inter = self.class_auxialiary_sampler.M_simulator
-                    self.class_auxialiary_sampler.M_simulator = 1
-                    auxiliary_particles_list_length = len(self.auxialiary_particles_list)
+                if self.y_simulation == 'neg_binomial':
+                    auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_auxialiary_sampler_negative_binomial(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1])
                     self.auxialiary_particles_list.append(auxiliary_particles_new)
-                    #pdb.set_trace()
-                    y_alive = np.sum((auxiliary_particles_new < self.epsilon[current_t-1]).flatten())
-                    counter_M_simulations = M_simulator_inter
-                    while y_alive<self.N_particles*self.M_target_multiple_N:
-                        print('Successfull simulations y = %s of in total M*target= %s, number of tries M %s' % (y_alive, self.N_particles*self.M_target_multiple_N, counter_M_simulations), end='\r')
-                        auxiliary_particles_inter = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:, : ,current_t], **kwargs)
-                        auxiliary_particles_new = np.vstack((auxiliary_particles_new, auxiliary_particles_inter))
+                    self.auxialiary_particles_list_tries_until_success.append(aux_particles_tries_new)
+
+                if self.y_simulation == 'standard':
+                    if self.M_increase_until_acceptance == True:
+                        auxiliary_particles_new = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:, :, current_t], **kwargs)
+                        M_simulator_inter = self.class_auxialiary_sampler.M_simulator
+                        self.class_auxialiary_sampler.M_simulator = 1
+                        auxiliary_particles_list_length = len(self.auxialiary_particles_list)
+                        self.auxialiary_particles_list.append(auxiliary_particles_new)
+                        #pdb.set_trace()
                         y_alive = np.sum((auxiliary_particles_new < self.epsilon[current_t-1]).flatten())
-                        self.auxialiary_particles_list[current_t] = auxiliary_particles_new
-                        counter_M_simulations += 1
-                        if (self.sampling_counter+counter_M_simulations*self.N_particles)>self.computational_budget:
-                            break
-                    print('\n')
-                    #pdb.set_trace()
-                    self.class_auxialiary_sampler.M_simulator = counter_M_simulations
-                else: 
-                    auxiliary_particles_new = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:, :, current_t], **kwargs)
-                    self.auxialiary_particles_list.append(auxiliary_particles_new)
+                        counter_M_simulations = M_simulator_inter
+                        while y_alive<self.N_particles*self.M_target_multiple_N:
+                            print('Successfull simulations y = %s of in total M*target= %s, number of tries M %s' % (y_alive, self.N_particles*self.M_target_multiple_N, counter_M_simulations), end='\r')
+                            auxiliary_particles_inter = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:, : ,current_t], **kwargs)
+                            auxiliary_particles_new = np.vstack((auxiliary_particles_new, auxiliary_particles_inter))
+                            y_alive = np.sum((auxiliary_particles_new < self.epsilon[current_t-1]).flatten())
+                            self.auxialiary_particles_list[current_t] = auxiliary_particles_new
+                            counter_M_simulations += 1
+                            if (self.sampling_counter+counter_M_simulations*self.N_particles)>self.computational_budget:
+                                break
+                        print('\n')
+                        #pdb.set_trace()
+                        self.class_auxialiary_sampler.M_simulator = counter_M_simulations
+                    else: 
+                        auxiliary_particles_new = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:, :, current_t], **kwargs)
+                        self.auxialiary_particles_list.append(auxiliary_particles_new)
                 #import matplotlib.pyplot as plt
                 #X =  self.auxialiary_particles_list[-1].mean(axis=0)
                 #print X.mean()
@@ -257,10 +265,8 @@ class smc_sampler(object):
             self.particles_before_resampling[:, :, current_t] = self.particles[:, :, current_t]
 
 
+    """
     def propagate_particles_neg_binomial(self, current_t, *args, **kwargs):
-        """
-        function that implements the propagation with a negative binomial distribution
-        """
         #kwargs = self.parameters_Propagate
         #if self.class_auxialiary_sampler.M_simulator < 2.:
         #    raise ValueError('simulator of y needs to return only one value!')
@@ -318,7 +324,7 @@ class smc_sampler(object):
                 #gaussian_densities_etc.gaussian_density(self.particles[:,i_particle,current_t], self.particles[:,i_former_particle,current_t], particles_var) for i_former_particle in range(self.N_particles)]).sum()
             self.auxialiary_particles_list.append(self.auxialiary_particles[:,:, current_t])
             self.particles_before_resampling[:, :, current_t] = self.particles[:, :, current_t]
-            #pdb.set_trace()
+            #pdb.set_trace()"""
 
 
 
@@ -337,11 +343,18 @@ class smc_sampler(object):
                 previous_ESS = self.N_particles
             else:
                 previous_ESS = self.ESS[current_t-1]
+            if (self.y_simulation == 'neg_binomial') and (len(self.auxialiary_particles_list_tries_until_success) > 1):
+                # check if list is not empty, important in first iteration when using negative binomial
+                #pdb.set_trace()
+                aux_particles_tries_current_t = self.auxialiary_particles_list_tries_until_success[current_t]
+            else: 
+                aux_particles_tries_current_t = []
             weights, particles_mean, particles_var, ESS, epsilon_current, ESS_before_reweighting, variances_normalisation_constant, means_normalisation_constant = self.f_weight_particles(self.particles[:,:,current_t],
                                                                                                     self.particles_preweights[:,:,current_t],
                                                                                                     current_t,
                                                                                                     #aux_particles=self.auxialiary_particles[:,:,current_t],
                                                                                                     aux_particles=self.auxialiary_particles_list[current_t],
+                                                                                                    aux_particles_tries_current_t = aux_particles_tries_current_t,
                                                                                                     weights_before = self.weights[:,:,current_t-1],
                                                                                                     epsilon=self.epsilon, previous_ESS=previous_ESS, **kwargs)
         else:
@@ -435,11 +448,11 @@ class smc_sampler(object):
         self.reweight_particles(current_t = current_t)
         # choose whether to increase M
         if (self.ESS[current_t] < self.ESS_treshold_incrementer) or (self.epsilon[current_t]==self.epsilon[current_t-1]):
-            if (self.augment_M):
+            if self.augment_M:
                 # first check whether increase M is true
                 print("Increase M")
                 self.class_auxialiary_sampler.M_simulator += self.M_incrementer
-            if (not self.contracting_AIS):
+            if not self.contracting_AIS:
                 self.flag_failed_ESS = True
         self.M_list.append(self.class_auxialiary_sampler.M_simulator)
         # Resample
@@ -567,9 +580,9 @@ if __name__ == '__main__':
     model_description = functions_mixture_model.model_string
     N_particles = 500
     dim_particles = 1
-    Time = 100
+    Time = 10
     dim_auxiliary_var = 2
-    augment_M = True
+    augment_M = False
     M_incrementer = 2
     target_ESS_ratio_reweighter = 0.5
     target_ESS_ratio_resampler = 0.5
@@ -578,8 +591,9 @@ if __name__ == '__main__':
     M_increase_until_acceptance = False
     M_target_multiple_N = target_ESS_ratio_reweighter
     covar_factor = 1.
-    propagation_mechanism = 'neg_binomial'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
+    propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
     sampler_type = 'MC'
+    y_simulation = 'neg_binomial' # 'standard'
     ancestor_sampling = False #"Hilbert"#False#"Hilbert"
     resample = True
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
@@ -610,7 +624,8 @@ if __name__ == '__main__':
                                 contracting_AIS=contracting_AIS,
                                 M_increase_until_acceptance=M_increase_until_acceptance,
                                 M_target_multiple_N = M_target_multiple_N,
-                                computational_budget = computational_budget)
+                                computational_budget = computational_budget,
+                                y_simulation = y_simulation)
     test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_mc)
     test_sampler.propagation_mechanism = propagation_mechanism
     test_sampler.sampler_type = sampler_type

@@ -33,6 +33,7 @@ class simulator_sampler():
         self.exclude_theta = exclude_theta
         self.parallelize = parallelize
         self.M_simulator = M_simulator
+
     def f_parallel_loop(self, n_particle, particles):
         """
         parallel simulation
@@ -40,26 +41,54 @@ class simulator_sampler():
         """
         #pdb.set_trace()
         particle_n = particles[:, n_particle, np.newaxis]
-        aux_particles_ind = np.zeros((self.M_simulator, 1))
+        aux_particles_indvidual = np.zeros((self.M_simulator, 1))
         if self.exclude_theta(particle_n) == 1:
             # if ok sample
             #pdb.set_trace()
             for m_particle in xrange(self.M_simulator):
                 y_proposed = self.simulator(particle_n)
                 distance = self.delta(y_proposed, self.y_star)
-                aux_particles_ind[m_particle, :] = distance
+                aux_particles_indvidual[m_particle, :] = distance
                 # if not set large distance
         else:
-            aux_particles_ind = np.ones((self.M_simulator, 1))*10000000000.
-        return aux_particles_ind
+            aux_particles_indvidual = np.ones((self.M_simulator, 1))*10000000000.
+        return aux_particles_indvidual
+
+    def f_parallel_loop_negative_binomial(self, n_particle, particles, epsilon_target, n_successfull_tries=2):
+        """
+        parallel simulation
+        we directly return the value of the distance, this is a scalar !
+        return the two smallest distances that are below the threshold and 
+        the number of tries necessary
+        """
+        #pdb.set_trace()
+        particle_n = particles[:, n_particle, np.newaxis]
+        aux_particles_indvidual = np.zeros((n_successfull_tries, 1))
+        aux_particles_tries = np.zeros(1)
+        if self.exclude_theta(particle_n) == 1:
+            # if ok sample
+            #pdb.set_trace()
+            achieved_successful_tries = 0
+            while achieved_successful_tries < n_successfull_tries:
+                y_proposed = self.simulator(particle_n)
+                distance = self.delta(y_proposed, self.y_star)
+                if distance < epsilon_target:
+                    aux_particles_indvidual[achieved_successful_tries, :] = distance
+                    achieved_successful_tries += 1
+                aux_particles_tries += 1.
+            aux_particles_tries_until_success = aux_particles_tries - n_successfull_tries
+        else:
+            aux_particles_indvidual = np.ones((n_successfull_tries, 1))*10000000000.
+            aux_particles_tries_until_success = np.inf
+        #pdb.set_trace()
+        return aux_particles_indvidual, aux_particles_tries_until_success
+
 
     def f_auxialiary_sampler(self, particles, *args, **kwargs):
-        # TODO: make M_simulator implicit ??
         """
             function that samples according to the size of the particles
         """
         #pdb.set_trace()
-        # TODO: can we make this parallel ??
         N_particles = particles.shape[1]
         aux_particles = np.zeros((self.M_simulator, N_particles))
         # loop over the particles (theta)
@@ -79,6 +108,33 @@ class simulator_sampler():
 
         gaussian_densities_etc.break_if_nan(aux_particles)
         return aux_particles
+
+    def f_auxialiary_sampler_negative_binomial(self, particles, epsilon_target, n_successfull_tries=2):
+        """
+        negative binomial sampling
+        """
+        N_particles = particles.shape[1]
+        aux_particles = np.zeros((n_successfull_tries, N_particles))
+        aux_particles_tries = np.zeros((1, N_particles))
+        # loop over the particles (theta)
+        partial_f_parallel_loop = partial(self.f_parallel_loop_negative_binomial, particles=particles, epsilon_target=epsilon_target, n_successfull_tries=n_successfull_tries)
+        if self.parallelize == True:
+            pool = multiprocessing.Pool(processes=(NUM_CORES))
+            F = pool.map(partial_f_parallel_loop, range(N_particles))
+            pool.close()
+            pool.join()
+            for n_particle in xrange(N_particles):
+                aux_particles[:, n_particle] = F[0][n_particle].squeeze()
+                aux_particles_tries[:,n_particle] = F[1][n_particle].squeeze()
+        else:
+            for n_particle in xrange(N_particles):
+                # check if theta is admissible
+                aux_particles_indvidual, aux_particles_tries_until_success = partial_f_parallel_loop(n_particle)
+                aux_particles[:, n_particle] = aux_particles_indvidual.squeeze()
+                aux_particles_tries[:,n_particle] = aux_particles_tries_until_success
+
+        gaussian_densities_etc.break_if_nan(aux_particles)
+        return aux_particles, aux_particles_tries
 
 
 def f_hilbert_sampling(particles, weights, u):
@@ -113,9 +169,7 @@ class propagater_particles():
             #pdb.set_trace()
             particles_var = np.atleast_2d(self.covar_factor*np.cov(particles, aweights=np.squeeze(weights)))
             particles_mean = np.average(particles, weights=np.squeeze(weights), axis=1)
-            
             u = random_sequence(self.dim_particles, i=0, n=self.N_particles)
-            #pdb.set_trace()
             particles_next = np.zeros(particles.shape)
             particles_preweights = np.ones(weights.shape)
 
@@ -136,8 +190,6 @@ class propagater_particles():
             particles_resampled = np.zeros(particles.shape)
             # implement residual resampling
             ancestors = resampling.residual_resample(np.squeeze(weights))
-            #for i_particle in range(self.N_particles):
-            #    particles_resampled[:, i_particle] = particles[:, ancestors[i_particle]] # define the old value ( ancestor )
             particles_resampled = particles[:, ancestors] # define the old value ( ancestor )
             vb_sampler = function_vb_class_sampler.vb_sampler(n_components = self.mixture_components, covar_factor=self.covar_factor)
 
@@ -180,21 +232,20 @@ class propagater_particles():
         for i_particle in range(self.N_particles):
             # resampling first, to pick the ancestors
             ancestor = int(resampled_indices[i_particle])
-            particles_old[:,i_particle] = particles[:,ancestor] # define the old value ( ancestor )
+            particles_old[:, i_particle] = particles[:, ancestor] # define the old value (ancestor)
             particle_prop = self.move_particle(particles_old[:,i_particle], u[i_particle,:-1], particles_var) # move the particle$
-            particles_next[:,i_particle] = particle_prop # save the particles
+            particles_next[:, i_particle] = particle_prop # save the particles
             # calculate the weights
-        #pdb.set_trace()
+
         for i_particle in range(self.N_particles):
-            #density_particle = np.array([weights[:,i_former_particle]*gaussian_densities_etc.gaussian_density(particles_next[:,i_particle], particles_old[:,i_former_particle], particles_var) for i_former_particle in range(self.N_particles)])
             density_particle = (weights*multivariate_normal.pdf(particles_old.transpose(), mean=particles_next[:,i_particle], cov=particles_var)).transpose()
             density_prior = 1 # TODO: add real prior
             weight_inter = density_prior/density_particle.sum()
             if np.isnan(weight_inter).any():
                 raise ValueError('some particles are Nan!')
                 weight_inter = 0.
-            particles_preweights[:,i_particle] = weight_inter
-        #pdb.set_trace()
+            particles_preweights[:, i_particle] = weight_inter
+
 
         
         return particles_next, particles_preweights, []
@@ -277,18 +328,6 @@ def calculate_weights_del_moral(epsilon, particles_preweights, aux_particles, we
     """
     the function that calculates the weights in the approach of del moral
     """
-    # weights_next_old = np.ones(particles_preweights.shape)
-    # N_particles = particles_preweights.shape[1] # the shape of the weights is (1,N) !!!!!
-    # # loop over particles
-    # for i_particle in range(N_particles):
-    #     # procedure for del moral
-    #     density_aux_nominator = np.mean(gaussian_densities_etc.f_kernel_value(epsilon, aux_particles[:,i_particle], kernel))
-    #     density_aux_denominator = np.mean(gaussian_densities_etc.f_kernel_value(previous_epsilon, aux_particles[:,i_particle], kernel))
-    #     weight_inter = density_aux_nominator/density_aux_denominator
-    #     if np.isnan(weight_inter).any():
-    #         weight_inter = 0.
-    #     weights_next_old[:, i_particle] = weight_inter*weights_before[:, i_particle]
-
     density_aux_nominator = gaussian_densities_etc.f_kernel_value(epsilon, aux_particles, kernel).mean(axis=0)
     density_aux_denominator = gaussian_densities_etc.f_kernel_value(previous_epsilon, aux_particles, kernel).mean(axis=0)
     weights_inter = density_aux_nominator/density_aux_denominator
@@ -301,18 +340,6 @@ def calculate_weights_del_moral(epsilon, particles_preweights, aux_particles, we
 
 def accept_reject_del_moral(epsilon, aux_particles_new, aux_particles_old, kernel=gaussian_densities_etc.uniform_kernel):
     N_particles = aux_particles_new.shape[1] # the shape of the weights is (1,N) !!!!!
-    # weights_next = np.ones((1, N_particles))
-    # # loop over particles
-    # for i_particle in range(N_particles):
-    #     # procedure for del moral
-    #     #pdb.set_trace()
-    #     density_aux_nominator = np.mean(gaussian_densities_etc.f_kernel_value(epsilon, aux_particles_new[:, i_particle], kernel))
-    #     density_aux_denominator = np.mean(gaussian_densities_etc.f_kernel_value(epsilon, aux_particles_old[:, i_particle], kernel))
-    #     weight_inter = density_aux_nominator/density_aux_denominator
-    #     if np.isnan(weight_inter).any():
-    #         weight_inter = 0.
-    #     weights_next[:, i_particle] = weight_inter
-
     density_aux_nominator = gaussian_densities_etc.f_kernel_value(epsilon, aux_particles_new, kernel).mean(axis=0)
     density_aux_denominator = gaussian_densities_etc.f_kernel_value(epsilon, aux_particles_old, kernel).mean(axis=0)
     weights_next = density_aux_nominator/density_aux_denominator
@@ -324,22 +351,16 @@ def accept_reject_del_moral(epsilon, aux_particles_new, aux_particles_old, kerne
     probabilities = np.random.uniform(size=N_particles)
     return (weights_next > probabilities)
 
-def calculate_weights(epsilon, particles_preweights, aux_particles, weights_before=None, kernel=gaussian_densities_etc.gaussian_kernel, previous_epsilon=None):
+def calculate_weights(epsilon, particles_preweights, aux_particles, weights_before=None, aux_particles_tries_current_t=[], kernel=gaussian_densities_etc.gaussian_kernel, previous_epsilon=None):
     """
     general weight calculation
     """
-    #weights_next = np.ones(particles_preweights.shape)
-    #N_particles = particles_preweights.shape[1] # the shape of the weights is (1,N) !!!!!
-    # loop over particles
-    #for i_particle in range(N_particles):
-    #    pdb.set_trace()
-    #    density_aux = gaussian_densities_etc.f_kernel_value(epsilon, aux_particles[:,i_particle], kernel).mean()
-    #    weight_inter = particles_preweights[:, i_particle]*density_aux
-    #    if np.isnan(weight_inter).any():
-    #        weight_inter = 0.
-    #    weights_next[:, i_particle] = weight_inter
     # vectorize code
-    density_aux = gaussian_densities_etc.f_kernel_value(epsilon, aux_particles, kernel).mean(axis=0)
+    pdb.set_trace()
+    if len(aux_particles_tries_current_t)>0: # list is not empty, use it for the negative binomial model
+        density_aux = 1/(aux_particles_tries_current_t+1.)
+    else:
+        density_aux = gaussian_densities_etc.f_kernel_value(epsilon, aux_particles, kernel).mean(axis=0)
     weights_next = particles_preweights*density_aux
     eliminator = np.isnan(weights_next)
     weights_next[eliminator] = 0.
@@ -356,14 +377,14 @@ def calculate_weights_ESS(epsilon, f_calculate_weights, *args, **kwargs):
     ESS = 1/(weights_normalized**2).sum()
     return ESS
 
-def reweight_particles(epsilon, f_calculate_weights, particles_next, particles_preweights, covar_factor, aux_particles, weights_before, kernel=gaussian_densities_etc.gaussian_kernel, previous_epsilon=None):
+def reweight_particles(epsilon, f_calculate_weights, particles_next, particles_preweights, covar_factor, aux_particles, weights_before, aux_particles_tries_current_t=[], kernel=gaussian_densities_etc.gaussian_kernel, previous_epsilon=None):
     """
     implmenents the reweighting scheme
     """
 
-    weights_next = f_calculate_weights(epsilon, particles_preweights, aux_particles, weights_before, kernel, previous_epsilon)
+    weights_next = f_calculate_weights(epsilon, particles_preweights, aux_particles, weights_before, aux_particles_tries_current_t, kernel, previous_epsilon)
 
-    
+
     weights_normalized = weights_next/np.sum(weights_next)
     gaussian_densities_etc.break_if_nan(weights_normalized)
     gaussian_densities_etc.break_if_negative(weights_normalized)
@@ -378,7 +399,7 @@ def reweight_particles(epsilon, f_calculate_weights, particles_next, particles_p
 
 
     ###################################################################################################################################
-###################################################################################################################################
+    ###################################################################################################################################
 
 
 def f_dichotomic_search_ESS(previous_epsilon, partial_f_ESS, target_ESS, N_max_steps=100, tolerance=0.1):
@@ -442,7 +463,7 @@ class reweighter_particles():
         self.epsilon_target = epsilon_target
 
 
-    def f_reweight(self, particles_next, particles_preweights, current_t, epsilon, aux_particles, weights_before, previous_ESS=None, **kwargs):
+    def f_reweight(self, particles_next, particles_preweights, current_t, epsilon, aux_particles, weights_before, aux_particles_tries_current_t=[], previous_ESS=None, **kwargs):
         """
         function that is responsible for the reweigthing of the particles, based on the previous particles
         """
@@ -476,6 +497,7 @@ class reweighter_particles():
                                 particles_preweights=particles_preweights,
                                 aux_particles = aux_particles,
                                 weights_before = weights_before,
+                                aux_particles_tries_current_t = aux_particles_tries_current_t,
                                 kernel = self.kernel, 
                                 previous_epsilon = previous_epsilon_del_moral)
         
@@ -490,7 +512,7 @@ class reweighter_particles():
             number_inadmissable_particles = sum(aux_particles.flatten()>1000)
             epsilon_proposed = np.sort(aux_particles.flatten())[quantile_index-number_inadmissable_particles]
             epsilon_current = np.min(np.array([epsilon_proposed, previous_epsilon]))
-            #pdb.set_trace()
+            pdb.set_trace()
             
         elif self.autochoose_eps == 'ess_based':
             # routine for autochosing epsilon based on bisect search
@@ -523,6 +545,7 @@ class reweighter_particles():
                                                                                       covar_factor = self.covar_factor,
                                                                                       aux_particles = aux_particles,
                                                                                       weights_before = weights_before, 
+                                                                                      aux_particles_tries_current_t = aux_particles_tries_current_t, 
                                                                                       kernel = self.kernel,
                                                                                       previous_epsilon = None)
         print "ESS = %s, ESS before reweighting = %s, current epsilon = %s" %(ESS, ESS_before_reweighting, epsilon_current)
@@ -580,30 +603,3 @@ if __name__=='__main__':
         dist = simulator_tuber.f_auxialiary_sampler(theta)
         print dist.shape
         print dist
-
-
-
-if False:
-    """
-    testing if can call a function inside another
-    """
-    class outer():
-        def __init__(self):
-            pass
-        def define_inner(self, function):
-            self.function = function
-        def call_inner(self):
-            self.function()
-
-    class inner():
-        def __init__(self, value):
-            self.value = value
-        def print_value(self):
-            print self.value
-
-    test_inner = inner(2)
-    test_inner.print_value()
-    test_outer = outer()
-    test_outer.define_inner(test_inner.print_value)
-    print 'test now'
-    test_outer.call_inner()
