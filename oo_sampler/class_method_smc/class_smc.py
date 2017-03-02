@@ -582,9 +582,9 @@ if __name__ == '__main__':
     #import functions_toggle_switch_model as functions_mixture_model
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
-    N_particles = 1000
+    N_particles = 100
     dim_particles = 1
-    Time = 20
+    Time = 50
     dim_auxiliary_var = 2
     augment_M = False
     M_incrementer = 2
@@ -594,15 +594,15 @@ if __name__ == '__main__':
     contracting_AIS = True
     M_increase_until_acceptance = False
     M_target_multiple_N = target_ESS_ratio_reweighter
-    covar_factor = 1.
+    covar_factor = 1.2
     propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
-    sampler_type = 'MC'
+    sampler_type = 'QMC'
     y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
     ancestor_sampling = False #"Hilbert"#False#"Hilbert"
     resample = False
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**6
-    parallelize = True
+    parallelize = False
 
 
 
