@@ -458,7 +458,11 @@ class smc_sampler(object):
         # Resample
         if resample==True:
             self.resample_particles(current_t = current_t)
-        self.sampling_counter = self.N_particles*sum(self.M_list)
+        if self.y_simulation == 'neg_binomial':
+            counts = self.auxialiary_particles_list_tries_until_success[current_t].flatten()
+            self.sampling_counter += sum(counts[counts<np.inf]+2)
+        else:
+            self.sampling_counter = self.N_particles*sum(self.M_list)
         
             
 
@@ -574,18 +578,18 @@ if __name__ == '__main__':
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
-    import functions_mixture_model_3 as functions_mixture_model
+    import functions_mixture_model as functions_mixture_model
     #import functions_toggle_switch_model as functions_mixture_model
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
-    N_particles = 500
+    N_particles = 1000
     dim_particles = 1
-    Time = 10
+    Time = 20
     dim_auxiliary_var = 2
     augment_M = False
     M_incrementer = 2
     target_ESS_ratio_reweighter = 0.5
-    target_ESS_ratio_resampler = 0.5
+    target_ESS_ratio_resampler = 0.99
     epsilon_target = functions_mixture_model.epsilon_target(dim_particles)
     contracting_AIS = True
     M_increase_until_acceptance = False
@@ -593,19 +597,19 @@ if __name__ == '__main__':
     covar_factor = 1.
     propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
     sampler_type = 'MC'
-    y_simulation = 'neg_binomial' # 'standard'
+    y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
     ancestor_sampling = False #"Hilbert"#False#"Hilbert"
-    resample = True
+    resample = False
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
-    computational_budget = 10**5
-    parallelize = False
+    computational_budget = 10**6
+    parallelize = True
 
 
 
     model_description = model_description+'_'+sampler_type+'_'+propagation_mechanism
     save = False
-    mixture_components = 10
-    kernel = gaussian_densities_etc.gaussian_kernel
+    mixture_components = 1
+    kernel = gaussian_densities_etc.uniform_kernel
     move_particle =gaussian_densities_etc.gaussian_move
     y_star = functions_mixture_model.f_y_star(dim_particles)
 

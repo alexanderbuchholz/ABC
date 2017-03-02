@@ -113,6 +113,12 @@ class simulator_sampler():
         """
         negative binomial sampling
         """
+        
+        """if True:
+            pdb.set_trace()
+            from matplotlib import pyplot as plt
+            plt.hist(particles.flatten())
+            plt.show()"""
         N_particles = particles.shape[1]
         aux_particles = np.zeros((n_successfull_tries, N_particles))
         aux_particles_tries = np.zeros((1, N_particles))
@@ -124,9 +130,11 @@ class simulator_sampler():
             pool.close()
             pool.join()
             for n_particle in xrange(N_particles):
-                aux_particles[:, n_particle] = F[0][n_particle].squeeze()
-                aux_particles_tries[:,n_particle] = F[1][n_particle].squeeze()
+                #pdb.set_trace()
+                aux_particles[:, n_particle] = F[n_particle][0].squeeze()
+                aux_particles_tries[:,n_particle] = F[n_particle][1]
         else:
+            #pdb.set_trace()
             for n_particle in xrange(N_particles):
                 # check if theta is admissible
                 aux_particles_indvidual, aux_particles_tries_until_success = partial_f_parallel_loop(n_particle)
@@ -172,7 +180,7 @@ class propagater_particles():
             u = random_sequence(self.dim_particles, i=0, n=self.N_particles)
             particles_next = np.zeros(particles.shape)
             particles_preweights = np.ones(weights.shape)
-
+            #pdb.set_trace()
             for i_particle in range(self.N_particles):
                 # resampling first, to pick the ancestors
                 particles_next[:,i_particle] = self.move_particle(particles_mean, u[i_particle,:], particles_var) # move the particle$
@@ -293,15 +301,16 @@ class propagater_particles():
             # TODO: add a real prior
             # pass the class for the reweighting scheme
             particles_next, particles_preweights, information_components = self.f_propagate_ais(random_sequence, particles, weights, flag_failed_ESS, information_components, *args, **kwargs)
-            if False:
+            """if True:
                 pdb.set_trace()
                 import matplotlib.pyplot as plt
                 import seaborn as sns
-                for dim in range(7):    
-                    sns.distplot(particles[dim, :], label='current')
-                    sns.kdeplot(particles_next[dim, :], label='next')
-                    plt.show()
-                pdb.set_trace()
+                #for dim in range(7):   
+                dim = 0 
+                sns.distplot(particles[dim, :], label='current')
+                sns.kdeplot(particles_next[dim, :], label='next')
+                plt.show()
+                pdb.set_trace()"""
         #########################################################################################
 
         #########################################################################################
@@ -356,9 +365,15 @@ def calculate_weights(epsilon, particles_preweights, aux_particles, weights_befo
     general weight calculation
     """
     # vectorize code
-    pdb.set_trace()
+    """pdb.set_trace()
+    if False: 
+        from matplotlib import pyplot as plt
+        aux_particles_inter = aux_particles.flatten()
+        plt.hist(aux_particles_inter[aux_particles_inter<100000])
+        plt.show()
+    """
     if len(aux_particles_tries_current_t)>0: # list is not empty, use it for the negative binomial model
-        density_aux = 1/(aux_particles_tries_current_t+1.)
+        density_aux = 1./(aux_particles_tries_current_t+1.)
     else:
         density_aux = gaussian_densities_etc.f_kernel_value(epsilon, aux_particles, kernel).mean(axis=0)
     weights_next = particles_preweights*density_aux
@@ -512,7 +527,7 @@ class reweighter_particles():
             number_inadmissable_particles = sum(aux_particles.flatten()>1000)
             epsilon_proposed = np.sort(aux_particles.flatten())[quantile_index-number_inadmissable_particles]
             epsilon_current = np.min(np.array([epsilon_proposed, previous_epsilon]))
-            pdb.set_trace()
+            #pdb.set_trace()
             
         elif self.autochoose_eps == 'ess_based':
             # routine for autochosing epsilon based on bisect search
@@ -568,6 +583,12 @@ class resampler_particles():
             ancestors = resampling.residual_resample(np.squeeze(weights_current))
             particles_resampled = particles_current[:, ancestors]
             gaussian_densities_etc.break_if_nan(particles_resampled)
+            """if True: 
+                pdb.set_trace()
+                from matplotlib import pyplot as plt
+                plt.hist(particles_resampled.flatten())
+                plt.show()
+                pdb.set_trace()"""
             return particles_resampled, np.ones(weights_current.shape)/self.N_particles
         else:
             return particles_current, weights_current
