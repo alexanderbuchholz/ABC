@@ -23,7 +23,7 @@ class smc_sampler(object):
             (dim_particles, N_particles, T_time)
 
     """
-    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small', y_simulation = 'neg_binomial'):
+    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small', y_simulation = 'neg_binomial', start_phase_ais= 20):
         """
             set the data structures of the class
             set the random generator that will drive the stochastic propagation
@@ -80,6 +80,7 @@ class smc_sampler(object):
             self.computational_budget = 10**20
         self.save_size = save_size
         self.y_simulation = y_simulation
+        self.start_phase_ais = start_phase_ais
 
     def setParameters(self, parameters):
         self.parameters = parameters
@@ -183,9 +184,15 @@ class smc_sampler(object):
                 kwargs = self.parameters_AuxialiarySampler
                 #pdb.set_trace()
                 if self.y_simulation == 'neg_binomial':
-                    auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_auxialiary_sampler_negative_binomial(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1])
-                    self.auxialiary_particles_list.append(auxiliary_particles_new)
-                    self.auxialiary_particles_list_tries_until_success.append(aux_particles_tries_new)
+                    if current_t < self.start_phase_ais: 
+                        # special procedure in the beginning to start with slow epsilon
+                        auxiliary_particles_new = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:, :, current_t], **kwargs)
+                        self.auxialiary_particles_list.append(auxiliary_particles_new)
+                        self.auxialiary_particles_list_tries_until_success.append([])
+                    else: 
+                        auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_auxialiary_sampler_negative_binomial(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1])
+                        self.auxialiary_particles_list.append(auxiliary_particles_new)
+                        self.auxialiary_particles_list_tries_until_success.append(aux_particles_tries_new)
 
                 if self.y_simulation == 'standard':
                     if self.M_increase_until_acceptance == True:
@@ -419,11 +426,11 @@ class smc_sampler(object):
         self.propagate_particles_sisson(current_t=current_t)
         self.reweight_particles(current_t = current_t)
     
-    def iterator_neg_binomial(self, current_t):
-        '''
-        '''
-        self.propagate_particles_neg_binomial(current_t=current_t)
-        self.reweight_particles(current_t = current_t)
+    #def iterator_neg_binomial(self, current_t):
+    #    '''
+    #    '''
+    #    self.propagate_particles_neg_binomial(current_t=current_t)
+    #    self.reweight_particles(current_t = current_t)
 
     def iterator_del_moral(self, current_t, **kwargs):
         """
@@ -459,8 +466,11 @@ class smc_sampler(object):
         if resample==True:
             self.resample_particles(current_t = current_t)
         if self.y_simulation == 'neg_binomial':
-            counts = self.auxialiary_particles_list_tries_until_success[current_t].flatten()
-            self.sampling_counter += sum(counts[counts<np.inf]+2)
+            try: 
+                counts = self.auxialiary_particles_list_tries_until_success[current_t].flatten()
+                self.sampling_counter += sum(counts[counts<np.inf]+2)
+            except:
+                self.sampling_counter = self.N_particles*sum(self.M_list)
         else:
             self.sampling_counter = self.N_particles*sum(self.M_list)
         
@@ -508,8 +518,8 @@ class smc_sampler(object):
                 self.iterator_ais(current_t, resample=resample)
             elif modified_sampling == "nonparametric":
                 self.iterator_ais(current_t, resample=resample)
-            elif modified_sampling == "neg_binomial":
-                self.iterator_neg_binomial(current_t)
+            #elif modified_sampling == "neg_binomial":
+            #    self.iterator_neg_binomial(current_t)
             elif modified_sampling == "Del_Moral":
                 if current_t == self.T-1: # break due to forward propagation of del moral
                     self.break_routine(current_t)
@@ -582,9 +592,9 @@ if __name__ == '__main__':
     #import functions_toggle_switch_model as functions_mixture_model
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
-    N_particles = 100
+    N_particles = 500
     dim_particles = 1
-    Time = 50
+    Time = 40
     dim_auxiliary_var = 2
     augment_M = False
     M_incrementer = 2
@@ -598,6 +608,7 @@ if __name__ == '__main__':
     propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
     sampler_type = 'QMC'
     y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
+    start_phase_ais = 15
     ancestor_sampling = False #"Hilbert"#False#"Hilbert"
     resample = False
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
@@ -629,7 +640,8 @@ if __name__ == '__main__':
                                 M_increase_until_acceptance=M_increase_until_acceptance,
                                 M_target_multiple_N = M_target_multiple_N,
                                 computational_budget = computational_budget,
-                                y_simulation = y_simulation)
+                                y_simulation = y_simulation,
+                                start_phase_ais = start_phase_ais)
     test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_mc)
     test_sampler.propagation_mechanism = propagation_mechanism
     test_sampler.sampler_type = sampler_type
