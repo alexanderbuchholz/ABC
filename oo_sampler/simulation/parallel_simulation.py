@@ -44,7 +44,9 @@ def set_up_parallel_abc_sampler(filename, fixed_epsilon_schedule=False, algorith
                                 contracting_AIS=contracting_AIS,
                                 M_increase_until_acceptance=M_increase_until_acceptance,
                                 M_target_multiple_N = M_target_multiple_N,
-                                computational_budget = computational_budget)
+                                computational_budget = computational_budget,
+                                y_simulation = y_simulation,
+                                start_phase_ais = start_phase_ais)
 
         ####################################################
         #pdb.set_trace()

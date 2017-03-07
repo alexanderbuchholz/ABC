@@ -271,70 +271,6 @@ class smc_sampler(object):
             self.auxialiary_particles_list.append(self.auxialiary_particles[:,:, current_t])
             self.particles_before_resampling[:, :, current_t] = self.particles[:, :, current_t]
 
-
-    """
-    def propagate_particles_neg_binomial(self, current_t, *args, **kwargs):
-        #kwargs = self.parameters_Propagate
-        #if self.class_auxialiary_sampler.M_simulator < 2.:
-        #    raise ValueError('simulator of y needs to return only one value!')
-        if current_t==0:
-            self.__initialize_sampler() # TODO: not correct, change this !
-            self.M_list.append(self.N_particles)
-        else:
-            particles_var = np.atleast_2d(1*np.cov(self.particles[:,:,current_t-1], aweights=np.squeeze(self.weights[:,:,current_t-1])))
-            #particles_next = np.zeros(self.particles[:,:,current_t-1].shape)
-            counter_M = 0.
-            self.class_auxialiary_sampler.M_simulator = 1
-            for index_particle in xrange(self.N_particles):
-                # TODO: chose ancestor
-                u = nr.uniform()
-                #ancestor = resample.multinomial(np.squeeze(self.weights[:,:,current_t-1]))
-                ancestor = gaussian_densities_etc.weighted_choice(np.squeeze(self.weights[:,:,current_t-1]),u)
-                center = self.particles[:, ancestor, current_t-1]
-                
-                #pdb.set_trace()
-                acceptance_counter = 0
-                repetition_counter = 0
-                proposal = gaussian_densities_etc.gaussian_standard(center, particles_var)[:,np.newaxis]
-                self.particles[:,index_particle, current_t] = proposal.squeeze()
-                #pdb.set_trace()
-                break_flag = False
-                while acceptance_counter < 2.:
-                    dist = 100000000000.
-                    while dist> self.epsilon[current_t-1]: # this amounts to a uniform acceptance
-                        #pdb.set_trace()
-                    
-                        dist = self.class_auxialiary_sampler.f_auxialiary_sampler(proposal)
-
-                        self.sampling_counter += 1.
-                        counter_M += 1.
-                        repetition_counter += 1.
-                        if dist == 10**10:
-                            break_flag = True
-                            break
-                    if dist == 10**10:
-                        break_flag = True
-                        break
-                    self.auxialiary_particles[acceptance_counter,index_particle, current_t] = dist
-                    acceptance_counter += 1.
-                if break_flag:
-                    self.particles_preweights_neg_binomial[:,index_particle,current_t] = 0
-                else:
-                    self.particles_preweights_neg_binomial[:,index_particle,current_t] = (acceptance_counter-1)/(repetition_counter+acceptance_counter-1)
-
-            self.M_list.append(counter_M)
-            for i_particle in xrange(self.N_particles):
-                # TODO: calc preweights
-                #pdb.set_trace()
-                #self.particles_preweights[:,i_particle,current_t] = np.array([self.weights[:,i_former_particle,current_t-1]*gaussian_densities_etc.gaussian_density(self.particles[:,i_particle,current_t], self.particles[:,i_former_particle,current_t], particles_var) for i_former_particle in range(self.N_particles)]).sum()
-                self.particles_preweights[:,i_particle,current_t] = self.particles_preweights_neg_binomial[:,i_particle,current_t]*(self.weights[:,:,current_t-1]*multivariate_normal.pdf(self.particles[:,:,current_t].transpose(), mean=self.particles[:,i_particle,current_t], cov=particles_var)).sum()
-                #gaussian_densities_etc.gaussian_density(self.particles[:,i_particle,current_t], self.particles[:,i_former_particle,current_t], particles_var) for i_former_particle in range(self.N_particles)]).sum()
-            self.auxialiary_particles_list.append(self.auxialiary_particles[:,:, current_t])
-            self.particles_before_resampling[:, :, current_t] = self.particles[:, :, current_t]
-            #pdb.set_trace()"""
-
-
-
     def reweight_particles(self, current_t, *args, **kwargs):
         """
             1. weighting with auxiliary particles
@@ -592,7 +528,7 @@ if __name__ == '__main__':
     #import functions_toggle_switch_model as functions_mixture_model
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
-    N_particles = 500
+    N_particles = 1000
     dim_particles = 1
     Time = 40
     dim_auxiliary_var = 2
@@ -610,14 +546,14 @@ if __name__ == '__main__':
     y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
     start_phase_ais = 15
     ancestor_sampling = False #"Hilbert"#False#"Hilbert"
-    resample = False
+    resample = True
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**6
-    parallelize = False
+    parallelize = True
 
 
 
-    model_description = model_description+'_'+sampler_type+'_'+propagation_mechanism
+    model_description = model_description+'_'+sampler_type+'_'+propagation_mechanism+'_'+y_simulation
     save = False
     mixture_components = 1
     kernel = gaussian_densities_etc.uniform_kernel
