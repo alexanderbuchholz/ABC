@@ -88,6 +88,7 @@ if __name__ == '__main__':
         kwargs['M_increase_until_acceptance'] = False
         kwargs['augment_M'] = False
         kwargs['covar_factor'] = 2
+        kwargs['parallelize'] = False
         
         
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
@@ -106,6 +107,7 @@ if __name__ == '__main__':
         kwargs['y_simulation'] = 'neg_binomial'
         kwargs['autochoose_eps'] = 'quantile_based'
         kwargs['dim_auxiliary_var'] = 2
+        kwargs['parallelize'] = True
         #del partial_parallel_smc
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
         for i_simulation in filenames_list:
