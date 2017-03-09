@@ -23,7 +23,7 @@ class smc_sampler(object):
             (dim_particles, N_particles, T_time)
 
     """
-    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small', y_simulation = 'neg_binomial', start_phase_ais= 20):
+    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small', y_simulation = 'neg_binomial', start_phase_ais= 20, quantile_target=0.8):
         """
             set the data structures of the class
             set the random generator that will drive the stochastic propagation
@@ -81,6 +81,7 @@ class smc_sampler(object):
         self.save_size = save_size
         self.y_simulation = y_simulation
         self.start_phase_ais = start_phase_ais
+        self.quantile_target = quantile_target
 
     def setParameters(self, parameters):
         self.parameters = parameters
@@ -186,10 +187,12 @@ class smc_sampler(object):
                 if self.y_simulation == 'neg_binomial':
                     if current_t < self.start_phase_ais: 
                         # special procedure in the beginning to start with slow epsilon
+                        self.quantile_target = 0.3
                         auxiliary_particles_new = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:, :, current_t], **kwargs)
                         self.auxialiary_particles_list.append(auxiliary_particles_new)
                         self.auxialiary_particles_list_tries_until_success.append([])
                     else: 
+                        self.quantile_target = 0.8
                         auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_auxialiary_sampler_negative_binomial(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1])
                         self.auxialiary_particles_list.append(auxiliary_particles_new)
                         self.auxialiary_particles_list_tries_until_success.append(aux_particles_tries_new)
@@ -299,7 +302,7 @@ class smc_sampler(object):
                                                                                                     aux_particles=self.auxialiary_particles_list[current_t],
                                                                                                     aux_particles_tries_current_t = aux_particles_tries_current_t,
                                                                                                     weights_before = self.weights[:,:,current_t-1],
-                                                                                                    epsilon=self.epsilon, previous_ESS=previous_ESS, **kwargs)
+                                                                                                    epsilon=self.epsilon, previous_ESS=previous_ESS, quantile_target= self.quantile_target, **kwargs)
         else:
             assert False # this is not implemented !
         self.weights[:,:,current_t]= weights

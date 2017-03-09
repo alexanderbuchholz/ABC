@@ -333,7 +333,7 @@ class propagater_particles():
 #########################################################################################
 #########################################################################################
 
-def calculate_weights_del_moral(epsilon, particles_preweights, aux_particles, weights_before, kernel=gaussian_densities_etc.uniform_kernel, previous_epsilon=None):
+def calculate_weights_del_moral(epsilon, particles_preweights, aux_particles, weights_before, aux_particles_tries_current_t=[], kernel=gaussian_densities_etc.uniform_kernel, previous_epsilon=None):
     """
     the function that calculates the weights in the approach of del moral
     """
@@ -476,9 +476,10 @@ class reweighter_particles():
         self.kernel = kernel
         self.alpha = alpha
         self.epsilon_target = epsilon_target
+        #self.quantile_target = quantile_target
 
 
-    def f_reweight(self, particles_next, particles_preweights, current_t, epsilon, aux_particles, weights_before, aux_particles_tries_current_t=[], previous_ESS=None, **kwargs):
+    def f_reweight(self, particles_next, particles_preweights, current_t, epsilon, aux_particles, weights_before, aux_particles_tries_current_t=[], previous_ESS=None, quantile_target = 0.8, **kwargs):
         """
         function that is responsible for the reweigthing of the particles, based on the previous particles
         """
@@ -521,7 +522,7 @@ class reweighter_particles():
             #pdb.set_trace()
             M = aux_particles.shape[0]
             #aux_particles_means =  aux_particles.mean(axis=0)
-            quantile_index = np.round(M*self.N_particles*0.8)
+            quantile_index = np.round(M*self.N_particles*quantile_target)
             
             #epsilon_proposed = np.sort(aux_particles_means)[quantile_index]
             number_inadmissable_particles = sum(aux_particles.flatten()>1000)

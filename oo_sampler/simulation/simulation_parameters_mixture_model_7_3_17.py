@@ -22,13 +22,13 @@ import functions_mixture_model_3 as functions_model
 
 
 Time = 600
-repetitions = 2
+repetitions = 20
 dim_particles = 1
 target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
 epsilon_target = 0.01#functions_model.epsilon_target(dim_particles) #0.001 #0.25
 epsilon_start = 4
-kwargs = {'N_particles_list': [500], #750, 1000, 1500, 2000],# 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
+kwargs = {'N_particles_list': [1000], #750, 1000, 1500, 2000],# 2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
@@ -62,7 +62,7 @@ kwargs = {'N_particles_list': [500], #750, 1000, 1500, 2000],# 2500, 3000, 4000,
             'fixed_epsilon_schedule': True,
             'algorithm_only_schedule': True,
             'y_simulation': 'standard',
-            'start_phase_ais': 15,
+            'start_phase_ais': 8,
             }
 
 K_repetitions = range(repetitions)
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
 
 
-    if False: 
+    if True: 
         # simulation Del Moral
         kwargs['inititation_particles'] = functions_model.theta_sampler_mc
         kwargs['sampler_type'] = 'MC'
