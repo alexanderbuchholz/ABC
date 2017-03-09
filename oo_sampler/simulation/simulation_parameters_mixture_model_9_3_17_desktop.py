@@ -22,7 +22,7 @@ import functions_mixture_model_3 as functions_model
 
 
 Time = 600
-repetitions = 20
+repetitions = 40
 dim_particles = 1
 target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
