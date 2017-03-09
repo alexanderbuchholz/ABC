@@ -405,9 +405,13 @@ class smc_sampler(object):
         if resample==True:
             self.resample_particles(current_t = current_t)
         if self.y_simulation == 'neg_binomial':
+            #pdb.set_trace()
             try: 
                 counts = self.auxialiary_particles_list_tries_until_success[current_t].flatten()
                 self.sampling_counter += sum(counts[counts<np.inf]+2)
+                self.M_list[current_t] = np.mean(self.auxialiary_particles_list_tries_until_success[current_t].flatten())
+                if current_t == 0: # correction
+                    self.M_list[current_t] = self.class_auxialiary_sampler.M_simulator
             except:
                 self.sampling_counter = self.N_particles*sum(self.M_list)
         else:
@@ -506,7 +510,8 @@ class smc_sampler(object):
                       'M_list': self.M_list,
                       'T_max': self.T_max,
                       'variances_normalisation_constant' : self.variances_normalisation_constant,
-                      'means_normalisation_constant' : self.means_normalisation_constant}
+                      'means_normalisation_constant' : self.means_normalisation_constant,
+                      'auxialiary_particles_list_tries_until_success': self.auxialiary_particles_list_tries_until_success}
             if self.save_size == 'large':
                 output['auxiliary_particles_list'] = self.auxialiary_particles_list
             else:
@@ -533,12 +538,12 @@ if __name__ == '__main__':
     model_description = functions_mixture_model.model_string
     N_particles = 1000
     dim_particles = 1
-    Time = 40
+    Time = 20
     dim_auxiliary_var = 2
     augment_M = False
     M_incrementer = 2
     target_ESS_ratio_reweighter = 0.5
-    target_ESS_ratio_resampler = 0.99
+    target_ESS_ratio_resampler = 0.5
     epsilon_target = functions_mixture_model.epsilon_target(dim_particles)
     contracting_AIS = True
     M_increase_until_acceptance = False
@@ -547,7 +552,7 @@ if __name__ == '__main__':
     propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
     sampler_type = 'QMC'
     y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
-    start_phase_ais = 15
+    start_phase_ais = 5
     ancestor_sampling = False #"Hilbert"#False#"Hilbert"
     resample = True
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
