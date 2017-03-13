@@ -8,7 +8,7 @@ import ipdb as pdb
 import pickle
 import numpy as np
 #if __name__ == '__main__':
-path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_7-3-17"
+path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_9-3-17"
 path2 = "/home/alex/python_programming/ABC_results_storage/simulation_results"
 import os
 os.chdir(path1)
@@ -22,7 +22,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tubercul
 #import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
 #import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
 #import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
-import simulation_parameters_mixture_model_7_3_17 as simulation_parameters_model
+import simulation_parameters_mixture_model_9_3_17_desktop as simulation_parameters_model
 import f_rand_seq_gen
 import gaussian_densities_etc
 def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation_method = 'AIS', cum_sum=False):
@@ -109,7 +109,7 @@ if True:
     counter = 0
     for N_particles in simulation_parameters_model.kwargs['N_particles_list']:
         QMC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "QMC", particles=N_particles, propagation_method = 'AIS')
-        pdb.set_trace()
+        #pdb.set_trace()
         #MC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'AIS')
         #RQMC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, propagation_method = 'AIS')
         del_moral_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral')
@@ -310,7 +310,7 @@ rqmc_resampled = resample_for_plotting(simulation_RQMC['particles'][:,:,simulati
 mc_resampled = resample_for_plotting(simulation_MC['particles'][:,:,simulation_MC["T_max"]], simulation_MC['weights'][:,:,simulation_MC["T_max"]])
 
 #pdb.set_trace()
-#x1_sisson = pd.Series(sisson_resampled[0,:], name="$X_1$")
+#x1_sisson = pd.Series(sisson_resampled[0,:], name="$X_1$") 
 #x2_sisson = pd.Series(sisson_resampled[1,:], name="$X_2$")
 #sns.jointplot(x1_sisson, x2_sisson, kind="kde")
 

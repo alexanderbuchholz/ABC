@@ -54,7 +54,7 @@ class simulator_sampler():
             aux_particles_indvidual = np.ones((self.M_simulator, 1))*10000000000.
         return aux_particles_indvidual
 
-    def f_parallel_loop_negative_binomial(self, n_particle, particles, epsilon_target, n_successfull_tries=2):
+    def f_parallel_loop_negative_binomial(self, n_particle, particles, epsilon_target, n_successfull_tries=2, truncation_level=None):
         """
         parallel simulation
         we directly return the value of the distance, this is a scalar !
@@ -76,6 +76,12 @@ class simulator_sampler():
                     aux_particles_indvidual[achieved_successful_tries, :] = distance
                     achieved_successful_tries += 1
                 aux_particles_tries += 1.
+                if truncation_level is not None:
+                    if aux_particles_tries > truncation_level:
+                        aux_particles_indvidual = np.ones((n_successfull_tries, 1))*10000000000.
+                        aux_particles_tries_until_success = truncation_level
+                        aux_particles_tries = truncation_level
+                        break
             aux_particles_tries_until_success = aux_particles_tries - n_successfull_tries
         else:
             aux_particles_indvidual = np.ones((n_successfull_tries, 1))*10000000000.
@@ -109,7 +115,7 @@ class simulator_sampler():
         gaussian_densities_etc.break_if_nan(aux_particles)
         return aux_particles
 
-    def f_auxialiary_sampler_negative_binomial(self, particles, epsilon_target, n_successfull_tries=2):
+    def f_auxialiary_sampler_negative_binomial(self, particles, epsilon_target, n_successfull_tries=2, truncation_level=None):
         """
         negative binomial sampling
         """
@@ -123,7 +129,7 @@ class simulator_sampler():
         aux_particles = np.zeros((n_successfull_tries, N_particles))
         aux_particles_tries = np.zeros((1, N_particles))
         # loop over the particles (theta)
-        partial_f_parallel_loop = partial(self.f_parallel_loop_negative_binomial, particles=particles, epsilon_target=epsilon_target, n_successfull_tries=n_successfull_tries)
+        partial_f_parallel_loop = partial(self.f_parallel_loop_negative_binomial, particles=particles, epsilon_target=epsilon_target, n_successfull_tries=n_successfull_tries, truncation_level=truncation_level)
         if self.parallelize == True:
             pool = multiprocessing.Pool(processes=(NUM_CORES))
             F = pool.map(partial_f_parallel_loop, range(N_particles))

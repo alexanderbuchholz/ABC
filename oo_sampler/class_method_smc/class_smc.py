@@ -23,7 +23,7 @@ class smc_sampler(object):
             (dim_particles, N_particles, T_time)
 
     """
-    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small', y_simulation = 'neg_binomial', start_phase_ais= 20, quantile_target=0.8):
+    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small', y_simulation = 'neg_binomial', start_phase_ais= 20, quantile_target=0.8, truncate_neg_binomial=True):
         """
             set the data structures of the class
             set the random generator that will drive the stochastic propagation
@@ -82,6 +82,7 @@ class smc_sampler(object):
         self.y_simulation = y_simulation
         self.start_phase_ais = start_phase_ais
         self.quantile_target = quantile_target
+        self.truncate_neg_binomial = truncate_neg_binomial
 
     def setParameters(self, parameters):
         self.parameters = parameters
@@ -193,7 +194,15 @@ class smc_sampler(object):
                         self.auxialiary_particles_list_tries_until_success.append([])
                     else: 
                         self.quantile_target = 0.8
-                        auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_auxialiary_sampler_negative_binomial(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1])
+                        #pdb.set_trace()
+                        if self.truncate_neg_binomial == True: 
+                            try: 
+                                truncation_level = np.percentile(self.auxialiary_particles_list_tries_until_success[current_t-1], 99)*2
+                            except: 
+                                truncation_level = None
+                        else: 
+                            truncation_level = None
+                        auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_auxialiary_sampler_negative_binomial(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1], truncation_level=truncation_level)
                         self.auxialiary_particles_list.append(auxiliary_particles_new)
                         self.auxialiary_particles_list_tries_until_success.append(aux_particles_tries_new)
 
@@ -538,7 +547,7 @@ if __name__ == '__main__':
     model_description = functions_mixture_model.model_string
     N_particles = 1000
     dim_particles = 1
-    Time = 20
+    Time = 15
     dim_auxiliary_var = 2
     augment_M = False
     M_incrementer = 2
@@ -553,11 +562,13 @@ if __name__ == '__main__':
     sampler_type = 'QMC'
     y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
     start_phase_ais = 5
-    ancestor_sampling = False #"Hilbert"#False#"Hilbert"
-    resample = True
+    truncate_neg_binomial = True
+    ancestor_sampling = "Hilbert" #"Hilbert"#False#"Hilbert"
+    resample = False
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**6
     parallelize = True
+
 
 
 
@@ -585,7 +596,8 @@ if __name__ == '__main__':
                                 M_target_multiple_N = M_target_multiple_N,
                                 computational_budget = computational_budget,
                                 y_simulation = y_simulation,
-                                start_phase_ais = start_phase_ais)
+                                start_phase_ais = start_phase_ais, 
+                                truncate_neg_binomial = truncate_neg_binomial)
     test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_mc)
     test_sampler.propagation_mechanism = propagation_mechanism
     test_sampler.sampler_type = sampler_type
