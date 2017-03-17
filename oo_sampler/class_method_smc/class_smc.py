@@ -83,6 +83,7 @@ class smc_sampler(object):
         self.start_phase_ais = start_phase_ais
         self.quantile_target = quantile_target
         self.truncate_neg_binomial = truncate_neg_binomial
+        self.statistics_tries_until_succes = np.zeros((self.T, 3))
 
     def setParameters(self, parameters):
         self.parameters = parameters
@@ -193,7 +194,7 @@ class smc_sampler(object):
                         self.auxialiary_particles_list.append(auxiliary_particles_new)
                         self.auxialiary_particles_list_tries_until_success.append([])
                     else: 
-                        self.quantile_target = 0.8
+                        self.quantile_target = 0.9
                         #pdb.set_trace()
                         if self.truncate_neg_binomial == True: 
                             try: 
@@ -205,6 +206,7 @@ class smc_sampler(object):
                         auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_auxialiary_sampler_negative_binomial(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1], truncation_level=truncation_level)
                         self.auxialiary_particles_list.append(auxiliary_particles_new)
                         self.auxialiary_particles_list_tries_until_success.append(aux_particles_tries_new)
+                        self.statistics_tries_until_succes[current_t,:] =  np.array([aux_particles_tries_new.flatten().mean(), aux_particles_tries_new.flatten().var(), np.percentile(aux_particles_tries_new.flatten(),50)])
 
                 if self.y_simulation == 'standard':
                     if self.M_increase_until_acceptance == True:
@@ -520,7 +522,8 @@ class smc_sampler(object):
                       'T_max': self.T_max,
                       'variances_normalisation_constant' : self.variances_normalisation_constant,
                       'means_normalisation_constant' : self.means_normalisation_constant,
-                      'auxialiary_particles_list_tries_until_success': self.auxialiary_particles_list_tries_until_success}
+                      'auxialiary_particles_list_tries_until_success': self.auxialiary_particles_list_tries_until_success,
+                      'statistics_tries_until_succes': self.statistics_tries_until_succes}
             if self.save_size == 'large':
                 output['auxiliary_particles_list'] = self.auxialiary_particles_list
             else:
@@ -547,7 +550,7 @@ if __name__ == '__main__':
     model_description = functions_mixture_model.model_string
     N_particles = 1000
     dim_particles = 1
-    Time = 15
+    Time = 50
     dim_auxiliary_var = 2
     augment_M = False
     M_incrementer = 2
@@ -658,11 +661,20 @@ if __name__ == '__main__':
 
 
     #pdb.set_trace()
-    import yappi
-    yappi.start()
+    #import yappi
+    #yappi.start()
     test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)
-    yappi.get_func_stats().print_all()
+    #yappi.get_func_stats().print_all()
     pdb.set_trace()
+    plt.plot(test_sampler.epsilon[5:], test_sampler.statistics_tries_until_succes[5:,0])
+    plt.plot(test_sampler.epsilon[5:], test_sampler.statistics_tries_until_succes[5:,1]**0.5)
+    plt.plot(test_sampler.epsilon[5:], test_sampler.statistics_tries_until_succes[5:,2])
+    plt.yscale('log'); plt.xscale('log'); plt.xlabel('epsilon'); plt.ylabel('tries until success')
+    plt.legend(['mean', 'var', 'median'])
+    plt.show()
+
+    
+    plt.show()
     if True:
         select_component = 0
         #lim = (-0.5, 0.5)

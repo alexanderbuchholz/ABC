@@ -8,7 +8,7 @@ import ipdb as pdb
 import pickle
 import numpy as np
 #if __name__ == '__main__':
-path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_9-3-17"
+path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_13-3-17"
 path2 = "/home/alex/python_programming/ABC_results_storage/simulation_results"
 import os
 os.chdir(path1)
@@ -22,7 +22,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tubercul
 #import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
 #import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
 #import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
-import simulation_parameters_mixture_model_9_3_17_desktop as simulation_parameters_model
+import simulation_parameters_mixture_model_13_3_17_desktop as simulation_parameters_model
 import f_rand_seq_gen
 import gaussian_densities_etc
 def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation_method = 'AIS', cum_sum=False):
@@ -111,7 +111,7 @@ if True:
         QMC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "QMC", particles=N_particles, propagation_method = 'AIS')
         #pdb.set_trace()
         #MC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'AIS')
-        #RQMC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, propagation_method = 'AIS')
+        RQMC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, propagation_method = 'AIS')
         del_moral_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral')
         #true_sisson_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson')
         #nonparametric_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "QMC", particles=N_particles, propagation_method = 'nonparametric')
@@ -120,7 +120,7 @@ if True:
         print N_particles
         #print MC_simulation_results[0]
         print QMC_simulation_results[0]
-        #print RQMC_simulation_results[0]
+        print RQMC_simulation_results[0]
         print del_moral_simulation_results[0]
         #print nonparametric_simulation_results[0]
         #print true_sisson_simulation_results[0]
@@ -171,7 +171,8 @@ def plot_no_double_epsilon(results, label):
     else:
         epsilon_list = results[1][1][0,:,0]
         epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
-        var_list = (results[1][2][0,:]*results[1][3].mean(axis=0))[:]
+        #pdb.set_trace()
+        var_list = results[1][2][0,:] #(results[1][2][0,:]*results[1][3].mean(axis=0))[:]
         #plt.plot(MC_results[1][1][0,:,0], (MC_results[1][2][0,:]*MC_results[1][3].mean(axis=0))[:], label=label)
         plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
 
@@ -179,11 +180,11 @@ if True:
     N_particles_list = simulation_parameters_model.kwargs['N_particles_list']
     MC_means = []
     RQMC_means = []
-    cum_sum = True
+    cum_sum = False
     for N_particles in N_particles_list:
         #MC_results =  f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, cum_sum=cum_sum)
         QMC_results =  f_summary_stats(simulation_parameters_model, sample_method = "QMC", particles=N_particles, cum_sum=cum_sum)
-        #RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, cum_sum=cum_sum)
+        RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, cum_sum=cum_sum)
         Del_Moral_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral', cum_sum=cum_sum)
         #pdb.set_trace()
         #Sisson_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson', cum_sum=cum_sum)
@@ -191,7 +192,7 @@ if True:
         print('code works for one dimension only!')
         #MC_means_inter, MC_epsilons_inter = function_flatten_results(MC_results, 0)
         QMC_means_inter, QMC_epsilons_inter = function_flatten_results(QMC_results, 0)
-        #RQMC_means_inter, RQMC_epsilons_inter = function_flatten_results(RQMC_results, 0)
+        RQMC_means_inter, RQMC_epsilons_inter = function_flatten_results(RQMC_results, 0)
         Del_Moral_means_inter, Del_Moral_epsilons_inter = function_flatten_results(Del_Moral_results, 0)
         #Sisson_means_inter, Sisson_epsilons_inter = function_flatten_results(Sisson_results, 0)
 
@@ -205,7 +206,7 @@ if True:
         plt.title('means and epsilon for N:'+str(N_particles))
         #plt.scatter(MC_epsilons_inter, MC_means_inter, lw=0.5, alpha=1, color='blue', label="MC")
         plt.scatter(QMC_epsilons_inter, QMC_means_inter, lw=0.5, alpha=1, color='cyan', label="QMC")
-        #plt.scatter(RQMC_epsilons_inter, RQMC_means_inter, lw=0.5, alpha=1, color='green', label="RQMC")
+        plt.scatter(RQMC_epsilons_inter, RQMC_means_inter, lw=0.5, alpha=1, color='green', label="RQMC")
         plt.scatter(Del_Moral_epsilons_inter, Del_Moral_means_inter, color='red', label='Del Moral')
         #plt.scatter(Sisson_epsilons_inter, Sisson_means_inter, color='yellow', label='Sisson')
         #plt.yscale('log')
@@ -216,11 +217,11 @@ if True:
         #plt.savefig(str(N_particles)+'N_means_epsilon.png')
         plt.show()
 
-        #pdb.set_trace()
+        pdb.set_trace()
         plt.title('MSE for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N:'+str(N_particles))
         #plot_no_double_epsilon(MC_results, 'MC')
         plot_no_double_epsilon(QMC_results, 'QMC')
-        #plot_no_double_epsilon(RQMC_results, 'RQMC')
+        plot_no_double_epsilon(RQMC_results, 'RQMC')
         plot_no_double_epsilon(Del_Moral_results, 'Del Moral')
         #plot_no_double_epsilon(Sisson_results, 'Sisson')
 
