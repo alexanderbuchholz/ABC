@@ -14,7 +14,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/class_method_smc")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
 
-path = "/home/alex/python_programming/ABC_results_storage/simulation_results_13-3-17"
+path = "/home/alex/python_programming/ABC_results_storage/simulation_results_20-3-17"
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
 import functions_mixture_model as functions_model
@@ -99,11 +99,11 @@ if __name__ == '__main__':
     if True: 
     # simulation QMC
         kwargs['propagation_mechanism'] = 'AIS'
-        kwargs['sampler_type'] = 'QMC'
+        kwargs['sampler_type'] = 'RQMC'
         kwargs['augment_M'] = False
         kwargs['inititation_particles'] = functions_model.theta_sampler_rqmc
         kwargs['kernel'] = gaussian_densities_etc.uniform_kernel
-        kwargs['covar_factor'] = 1.2
+        kwargs['covar_factor'] = 1.1
         kwargs['M_increase_until_acceptance'] = False
         kwargs['y_simulation'] = 'neg_binomial'
         kwargs['autochoose_eps'] = 'quantile_based'
@@ -116,8 +116,8 @@ if __name__ == '__main__':
 
     if True: 
         # Simulation RQMC
-        kwargs['inititation_particles'] = functions_model.theta_sampler_rqmc
-        kwargs['sampler_type'] = 'RQMC'
+        kwargs['inititation_particles'] = functions_model.theta_sampler_qmc
+        kwargs['sampler_type'] = 'QMC'
 
         del partial_parallel_smc
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
