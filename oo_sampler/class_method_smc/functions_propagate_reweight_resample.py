@@ -79,8 +79,8 @@ class simulator_sampler():
                 if truncation_level is not None:
                     if aux_particles_tries > truncation_level:
                         aux_particles_indvidual = np.ones((n_successfull_tries, 1))*10000000000.
-                        aux_particles_tries_until_success = truncation_level
-                        aux_particles_tries = truncation_level
+                        aux_particles_tries_until_success =  truncation_level
+                        aux_particles_tries =  truncation_level
                         break
             aux_particles_tries_until_success = aux_particles_tries - n_successfull_tries
         else:

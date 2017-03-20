@@ -23,7 +23,7 @@ class smc_sampler(object):
             (dim_particles, N_particles, T_time)
 
     """
-    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small', y_simulation = 'neg_binomial', start_phase_ais= 20, quantile_target=0.8, truncate_neg_binomial=True):
+    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small', y_simulation = 'neg_binomial', start_phase_ais= 20, quantile_target=0.8, truncate_neg_binomial=True, quantile_target_negative_binomial=0.9):
         """
             set the data structures of the class
             set the random generator that will drive the stochastic propagation
@@ -82,8 +82,9 @@ class smc_sampler(object):
         self.y_simulation = y_simulation
         self.start_phase_ais = start_phase_ais
         self.quantile_target = quantile_target
+        self.quantile_target_negative_binomial = quantile_target_negative_binomial
         self.truncate_neg_binomial = truncate_neg_binomial
-        self.statistics_tries_until_succes = np.zeros((self.T, 3))
+        self.statistics_tries_until_succes = np.zeros((self.T, 4))
 
     def setParameters(self, parameters):
         self.parameters = parameters
@@ -194,19 +195,27 @@ class smc_sampler(object):
                         self.auxialiary_particles_list.append(auxiliary_particles_new)
                         self.auxialiary_particles_list_tries_until_success.append([])
                     else: 
-                        self.quantile_target = 0.9
-                        #pdb.set_trace()
+                        self.quantile_target = self.quantile_target_negative_binomial
+                        #if current_t > 30: pdb.set_trace()
                         if self.truncate_neg_binomial == True: 
                             try: 
-                                truncation_level = np.percentile(self.auxialiary_particles_list_tries_until_success[current_t-1], 99)*2
+                                truncation_level = np.nanpercentile(self.auxialiary_particles_list_tries_until_success[current_t-1], 50)*10
                             except: 
                                 truncation_level = None
                         else: 
                             truncation_level = None
+                        # procedure that handles the last epsilon
+                        #pdb.set_trace()
+                        epsilon_delta = abs(self.epsilon[current_t-2] - self.epsilon[current_t-1])
+                        if abs(self.epsilon_target-self.epsilon[current_t-1]) < epsilon_delta:
+                            truncation_level = None
                         auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_auxialiary_sampler_negative_binomial(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1], truncation_level=truncation_level)
                         self.auxialiary_particles_list.append(auxiliary_particles_new)
                         self.auxialiary_particles_list_tries_until_success.append(aux_particles_tries_new)
-                        self.statistics_tries_until_succes[current_t,:] =  np.array([aux_particles_tries_new.flatten().mean(), aux_particles_tries_new.flatten().var(), np.percentile(aux_particles_tries_new.flatten(),50)])
+                        aux_particles_tries_new_inter = aux_particles_tries_new+0
+                        aux_particles_tries_new_inter[np.isinf(aux_particles_tries_new_inter)]=np.nan
+                        #pdb.set_trace()
+                        self.statistics_tries_until_succes[current_t,:] =  np.array([np.nanmean(aux_particles_tries_new_inter.flatten()), np.nanvar(aux_particles_tries_new_inter.flatten()), np.nanpercentile(aux_particles_tries_new_inter.flatten(),50), np.nanmax(aux_particles_tries_new_inter.flatten())])
 
                 if self.y_simulation == 'standard':
                     if self.M_increase_until_acceptance == True:
@@ -368,6 +377,7 @@ class smc_sampler(object):
         self.mean_particles = self.mean_particles[:, :current_t+1]
         self.var_particles = self.var_particles[:,:, :current_t+1]
         self.epsilon = self.epsilon[:current_t+1]
+        self.statistics_tries_until_succes = self.statistics_tries_until_succes[:current_t+1,:]
 
     def iterator_true_sisson(self, current_t, **kwargs):
         """
@@ -544,11 +554,11 @@ if __name__ == '__main__':
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
-    import functions_mixture_model as functions_mixture_model
+    import functions_mixture_model_3 as functions_mixture_model
     #import functions_toggle_switch_model as functions_mixture_model
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
-    N_particles = 1000
+    N_particles = 500
     dim_particles = 1
     Time = 50
     dim_auxiliary_var = 2
@@ -560,14 +570,14 @@ if __name__ == '__main__':
     contracting_AIS = True
     M_increase_until_acceptance = False
     M_target_multiple_N = target_ESS_ratio_reweighter
-    covar_factor = 1.2
+    covar_factor = 1.0
     propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
     sampler_type = 'QMC'
     y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
     start_phase_ais = 5
     truncate_neg_binomial = True
     ancestor_sampling = "Hilbert" #"Hilbert"#False#"Hilbert"
-    resample = False
+    resample = True
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**6
     parallelize = True
@@ -666,12 +676,14 @@ if __name__ == '__main__':
     test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)
     #yappi.get_func_stats().print_all()
     pdb.set_trace()
-    plt.plot(test_sampler.epsilon[5:], test_sampler.statistics_tries_until_succes[5:,0])
-    plt.plot(test_sampler.epsilon[5:], test_sampler.statistics_tries_until_succes[5:,1]**0.5)
-    plt.plot(test_sampler.epsilon[5:], test_sampler.statistics_tries_until_succes[5:,2])
-    plt.yscale('log'); plt.xscale('log'); plt.xlabel('epsilon'); plt.ylabel('tries until success')
-    plt.legend(['mean', 'var', 'median'])
-    plt.show()
+    if False: 
+        plt.plot(test_sampler.epsilon[5:], test_sampler.statistics_tries_until_succes[5:,0])
+        plt.plot(test_sampler.epsilon[5:], test_sampler.statistics_tries_until_succes[5:,1]**0.5)
+        plt.plot(test_sampler.epsilon[5:], test_sampler.statistics_tries_until_succes[5:,2])
+        plt.plot(test_sampler.epsilon[5:], test_sampler.statistics_tries_until_succes[5:,3])
+        plt.yscale('log'); plt.xscale('log'); plt.xlabel('epsilon'); plt.ylabel('tries until success')
+        plt.legend(['mean', 'std', 'median', 'max'])
+        plt.show()
 
     
     plt.show()
