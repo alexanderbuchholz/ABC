@@ -36,6 +36,7 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
     number_simulations = np.zeros((1, parameters.repetitions, parameters.kwargs["Time"]))
 
     means = np.zeros((parameters.kwargs["dim_particles"], parameters.Time, parameters.repetitions))
+    vars = np.zeros((parameters.kwargs["dim_particles"], parameters.Time, parameters.repetitions))
     epsilons = np.zeros((1, parameters.Time, parameters.repetitions))
     for i_simulation in range(parameters.repetitions):
     #for i_simulation in range(32):
@@ -55,13 +56,15 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
             except:
                 simulation = pickle.load( open( parameters.filename+'_'+str(i_simulation)+"_"+sample_method+str(parameters.kwargs["dim_auxiliary_var"])+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+".p", "rb" ) )
         #pdb.set_trace()
-        selector = simulation["means_particles"].shape[1] #np.min((simulation['T_max'], parameters.Time))
+
+        selector = simulation["means_particles"].shape[1]
         #pdb.set_trace()
         #if propagation_method == 'Del_Moral':
         #    selector = selector - 1
         #pdb.set_trace()
         final_means[:, i_simulation] = simulation["means_particles"][:, selector-1] # TODO: error here ? is the range correct?
         means[:, :selector, i_simulation] = simulation["means_particles"][:, :selector]
+        vars[:, :selector, i_simulation] = simulation["var_particles"][:, :selector]
         final_ESS[:,i_simulation] = simulation["ESS"][selector-1]
         final_epsilon[:,i_simulation] = simulation["epsilon"][selector-1]
         #pdb.set_trace()
@@ -85,10 +88,18 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
             #pdb.set_trace()
         
     #pdb.set_trace()
+    if propagation_method=='Del_Moral':
+        selector = simulation["means_particles"].shape[1] -1
     means_all = means[:, :selector, :]
+    vars_all = vars[:, :selector, :]
     epsilons = epsilons[:,:len(simulation["epsilon"]),:]
     var_all = means_all.var(axis=2)
+    vars_vars = vars_all.var(axis=2)
+    vars_means = vars_all.mean(axis=2)
     means_last = np.nanmean(final_means, axis=1)
+    pdb.set_trace()
+    vars_vars_last = vars_vars[:,-1]
+    vars_means_last = vars_means[:,-1]
     #means_var = np.nanvar(final_means, axis=1)
     means_var_last = (final_means**2).mean(axis=1) # use this for the MSE
     ESS_mean = final_ESS.mean()
@@ -97,7 +108,7 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
     number_simulations_mean = final_number_simulations.mean()
     number_simulations = number_simulations[0,:, :selector]
     #pdb.set_trace()
-    return [means_last, means_var_last, ESS_mean, epsilon_mean, time_mean, number_simulations_mean], [means_all, epsilons, means_all.var(axis=2), number_simulations]
+    return [means_last, means_var_last, vars_means_last, vars_vars_last, ESS_mean, epsilon_mean, time_mean, number_simulations_mean], [means_all, epsilons, means_all.var(axis=2), number_simulations, vars_vars, vars_all.mean(axis=2)]
 
 import matplotlib.pyplot as plt
 import seaborn as sns
