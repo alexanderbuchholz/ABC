@@ -95,6 +95,9 @@ def check_consistency_theta(theta_prop):
     pass
 
 
+def distance_posterior(thetas, epsilon):
+    pass
+
 #N = 10 # number of particles
 #initial_particles_mc = np.array([ theta_sampler_mc(0) for i in range(N)])
 #y_star = np.array([0,0])

@@ -214,7 +214,12 @@ class smc_sampler(object):
                         self.auxialiary_particles_list_tries_until_success.append(aux_particles_tries_new)
                         aux_particles_tries_new_inter = aux_particles_tries_new+0
                         aux_particles_tries_new_inter[np.isinf(aux_particles_tries_new_inter)]=np.nan
-                        #pdb.set_trace()
+                        
+                        if False:
+                            pdb.set_trace()
+                            from matplotlib import pyplot as plt
+                            plt.hist(self.particles[:,:,current_t].flatten())
+                            plt.show()
                         self.statistics_tries_until_succes[current_t,:] =  np.array([np.nanmean(aux_particles_tries_new_inter.flatten()), np.nanvar(aux_particles_tries_new_inter.flatten()), np.nanpercentile(aux_particles_tries_new_inter.flatten(),50), np.nanmax(aux_particles_tries_new_inter.flatten())])
 
                 if self.y_simulation == 'standard':
@@ -323,6 +328,7 @@ class smc_sampler(object):
                                                                                                     aux_particles_tries_current_t = aux_particles_tries_current_t,
                                                                                                     weights_before = self.weights[:,:,current_t-1],
                                                                                                     epsilon=self.epsilon, previous_ESS=previous_ESS, quantile_target= self.quantile_target, **kwargs)
+            print("current mean = %s, current var = %s " %(particles_mean, particles_var))
         else:
             assert False # this is not implemented !
         self.weights[:,:,current_t]= weights
@@ -570,17 +576,17 @@ if __name__ == '__main__':
     contracting_AIS = True
     M_increase_until_acceptance = False
     M_target_multiple_N = target_ESS_ratio_reweighter
-    covar_factor = 1.0
+    covar_factor = 1.2
     propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
-    sampler_type = 'QMC'
+    sampler_type = 'RQMC'
     y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
-    start_phase_ais = 5
+    start_phase_ais = 10
     truncate_neg_binomial = True
-    ancestor_sampling = "Hilbert" #"Hilbert"#False#"Hilbert"
-    resample = True
+    ancestor_sampling = "False" #"Hilbert"#False#"Hilbert"
+    resample = False
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**6
-    parallelize = True
+    parallelize = False
 
 
 
@@ -611,7 +617,7 @@ if __name__ == '__main__':
                                 y_simulation = y_simulation,
                                 start_phase_ais = start_phase_ais, 
                                 truncate_neg_binomial = truncate_neg_binomial)
-    test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_mc)
+    test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_rqmc)
     test_sampler.propagation_mechanism = propagation_mechanism
     test_sampler.sampler_type = sampler_type
     test_sampler.covar_factor = covar_factor

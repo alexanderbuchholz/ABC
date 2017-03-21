@@ -79,8 +79,8 @@ class simulator_sampler():
                 if truncation_level is not None:
                     if aux_particles_tries > truncation_level:
                         aux_particles_indvidual = np.ones((n_successfull_tries, 1))*10000000000.
-                        aux_particles_tries_until_success =  truncation_level
-                        aux_particles_tries =  truncation_level
+                        aux_particles_tries_until_success =  truncation_level*2
+                        aux_particles_tries =  truncation_level*2
                         break
             aux_particles_tries_until_success = aux_particles_tries - n_successfull_tries
         else:
@@ -181,7 +181,8 @@ class propagater_particles():
         """
         if self.mixture_components == 1:
             #pdb.set_trace()
-            particles_var = np.atleast_2d(self.covar_factor*np.cov(particles, aweights=np.squeeze(weights)))
+            particles_var_true = np.atleast_2d(np.cov(particles, aweights=np.squeeze(weights)))
+            particles_var = self.covar_factor*particles_var_true
             particles_mean = np.average(particles, weights=np.squeeze(weights), axis=1)
             u = random_sequence(self.dim_particles, i=0, n=self.N_particles)
             particles_next = np.zeros(particles.shape)
@@ -199,6 +200,13 @@ class propagater_particles():
                     raise ValueError('some particles is Nan!')
                     weight_inter = 0.
                 particles_preweights[:,i_particle] = weight_inter
+            
+            if False:
+                pdb.set_trace()
+                from matplotlib import pyplot as plt
+                plt.hist(particles_next.flatten())
+                plt.show()
+            #print("current mean = %s, current var = %s"%(particles_mean, particles_var_true))
             return particles_next, particles_preweights, information_components.append([particles_mean, particles_var])
         else: 
             particles_resampled = np.zeros(particles.shape)
@@ -230,8 +238,8 @@ class propagater_particles():
         """
         propagation as done by sisson
         """
-        particles_var = self.covar_factor*np.cov(particles, aweights=np.squeeze(weights))
-        particles_var = np.atleast_2d(particles_var)
+        particles_var_true = np.atleast_2d(np.cov(particles, aweights=np.squeeze(weights)))
+        particles_var = self.covar_factor*np.atleast_2d(particles_var)
         #pdb.set_trace()
         if self.ancestor_sampling == "Hilbert":
             #pdb.set_trace()
@@ -270,9 +278,9 @@ class propagater_particles():
         """
         particles_next = np.zeros(particles.shape)
         #pdb.set_trace()
-        particles_var = self.covar_factor*np.cov(particles, aweights=np.squeeze(weights))
+        particles_var_true = np.cov(particles, aweights=np.squeeze(weights))
+        particles_var = self.covar_factor*particles_var_true
         particles_preweights = np.ones(weights.shape)
-
         for i_particle in range(self.N_particles):
             particle_prop = self.move_particle(particles[:, i_particle], u[i_particle, :-1], particles_var) # move the particle$
             particles_next[:, i_particle] = particle_prop # save the particles
@@ -413,7 +421,7 @@ def reweight_particles(epsilon, f_calculate_weights, particles_next, particles_p
     #pdb.set_trace()
 
     particles_mean_next = np.average(particles_next, axis=1, weights=np.squeeze(weights_normalized))
-    particles_var_next = covar_factor*np.cov(particles_next, aweights=np.squeeze(weights_normalized))
+    particles_var_next = np.cov(particles_next, aweights=np.squeeze(weights_normalized))
     #raise ValueError('this function should not be used anymore !')
     return weights_normalized, particles_mean_next, particles_var_next, ESS
 
