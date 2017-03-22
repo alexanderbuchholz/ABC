@@ -61,7 +61,7 @@ class simulator_sampler():
         return the two smallest distances that are below the threshold and 
         the number of tries necessary
         """
-        #pdb.set_trace()
+        pdb.set_trace()
         particle_n = particles[:, n_particle, np.newaxis]
         aux_particles_indvidual = np.zeros((n_successfull_tries, 1))
         aux_particles_tries = np.zeros(1)
@@ -79,8 +79,8 @@ class simulator_sampler():
                 if truncation_level is not None:
                     if aux_particles_tries > truncation_level:
                         aux_particles_indvidual = np.ones((n_successfull_tries, 1))*10000000000.
-                        aux_particles_tries_until_success =  truncation_level*2
-                        aux_particles_tries =  truncation_level*2
+                        aux_particles_tries_until_success = np.inf
+                        aux_particles_tries = np.inf
                         break
             aux_particles_tries_until_success = aux_particles_tries - n_successfull_tries
         else:
@@ -88,6 +88,43 @@ class simulator_sampler():
             aux_particles_tries_until_success = np.inf
         #pdb.set_trace()
         return aux_particles_indvidual, aux_particles_tries_until_success
+
+    def f_negative_binomial_race(self, particles, epsilon_target, quantile_target=0.95, n_successfull_tries=2):
+        """
+        """
+        N_particles = particles.shape[1]
+        indicator_successfull_tries = np.zeros(N_particles)
+        aux_particles = np.zeros((n_successfull_tries, N_particles))
+        aux_particles_tries = np.zeros((1, N_particles))
+        list_particles_to_iterate = range(N_particles)
+        counter_completed_particles = 0
+        while counter_completed_particles < quantile_target*N_particles:
+            """
+            loop as long as the simulation is not finished
+            """
+            iteration = 0
+            for i_particle in list_particles_to_iterate:
+                """ loop over list of particles, keep simulating"""
+                particle_n = particles[:, i_particle, np.newaxis]
+                y_proposed = self.simulator(particle_n)
+                distance = self.delta(y_proposed, self.y_star)
+                if distance < epsilon_target:
+                    aux_particles[indicator_successfull_tries[i_particle], i_particle] = distance
+                    indicator_successfull_tries[i_particle] += 1
+                    #pdb.set_trace()
+                    if indicator_successfull_tries[i_particle] > 1:
+                        del list_particles_to_iterate[iteration]
+                        counter_completed_particles += 1
+                else:
+                    aux_particles_tries[:, i_particle] += 1
+                # break routine
+                iteration += 1 # counts the iterations, needed to select the right element to delete
+                if counter_completed_particles >= quantile_target*N_particles:
+                    break
+        #pdb.set_trace()
+        aux_particles[:,list_particles_to_iterate] = 10000000000
+        aux_particles_tries[:,list_particles_to_iterate] = np.inf
+        return aux_particles, aux_particles_tries
 
 
     def f_auxialiary_sampler(self, particles, *args, **kwargs):

@@ -209,7 +209,8 @@ class smc_sampler(object):
                         epsilon_delta = abs(self.epsilon[current_t-2] - self.epsilon[current_t-1])
                         if abs(self.epsilon_target-self.epsilon[current_t-1]) < epsilon_delta:
                             truncation_level = 10**6
-                        auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_auxialiary_sampler_negative_binomial(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1], truncation_level=truncation_level)
+                        #auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_auxialiary_sampler_negative_binomial(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1], truncation_level=truncation_level)
+                        auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_negative_binomial_race(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1])#, truncation_level=truncation_level)
                         self.auxialiary_particles_list.append(auxiliary_particles_new)
                         self.auxialiary_particles_list_tries_until_success.append(aux_particles_tries_new)
                         aux_particles_tries_new_inter = aux_particles_tries_new+0
@@ -581,7 +582,7 @@ if __name__ == '__main__':
     sampler_type = 'RQMC'
     y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
     start_phase_ais = 10
-    truncate_neg_binomial = True
+    truncate_neg_binomial = False
     ancestor_sampling = "False" #"Hilbert"#False#"Hilbert"
     resample = False
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
