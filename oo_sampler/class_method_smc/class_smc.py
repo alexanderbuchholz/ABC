@@ -201,14 +201,14 @@ class smc_sampler(object):
                             try: 
                                 truncation_level = np.nanpercentile(self.auxialiary_particles_list_tries_until_success[current_t-1], 50)*10
                             except: 
-                                truncation_level = None
+                                truncation_level = 10**6
                         else: 
-                            truncation_level = None
+                            truncation_level = 10**6
                         # procedure that handles the last epsilon
                         #pdb.set_trace()
                         epsilon_delta = abs(self.epsilon[current_t-2] - self.epsilon[current_t-1])
                         if abs(self.epsilon_target-self.epsilon[current_t-1]) < epsilon_delta:
-                            truncation_level = None
+                            truncation_level = 10**6
                         auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_auxialiary_sampler_negative_binomial(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1], truncation_level=truncation_level)
                         self.auxialiary_particles_list.append(auxiliary_particles_new)
                         self.auxialiary_particles_list_tries_until_success.append(aux_particles_tries_new)
