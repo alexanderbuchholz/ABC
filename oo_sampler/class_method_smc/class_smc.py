@@ -210,7 +210,7 @@ class smc_sampler(object):
                         #if abs(self.epsilon_target-self.epsilon[current_t-1]) < epsilon_delta:
                         #    truncation_level = 10**6
                         #auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_auxialiary_sampler_negative_binomial(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1], truncation_level=truncation_level)
-                        auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_negative_binomial_race(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1], quantile_target_negative_binomial=quantile_target_negative_binomial)#, truncation_level=truncation_level)
+                        auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_negative_binomial_race(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1], quantile_target_negative_binomial=self.quantile_target_negative_binomial)#, truncation_level=truncation_level)
                         self.auxialiary_particles_list.append(auxiliary_particles_new)
                         self.auxialiary_particles_list_tries_until_success.append(aux_particles_tries_new)
                         aux_particles_tries_new_inter = aux_particles_tries_new+0
@@ -567,7 +567,7 @@ if __name__ == '__main__':
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 500
-    dim_particles = 1
+    dim_particles = 3
     Time = 30
     dim_auxiliary_var = 2
     augment_M = False
