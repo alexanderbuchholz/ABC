@@ -89,7 +89,7 @@ class simulator_sampler():
         #pdb.set_trace()
         return aux_particles_indvidual, aux_particles_tries_until_success
 
-    def f_negative_binomial_race(self, particles, epsilon_target, quantile_target=0.95, n_successfull_tries=2):
+    def f_negative_binomial_race(self, particles, epsilon_target, quantile_target_negative_binomial=0.99, n_successfull_tries=2):
         """
         """
         N_particles = particles.shape[1]
@@ -98,7 +98,7 @@ class simulator_sampler():
         aux_particles_tries = np.zeros((1, N_particles))
         list_particles_to_iterate = range(N_particles)
         counter_completed_particles = 0
-        while counter_completed_particles < quantile_target*N_particles:
+        while counter_completed_particles < quantile_target_negative_binomial*N_particles:
             """
             loop as long as the simulation is not finished
             """
@@ -119,7 +119,7 @@ class simulator_sampler():
                     aux_particles_tries[:, i_particle] += 1
                 # break routine
                 iteration += 1 # counts the iterations, needed to select the right element to delete
-                if counter_completed_particles >= quantile_target*N_particles:
+                if counter_completed_particles >= quantile_target_negative_binomial*N_particles:
                     break
         #pdb.set_trace()
         aux_particles[:,list_particles_to_iterate] = 10000000000

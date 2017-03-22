@@ -23,7 +23,7 @@ class smc_sampler(object):
             (dim_particles, N_particles, T_time)
 
     """
-    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small', y_simulation = 'neg_binomial', start_phase_ais= 20, quantile_target=0.8, truncate_neg_binomial=True, quantile_target_negative_binomial=0.9):
+    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small', y_simulation = 'neg_binomial', start_phase_ais= 20, quantile_target=0.3, truncate_neg_binomial=True, quantile_target_negative_binomial=0.99):
         """
             set the data structures of the class
             set the random generator that will drive the stochastic propagation
@@ -190,27 +190,27 @@ class smc_sampler(object):
                 if self.y_simulation == 'neg_binomial':
                     if current_t < self.start_phase_ais: 
                         # special procedure in the beginning to start with slow epsilon
-                        self.quantile_target = 0.3
+                        #self.quantile_target = 0.3
                         auxiliary_particles_new = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:, :, current_t], **kwargs)
                         self.auxialiary_particles_list.append(auxiliary_particles_new)
                         self.auxialiary_particles_list_tries_until_success.append([])
                     else: 
-                        self.quantile_target = self.quantile_target_negative_binomial
+                        #self.quantile_target = self.quantile_target_negative_binomial
                         #if current_t > 30: pdb.set_trace()
-                        if self.truncate_neg_binomial == True: 
-                            try: 
-                                truncation_level = np.nanpercentile(self.auxialiary_particles_list_tries_until_success[current_t-1], 50)*10
-                            except: 
-                                truncation_level = 10**6
-                        else: 
-                            truncation_level = 10**6
+                        #if self.truncate_neg_binomial == True: 
+                        #    try: 
+                        #        truncation_level = np.nanpercentile(self.auxialiary_particles_list_tries_until_success[current_t-1], 50)*10
+                        #    except: 
+                        #        truncation_level = 10**6
+                        #else: 
+                        #    truncation_level = 10**6
                         # procedure that handles the last epsilon
                         #pdb.set_trace()
-                        epsilon_delta = abs(self.epsilon[current_t-2] - self.epsilon[current_t-1])
-                        if abs(self.epsilon_target-self.epsilon[current_t-1]) < epsilon_delta:
-                            truncation_level = 10**6
+                        #epsilon_delta = abs(self.epsilon[current_t-2] - self.epsilon[current_t-1])
+                        #if abs(self.epsilon_target-self.epsilon[current_t-1]) < epsilon_delta:
+                        #    truncation_level = 10**6
                         #auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_auxialiary_sampler_negative_binomial(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1], truncation_level=truncation_level)
-                        auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_negative_binomial_race(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1])#, truncation_level=truncation_level)
+                        auxiliary_particles_new, aux_particles_tries_new = self.class_auxialiary_sampler.f_negative_binomial_race(self.particles[:, :, current_t], epsilon_target=self.epsilon[current_t-1], quantile_target_negative_binomial=quantile_target_negative_binomial)#, truncation_level=truncation_level)
                         self.auxialiary_particles_list.append(auxiliary_particles_new)
                         self.auxialiary_particles_list_tries_until_success.append(aux_particles_tries_new)
                         aux_particles_tries_new_inter = aux_particles_tries_new+0
@@ -437,7 +437,8 @@ class smc_sampler(object):
             try: 
                 counts = self.auxialiary_particles_list_tries_until_success[current_t].flatten()
                 self.sampling_counter += sum(counts[counts<np.inf]+2)
-                self.M_list[current_t] = np.mean(self.auxialiary_particles_list_tries_until_success[current_t].flatten())
+                inter_auxiliary_tries_until_success = self.auxialiary_particles_list_tries_until_success[current_t]
+                self.M_list[current_t] = np.mean(inter_auxiliary_tries_until_success[inter_auxiliary_tries_until_success<np.inf].flatten())
                 if current_t == 0: # correction
                     self.M_list[current_t] = self.class_auxialiary_sampler.M_simulator
             except:
@@ -561,13 +562,13 @@ if __name__ == '__main__':
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
-    import functions_mixture_model_3 as functions_mixture_model
+    import functions_mixture_model as functions_mixture_model
     #import functions_toggle_switch_model as functions_mixture_model
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 500
     dim_particles = 1
-    Time = 50
+    Time = 30
     dim_auxiliary_var = 2
     augment_M = False
     M_incrementer = 2
@@ -579,12 +580,12 @@ if __name__ == '__main__':
     M_target_multiple_N = target_ESS_ratio_reweighter
     covar_factor = 1.2
     propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
-    sampler_type = 'RQMC'
+    sampler_type = 'QMC'
     y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
     start_phase_ais = 10
     truncate_neg_binomial = False
     ancestor_sampling = "False" #"Hilbert"#False#"Hilbert"
-    resample = False
+    resample = True
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**6
     parallelize = False

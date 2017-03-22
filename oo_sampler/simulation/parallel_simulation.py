@@ -58,7 +58,7 @@ def set_up_parallel_abc_sampler(filename, fixed_epsilon_schedule=False, algorith
                 print("epsilon loaded")
                 test_sampler.T = len(epsilon_schedule)
                 test_sampler.setEpsilonSchedule(epsilon_schedule)
-                autochoose_eps = ''
+                autochoose_eps = '' # we set the schedule to fixed
                 flag_save_epsilon = False
             except IOError:
                 print("no epsilon available")

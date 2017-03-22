@@ -8,7 +8,7 @@ import ipdb as pdb
 import pickle
 import numpy as np
 #if __name__ == '__main__':
-path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_13-3-17"
+path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_22-3-17"
 path2 = "/home/alex/python_programming/ABC_results_storage/simulation_results"
 import os
 os.chdir(path1)
@@ -22,7 +22,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tubercul
 #import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
 #import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
 #import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
-import simulation_parameters_mixture_model_13_3_17_desktop as simulation_parameters_model
+import simulation_parameters_mixture_model_22_3_17_desktop as simulation_parameters_model
 import f_rand_seq_gen
 import gaussian_densities_etc
 def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation_method = 'AIS', cum_sum=False):
@@ -61,7 +61,7 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
         #pdb.set_trace()
         #if propagation_method == 'Del_Moral':
         #    selector = selector - 1
-        #pdb.set_trace()
+        pdb.set_trace()
         final_means[:, i_simulation] = simulation["means_particles"][:, selector-1] # TODO: error here ? is the range correct?
         means[:, :selector, i_simulation] = simulation["means_particles"][:, :selector]
         vars[:, :selector, i_simulation] = simulation["var_particles"][:, :selector]

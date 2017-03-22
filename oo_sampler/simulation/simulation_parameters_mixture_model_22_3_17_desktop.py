@@ -14,7 +14,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/class_method_smc")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
 
-path = "/home/alex/python_programming/ABC_results_storage/simulation_results_20-3-17"
+path = "/home/alex/python_programming/ABC_results_storage/simulation_results_22-3-17"
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
 import functions_mixture_model as functions_model
@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
 
 
-    if False: 
+    if True: 
         # simulation Del Moral
         kwargs['inititation_particles'] = functions_model.theta_sampler_mc
         kwargs['sampler_type'] = 'MC'
@@ -109,7 +109,7 @@ if __name__ == '__main__':
         kwargs['autochoose_eps'] = 'quantile_based'
         kwargs['dim_auxiliary_var'] = 2
         kwargs['parallelize'] = False
-        #del partial_parallel_smc
+        del partial_parallel_smc
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
         for i_simulation in filenames_list:
             partial_parallel_smc(i_simulation)
