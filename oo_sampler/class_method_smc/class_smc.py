@@ -589,6 +589,7 @@ if __name__ == '__main__':
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**6
     parallelize = False
+    quantile_target = 0.3
 
 
 
@@ -618,7 +619,8 @@ if __name__ == '__main__':
                                 computational_budget = computational_budget,
                                 y_simulation = y_simulation,
                                 start_phase_ais = start_phase_ais, 
-                                truncate_neg_binomial = truncate_neg_binomial)
+                                truncate_neg_binomial = truncate_neg_binomial,
+                                quantile_target=quantile_target)
     test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_rqmc)
     test_sampler.propagation_mechanism = propagation_mechanism
     test_sampler.sampler_type = sampler_type

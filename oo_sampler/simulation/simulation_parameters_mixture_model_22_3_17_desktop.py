@@ -63,7 +63,8 @@ kwargs = {'N_particles_list': [1000, 2000, 3000],# 500, 750, 1500,   2500, 3000,
             'algorithm_only_schedule': True,
             'y_simulation': 'standard',
             'start_phase_ais': 5,
-            'truncate_neg_binomial': True
+            'truncate_neg_binomial': True,
+            'quantile_target' : 0.3
             }
 
 K_repetitions = range(repetitions)
@@ -141,6 +142,7 @@ if __name__ == '__main__':
         kwargs['autochoose_eps'] = 'quantile_based'
         kwargs['dim_auxiliary_var'] = 1
         kwargs['parallelize'] =  False
+        kwargs['quantile_target'] = 0.9
         
         del partial_parallel_smc
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)

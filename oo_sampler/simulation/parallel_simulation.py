@@ -47,7 +47,8 @@ def set_up_parallel_abc_sampler(filename, fixed_epsilon_schedule=False, algorith
                                 computational_budget = computational_budget,
                                 y_simulation = y_simulation,
                                 start_phase_ais = start_phase_ais,
-                                truncate_neg_binomial=truncate_neg_binomial)
+                                truncate_neg_binomial=truncate_neg_binomial,
+                                quantile_target=quantile_target)
 
         ####################################################
         #pdb.set_trace()

@@ -61,8 +61,7 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
         #pdb.set_trace()
         #if propagation_method == 'Del_Moral':
         #    selector = selector - 1
-        pdb.set_trace()
-        final_means[:, i_simulation] = simulation["means_particles"][:, selector-1] # TODO: error here ? is the range correct?
+        #pdb.set_trace()
         means[:, :selector, i_simulation] = simulation["means_particles"][:, :selector]
         vars[:, :selector, i_simulation] = simulation["var_particles"][:, :selector]
         final_ESS[:,i_simulation] = simulation["ESS"][selector-1]
@@ -96,19 +95,19 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
     var_all = means_all.var(axis=2)
     vars_vars = vars_all.var(axis=2)
     vars_means = vars_all.mean(axis=2)
-    means_last = np.nanmean(final_means, axis=1)
-    pdb.set_trace()
+    means_last = np.nanmean(means_all[:,-1,:], axis=1)
+    #pdb.set_trace()
     vars_vars_last = vars_vars[:,-1]
     vars_means_last = vars_means[:,-1]
     #means_var = np.nanvar(final_means, axis=1)
-    means_var_last = (final_means**2).mean(axis=1) # use this for the MSE
+    means_var_last = (means_all[:,-1,:]**2).mean(axis=1) # use this for the MSE
     ESS_mean = final_ESS.mean()
     epsilon_mean = final_epsilon.mean()
     time_mean = final_simulation_time.mean()
     number_simulations_mean = final_number_simulations.mean()
     number_simulations = number_simulations[0,:, :selector]
     #pdb.set_trace()
-    return [means_last, means_var_last, vars_means_last, vars_vars_last, ESS_mean, epsilon_mean, time_mean, number_simulations_mean], [means_all, epsilons, means_all.var(axis=2), number_simulations, vars_vars, vars_all.mean(axis=2)]
+    return [means_last, means_var_last, vars_means_last, vars_vars_last, ESS_mean, epsilon_mean, time_mean, number_simulations_mean], [means_all, epsilons, means_all.var(axis=2), number_simulations, vars_vars, vars_all.mean(axis=2), vars_all]
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -121,7 +120,7 @@ if True:
     for N_particles in simulation_parameters_model.kwargs['N_particles_list']:
         QMC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "QMC", particles=N_particles, propagation_method = 'AIS')
         #pdb.set_trace()
-        #MC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'AIS')
+        MC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'AIS')
         RQMC_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, propagation_method = 'AIS')
         del_moral_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral')
         #true_sisson_simulation_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson')
@@ -129,7 +128,7 @@ if True:
         #print sisson_simulation_results[0]
         print simulation_parameters_model.filename
         print N_particles
-        #print MC_simulation_results[0]
+        print MC_simulation_results[0]
         print QMC_simulation_results[0]
         print RQMC_simulation_results[0]
         print del_moral_simulation_results[0]
@@ -164,10 +163,12 @@ if True:
     """
 #simulation = pickle.load( open( "mixture_gaussians_diff_variance_adaptive_M_autochoose_eps_gaussian_kernel10_MC10_AIS_2500_simulation_abc_epsilon_0.025_40.p", "rb" ) )
 
-def function_flatten_results(_results, dim):
-    #pdb.set_trace()
+def function_flatten_results(_results, dim, method="other"):
     _means_inter = _results[1][0][dim, :, :].flatten()
-    _epsilons_inter = _results[1][1].flatten()
+    if method == "Del_Moral":
+        _epsilons_inter = _results[1][1][:,:-1,:].flatten()
+    else:
+        _epsilons_inter = _results[1][1].flatten()
     _means_inter = _means_inter[_epsilons_inter > 0.]
     _epsilons_inter = _epsilons_inter[_epsilons_inter > 0.]
     return _means_inter, _epsilons_inter
@@ -176,61 +177,95 @@ def function_flatten_results(_results, dim):
 def plot_no_double_epsilon(results, label):
     if label == 'Del Moral':
         #pdb.set_trace()
-        plt.plot(results[1][1][0,:-1,0], (results[1][2][0,:]*results[1][3][:,:].mean(axis=0))[:-1], label=label)
+        plt.plot(results[1][1][0,:-1,0], (results[1][2][0,:]*results[1][3][:,:].mean(axis=0))[:], label=label)
     elif label == 'Sisson':
         plt.plot(results[1][1][0,:-1,0], (results[1][2][0,:]*results[1][3].mean(axis=0))[:-1], label=label)
     else:
         epsilon_list = results[1][1][0,:,0]
         epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
         #pdb.set_trace()
-        var_list = results[1][2][0,:] #(results[1][2][0,:]*results[1][3].mean(axis=0))[:]
-        #plt.plot(MC_results[1][1][0,:,0], (MC_results[1][2][0,:]*MC_results[1][3].mean(axis=0))[:], label=label)
-        plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
+        #var_list = results[1][2][0,:] #(results[1][2][0,:]*results[1][3].mean(axis=0))[:]
+        plt.plot(results[1][1][0,:,0], (results[1][2][0,:]*results[1][3].mean(axis=0))[:], label=label)
+        #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
+
+def plot_no_double_epsilon_variance(results, label, true_variance=1):
+    #pdb.set_trace()
+    vars_all = results[1][6][0,:]
+    mse_vars_all = ((vars_all-true_variance)**2).mean(axis=1)
+    if label == 'Del Moral':
+        #pdb.set_trace()
+        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3][:,:].mean(axis=0))[:], label=label)
+    elif label == 'Sisson':
+        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3].mean(axis=0))[:-1], label=label)
+    else:
+        #epsilon_list = results[1][1][0,:,0]
+        #epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
+        #pdb.set_trace()
+        #var_list = results[1][2][0,:] #(results[1][2][0,:]*results[1][3].mean(axis=0))[:]
+        plt.plot(results[1][1][0,:,0], (mse_vars_all*results[1][3].mean(axis=0))[:], label=label)
+        #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
+
+
 
 if True:
     N_particles_list = simulation_parameters_model.kwargs['N_particles_list']
     MC_means = []
     RQMC_means = []
-    cum_sum = False
+    cum_sum = True
     for N_particles in N_particles_list:
-        #MC_results =  f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, cum_sum=cum_sum)
+        MC_results =  f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, cum_sum=cum_sum)
         QMC_results =  f_summary_stats(simulation_parameters_model, sample_method = "QMC", particles=N_particles, cum_sum=cum_sum)
         RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, cum_sum=cum_sum)
         Del_Moral_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral', cum_sum=cum_sum)
-        #pdb.set_trace()
+        pdb.set_trace()
         #Sisson_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson', cum_sum=cum_sum)
         #pdb.set_trace()
         print('code works for one dimension only!')
-        #MC_means_inter, MC_epsilons_inter = function_flatten_results(MC_results, 0)
-        QMC_means_inter, QMC_epsilons_inter = function_flatten_results(QMC_results, 0)
-        RQMC_means_inter, RQMC_epsilons_inter = function_flatten_results(RQMC_results, 0)
-        Del_Moral_means_inter, Del_Moral_epsilons_inter = function_flatten_results(Del_Moral_results, 0)
-        #Sisson_means_inter, Sisson_epsilons_inter = function_flatten_results(Sisson_results, 0)
-
+        
         sns.set_style("darkgrid")
         #sns.tsplot(time=MC_epsilons_inter, data=MC_means_inter, color='blue')
         #sns.tsplot(time=RQMC_epsilons_inter, data=RQMC_means_inter, color='green')
         #sns.tsplot(time=Del_Moral_epsilons_inter, data=Del_Moral_means_inter, color='red')
         #plt.subplot(1,1,1)
         #pdb.set_trace()
+        if False: 
+            MC_means_inter, MC_epsilons_inter = function_flatten_results(MC_results, 0)
+            QMC_means_inter, QMC_epsilons_inter = function_flatten_results(QMC_results, 0)
+            RQMC_means_inter, RQMC_epsilons_inter = function_flatten_results(RQMC_results, 0)
+            Del_Moral_means_inter, Del_Moral_epsilons_inter = function_flatten_results(Del_Moral_results, 0, method="Del_Moral")
+            #Sisson_means_inter, Sisson_epsilons_inter = function_flatten_results(Sisson_results, 0)
+
+            plt.title('means and epsilon for N:'+str(N_particles))
+            #plt.scatter(MC_epsilons_inter, MC_means_inter, lw=0.5, alpha=1, color='blue', label="MC")
+            plt.scatter(QMC_epsilons_inter, QMC_means_inter, lw=0.5, alpha=1, color='cyan', label="QMC")
+            plt.scatter(RQMC_epsilons_inter, RQMC_means_inter, lw=0.5, alpha=1, color='green', label="RQMC")
+            plt.scatter(Del_Moral_epsilons_inter, Del_Moral_means_inter, color='red', label='Del Moral')
+            #plt.scatter(Sisson_epsilons_inter, Sisson_means_inter, color='yellow', label='Sisson')
+            #plt.yscale('log')
+            plt.xscale('log')
+            plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
+            plt.xlabel('epsilon')
+            plt.ylabel('means')
+            #plt.savefig(str(N_particles)+'N_means_epsilon.png')
+            plt.show()
         
-        plt.title('means and epsilon for N:'+str(N_particles))
-        #plt.scatter(MC_epsilons_inter, MC_means_inter, lw=0.5, alpha=1, color='blue', label="MC")
-        plt.scatter(QMC_epsilons_inter, QMC_means_inter, lw=0.5, alpha=1, color='cyan', label="QMC")
-        plt.scatter(RQMC_epsilons_inter, RQMC_means_inter, lw=0.5, alpha=1, color='green', label="RQMC")
-        plt.scatter(Del_Moral_epsilons_inter, Del_Moral_means_inter, color='red', label='Del Moral')
-        #plt.scatter(Sisson_epsilons_inter, Sisson_means_inter, color='yellow', label='Sisson')
-        #plt.yscale('log')
+        plt.title('MSE of variance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N:'+str(N_particles))
+        plot_no_double_epsilon_variance(MC_results, 'MC')
+        plot_no_double_epsilon_variance(QMC_results, 'QMC')
+        plot_no_double_epsilon_variance(RQMC_results, 'RQMC')
+        plot_no_double_epsilon_variance(Del_Moral_results, 'Del Moral')
+        #plot_no_double_epsilon(Sisson_results, 'Sisson')
+        plt.yscale('log')
         plt.xscale('log')
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
-        plt.ylabel('means')
-        #plt.savefig(str(N_particles)+'N_means_epsilon.png')
+        plt.ylabel('MSE times cumulative budget')
+        #plt.savefig(str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 
         pdb.set_trace()
         plt.title('MSE for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N:'+str(N_particles))
-        #plot_no_double_epsilon(MC_results, 'MC')
+        plot_no_double_epsilon(MC_results, 'MC')
         plot_no_double_epsilon(QMC_results, 'QMC')
         plot_no_double_epsilon(RQMC_results, 'RQMC')
         plot_no_double_epsilon(Del_Moral_results, 'Del Moral')
