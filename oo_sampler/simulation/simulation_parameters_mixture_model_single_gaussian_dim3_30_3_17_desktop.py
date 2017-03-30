@@ -23,7 +23,7 @@ import functions_mixture_model_3 as functions_model
 
 Time = 600
 repetitions = 40
-dim_particles = 4
+dim_particles = 3
 target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
 epsilon_target = functions_model.epsilon_target(dim_particles) #0.001 #0.25
@@ -69,7 +69,7 @@ kwargs = {'N_particles_list': [3000, 5000, 10000],# 500, 750, 1500,   2500, 3000
 
 K_repetitions = range(repetitions)
 #filename = functions_model.model_string+'_dim_'+str(dim_particles)+'_adaptive_M_autochoose_eps_gaussian_kernel'
-filename = functions_model.model_string+'_negative_binomial_uniform_kernel_1_VB_component_fixed_epsilon_schedule_algo_only_dim4'
+filename = functions_model.model_string+'_negative_binomial_uniform_kernel_1_VB_component_fixed_epsilon_schedule_algo_only_dim3'
 if __name__ == '__main__':
     import parallel_simulation
     from functools import partial
