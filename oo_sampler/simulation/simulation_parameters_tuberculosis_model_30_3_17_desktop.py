@@ -12,7 +12,8 @@ import ipdb as pdb
 
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/class_method_smc")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
+#sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
+sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
 
 path = "/home/alex/python_programming/ABC_results_storage/simulation_results_30-3-17"
 import gaussian_densities_etc
