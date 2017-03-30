@@ -567,7 +567,7 @@ if __name__ == '__main__':
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 500
-    dim_particles = 1
+    dim_particles = 3
     Time = 30
     dim_auxiliary_var = 2
     augment_M = False

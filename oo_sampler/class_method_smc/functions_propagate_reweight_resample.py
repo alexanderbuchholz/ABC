@@ -98,11 +98,13 @@ class simulator_sampler():
         aux_particles_tries = np.zeros((1, N_particles))
         list_particles_to_iterate = range(N_particles)
         counter_completed_particles = 0
+        iterations_total = 0
         while counter_completed_particles < quantile_target_negative_binomial*N_particles:
             """
             loop as long as the simulation is not finished
             """
-            iteration = 0
+            iterations_total += 1
+            iteration_of_particle = 0
             for i_particle in list_particles_to_iterate:
                 """ loop over list of particles, keep simulating"""
                 particle_n = particles[:, i_particle, np.newaxis]
@@ -112,15 +114,19 @@ class simulator_sampler():
                     aux_particles[indicator_successfull_tries[i_particle], i_particle] = distance
                     indicator_successfull_tries[i_particle] += 1
                     #pdb.set_trace()
-                    if indicator_successfull_tries[i_particle] > 1:
-                        del list_particles_to_iterate[iteration]
+                    if indicator_successfull_tries[i_particle] > n_successfull_tries-1:
+                        del list_particles_to_iterate[iteration_of_particle]
                         counter_completed_particles += 1
                 else:
                     aux_particles_tries[:, i_particle] += 1
                 # break routine
-                iteration += 1 # counts the iterations, needed to select the right element to delete
+                iteration_of_particle += 1 # counts the iterations, needed to select the right element to delete
                 if counter_completed_particles >= quantile_target_negative_binomial*N_particles:
                     break
+            
+            if iterations_total > 10**6:
+                print("break the negative binomial loop because too many iterations!")
+                break # break if the total number of iterations gets too large
         #pdb.set_trace()
         aux_particles[:,list_particles_to_iterate] = 10000000000
         aux_particles_tries[:,list_particles_to_iterate] = np.inf
