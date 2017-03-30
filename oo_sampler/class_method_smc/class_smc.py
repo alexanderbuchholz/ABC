@@ -520,7 +520,6 @@ class smc_sampler(object):
         #pdb.set_trace()
         if save == True:
             output = {'particles':self.particles,
-                      'particles_before_resampling': self.particles_before_resampling,
                       'weights': self.weights,
                       'means_particles': self.mean_particles,
                       'var_particles':self.var_particles,
@@ -544,6 +543,7 @@ class smc_sampler(object):
                       'statistics_tries_until_succes': self.statistics_tries_until_succes}
             if self.save_size == 'large':
                 output['auxiliary_particles_list'] = self.auxialiary_particles_list
+                output['particles_before_resampling'] = self.particles_before_resampling
             else:
                 pass
             pickle.dump(output, open(filename+'_'+str(self.sampler_type)+str(self.dim_auxiliary_var)+'_'+str(self.propagation_mechanism)+'_'+str(self.N_particles)+"_simulation_abc_epsilon_"+str(self.epsilon_target)+".p", "wb") )
