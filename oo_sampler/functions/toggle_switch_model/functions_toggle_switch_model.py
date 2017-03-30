@@ -24,7 +24,7 @@ import rtnorm as rt
 
 model_string = "toggle_switch_model"
 dim = 7
-exponent = 4
+exponent = 4    
 
 #path_archive_simulations = '/home/alex/python_programming/ABC/oo_sampler/functions/toggle_switch_model'
 path_archive_simulations = '/home/alex/python_programming/ABC_results_storage/models_information'
@@ -160,10 +160,11 @@ def f_y_star(dim=7):
     return y_star
 
 
-def load_precomputed_data(exponent, dim):
+def load_precomputed_data(dim, exponent):
     import os
     current_path = os.getcwd()
     os.chdir(path_archive_simulations)
+    #import ipdb as pdb; pdb.set_trace()
     with open(model_string+'_dim_'+str(dim)+'_npower_'+str(exponent)+'.p', 'rb') as handle:
         precomputed_data = pickle.load(handle)
     os.chdir(current_path)
@@ -202,7 +203,7 @@ if __name__ == '__main__':
     precompute_values = False
     if precompute_values:
         precompute_save_data(exponent, dim)
-    if False:
+    if True:
         theta = np.array([22, 12, 4, 4.5, 325, 0.25, 0.15])
         y_star = simulator(theta)
         import pickle
