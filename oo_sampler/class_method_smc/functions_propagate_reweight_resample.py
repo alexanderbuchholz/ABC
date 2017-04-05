@@ -282,7 +282,7 @@ class propagater_particles():
         propagation as done by sisson
         """
         particles_var_true = np.atleast_2d(np.cov(particles, aweights=np.squeeze(weights)))
-        particles_var = self.covar_factor*np.atleast_2d(particles_var)
+        particles_var = self.covar_factor*np.atleast_2d(particles_var_true)
         #pdb.set_trace()
         if self.ancestor_sampling == "Hilbert":
             #pdb.set_trace()

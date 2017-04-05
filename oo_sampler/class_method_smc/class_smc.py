@@ -563,11 +563,11 @@ if __name__ == '__main__':
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
     #import functions_mixture_model_3 as functions_mixture_model
-    import functions_toggle_switch_model as functions_mixture_model
-    #import functions_mixture_model
+    #import functions_toggle_switch_model as functions_mixture_model
+    import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 500
-    dim_particles = 7
+    dim_particles = 1
     Time = 30
     dim_auxiliary_var = 2
     augment_M = False
@@ -579,12 +579,12 @@ if __name__ == '__main__':
     M_increase_until_acceptance = False
     M_target_multiple_N = target_ESS_ratio_reweighter
     covar_factor = 1.2
-    propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
+    propagation_mechanism = 'nonparametric'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
     sampler_type = 'QMC'
     y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
     start_phase_ais = 1
     truncate_neg_binomial = False
-    ancestor_sampling = "False" #"Hilbert"#False#"Hilbert"
+    ancestor_sampling = "Hilbert" #"Hilbert"#False#"Hilbert"
     resample = True
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**6
@@ -596,7 +596,7 @@ if __name__ == '__main__':
 
     model_description = model_description+'_'+sampler_type+'_'+propagation_mechanism+'_'+y_simulation
     save = False
-    mixture_components = 1
+    mixture_components = 10
     kernel = gaussian_densities_etc.uniform_kernel
     move_particle =gaussian_densities_etc.gaussian_move
     y_star = functions_mixture_model.f_y_star(dim_particles)
