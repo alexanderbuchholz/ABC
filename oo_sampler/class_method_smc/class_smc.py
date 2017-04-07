@@ -562,13 +562,13 @@ if __name__ == '__main__':
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
-    #import functions_mixture_model_3 as functions_mixture_model
+    import functions_mixture_model_3 as functions_mixture_model
     #import functions_toggle_switch_model as functions_mixture_model
-    import functions_mixture_model
+    #import functions_mixture_model
     model_description = functions_mixture_model.model_string
-    N_particles = 500
+    N_particles = 2000
     dim_particles = 1
-    Time = 30
+    Time = 60
     dim_auxiliary_var = 2
     augment_M = False
     M_incrementer = 2
@@ -579,12 +579,12 @@ if __name__ == '__main__':
     M_increase_until_acceptance = False
     M_target_multiple_N = target_ESS_ratio_reweighter
     covar_factor = 1.2
-    propagation_mechanism = 'nonparametric'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
+    propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
     sampler_type = 'QMC'
     y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
-    start_phase_ais = 1
+    start_phase_ais = 5
     truncate_neg_binomial = False
-    ancestor_sampling = "Hilbert" #"Hilbert"#False#"Hilbert"
+    ancestor_sampling = "False" #"Hilbert"#False#"Hilbert"
     resample = True
     autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**6
@@ -596,7 +596,7 @@ if __name__ == '__main__':
 
     model_description = model_description+'_'+sampler_type+'_'+propagation_mechanism+'_'+y_simulation
     save = False
-    mixture_components = 10
+    mixture_components = 1
     kernel = gaussian_densities_etc.uniform_kernel
     move_particle =gaussian_densities_etc.gaussian_move
     y_star = functions_mixture_model.f_y_star(dim_particles)
@@ -685,7 +685,11 @@ if __name__ == '__main__':
     #yappi.start()
     test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)
     #yappi.get_func_stats().print_all()
+
     pdb.set_trace()
+    print(functions_mixture_model.l1_distance(test_sampler.particles[:,:,-1]))
+    pdb.set_trace()
+
     if False: 
         plt.plot(test_sampler.epsilon[5:], test_sampler.statistics_tries_until_succes[5:,0])
         plt.plot(test_sampler.epsilon[5:], test_sampler.statistics_tries_until_succes[5:,1]**0.5)

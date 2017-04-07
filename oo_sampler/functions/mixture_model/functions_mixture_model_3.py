@@ -15,6 +15,8 @@ import ipdb as pdb
 #import rpy2.robjects as robjects
 import rpy2.robjects.packages as rpackages
 import rpy2.robjects as robjects
+from scipy.stats import multivariate_normal
+from scipy.stats import gaussian_kde
 
 #from numba import jit
 randtoolbox = rpackages.importr('randtoolbox')
@@ -95,15 +97,31 @@ def check_consistency_theta(theta_prop):
     pass
 
 
-def distance_posterior(thetas, epsilon):
-    pass
-
 #N = 10 # number of particles
 #initial_particles_mc = np.array([ theta_sampler_mc(0) for i in range(N)])
 #y_star = np.array([0,0])
 def f_y_star(dim=2):
     y_star = np.zeros(dim)
     return y_star
+
+def true_posterior(theta):
+    dim, N = theta.shape
+    y_star = f_y_star(dim)
+    density = multivariate_normal.pdf(theta.transpose(), y_star, np.eye(dim))
+    #pdb.set_trace()
+    if density.shape[0] != N:
+        raise ValueError('error in the dimensions of the input!')
+    return density
+
+def l1_distance(theta):
+    estimated_kde = gaussian_kde(theta)
+    evaluated_kde_points = estimated_kde.evaluate(theta)
+    evaluated_posterior_points = true_posterior(theta)
+    l1_distance = np.mean(abs(1-evaluated_posterior_points/evaluated_kde_points))
+    #pdb.set_trace()
+    return l1_distance
+
+    
 
 def load_precomputed_data(dim, exponent):
     import os
@@ -142,6 +160,10 @@ def epsilon_target(dim):
 
 
 if __name__ == '__main__':
+    pdb.set_trace()
+    theta = np.random.standard_t(5, size = (1,50))
+    l1_distance(theta)
+
     precompute_values = False
     if precompute_values:
         precompute_save_data(exponent, dim)

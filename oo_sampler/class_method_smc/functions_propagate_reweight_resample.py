@@ -111,7 +111,7 @@ class simulator_sampler():
                 y_proposed = self.simulator(particle_n)
                 distance = self.delta(y_proposed, self.y_star)
                 if distance < epsilon_target:
-                    aux_particles[indicator_successfull_tries[i_particle], i_particle] = distance
+                    aux_particles[int(indicator_successfull_tries[i_particle]), int(i_particle)] = distance
                     indicator_successfull_tries[i_particle] += 1
                     #pdb.set_trace()
                     if indicator_successfull_tries[i_particle] > n_successfull_tries-1:
