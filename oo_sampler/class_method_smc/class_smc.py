@@ -567,8 +567,8 @@ if __name__ == '__main__':
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 2000
-    dim_particles = 1
-    Time = 60
+    dim_particles = 3
+    Time = 100
     dim_auxiliary_var = 2
     augment_M = False
     M_incrementer = 2
@@ -579,14 +579,14 @@ if __name__ == '__main__':
     M_increase_until_acceptance = False
     M_target_multiple_N = target_ESS_ratio_reweighter
     covar_factor = 1.2
-    propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
-    sampler_type = 'QMC'
-    y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
+    propagation_mechanism = 'Del_Moral'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
+    sampler_type = 'MC'
+    y_simulation = 'standard' # 'standard' 'neg_binomial'
     start_phase_ais = 5
     truncate_neg_binomial = False
     ancestor_sampling = "False" #"Hilbert"#False#"Hilbert"
     resample = True
-    autochoose_eps = 'quantile_based' # ''ess_based quantile_based
+    autochoose_eps = 'ess_based' # ''ess_based quantile_based
     computational_budget = 10**6
     parallelize = False
     quantile_target = 0.3

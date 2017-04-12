@@ -24,6 +24,7 @@ randtoolbox = rpackages.importr('randtoolbox')
 model_string = "single_gaussian"
 dim = 1
 exponent = 6
+var = 0.1
 #path_archive_simulations = '/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model'
 path_archive_simulations = '/home/alex/python_programming/ABC_results_storage/models_information'
 
@@ -39,7 +40,7 @@ def simulator(theta):
     np.random.seed(seed=random_seed)
     if True:
         #pdb.set_trace()
-        y = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = np.identity(theta.shape[0]))
+        y = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = np.identity(theta.shape[0])*var)
     else:
         raise ValueError('no simulation')
     return y
@@ -107,7 +108,7 @@ def f_y_star(dim=2):
 def true_posterior(theta):
     dim, N = theta.shape
     y_star = f_y_star(dim)
-    density = multivariate_normal.pdf(theta.transpose(), y_star, np.eye(dim))
+    density = multivariate_normal.pdf(theta.transpose(), y_star, np.eye(dim)*var)
     #pdb.set_trace()
     if density.shape[0] != N:
         raise ValueError('error in the dimensions of the input!')

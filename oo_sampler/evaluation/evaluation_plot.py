@@ -4,11 +4,12 @@ Created on Mon Jan  9 09:21:52 2017
     evaluation of results
 @author: alex
 """
+# pylint: disable=C0321
 import ipdb as pdb
 import pickle
 import numpy as np
 #if __name__ == '__main__':
-path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_23-3-17"
+path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_30-3-17"
 path2 = "/home/alex/python_programming/ABC_results_storage/simulation_results"
 import os
 os.chdir(path1)
@@ -23,9 +24,10 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tubercul
 #import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
 #import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
 import simulation_parameters_mixture_model_23_3_17_desktop as simulation_parameters_model
+import simulation_parameters_mixture_model_single_gaussian_dim3_30_3_17_desktop as simulation_parameters_model
 import f_rand_seq_gen
 import gaussian_densities_etc
-def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation_method = 'AIS', cum_sum=False):
+def f_summary_stats(parameters, sample_method="MC", particles=500, propagation_method = 'AIS', cum_sum=False):
     #parameters.repetitions = 2
     #pdb.set_trace()
     final_means = np.zeros((parameters.kwargs["dim_particles"], parameters.repetitions))
@@ -35,7 +37,7 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
     final_number_simulations = np.zeros((1, parameters.repetitions))
     number_simulations = np.zeros((1, parameters.repetitions, parameters.kwargs["Time"]))
 
-    means = np.zeros((parameters.kwargs["dim_particles"], parameters.Time, parameters.repetitions))
+    means = np.zeros((parameters.kwargs["dim_particles"], parameters.Time, parameters.repetitions)) 
     vars = np.zeros((parameters.kwargs["dim_particles"], parameters.Time, parameters.repetitions))
     epsilons = np.zeros((1, parameters.Time, parameters.repetitions))
     for i_simulation in range(parameters.repetitions):
@@ -43,7 +45,7 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
         if propagation_method == 'true_sisson':
             try:
                 simulation = pickle.load( open( parameters.filename+str(i_simulation)+"_"+sample_method+str(1)+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+".p", "rb" ) )
-            except: 
+            except:
                 simulation = pickle.load( open( parameters.filename+'_'+str(i_simulation)+"_"+sample_method+str(1)+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+".p", "rb" ) )
         elif propagation_method == 'AIS':
             try:
@@ -64,7 +66,8 @@ def f_summary_stats(parameters, sample_method = "MC", particles=500, propagation
         #    selector = selector - 1
         #pdb.set_trace()
         means[:, :selector, i_simulation] = simulation["means_particles"][:, :selector]
-        vars[:, :selector, i_simulation] = simulation["var_particles"][:, :selector]
+        #pdb.set_trace()
+        vars[:, :selector, i_simulation] = np.atleast_3d(simulation["var_particles"])[0,:, :selector]
         final_ESS[:,i_simulation] = simulation["ESS"][selector-1]
         final_epsilon[:,i_simulation] = simulation["epsilon"][selector-1]
         #pdb.set_trace()
@@ -219,7 +222,6 @@ if True:
         QMC_results =  f_summary_stats(simulation_parameters_model, sample_method = "QMC", particles=N_particles, cum_sum=cum_sum)
         RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, cum_sum=cum_sum)
         Del_Moral_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral', cum_sum=cum_sum)
-        pdb.set_trace()
         #Sisson_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson', cum_sum=cum_sum)
         #pdb.set_trace()
         print('code works for one dimension only!')
