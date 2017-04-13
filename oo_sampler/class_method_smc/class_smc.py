@@ -562,12 +562,12 @@ if __name__ == '__main__':
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
-    import functions_mixture_model_3 as functions_mixture_model
+    import functions_mixture_model as functions_mixture_model
     #import functions_toggle_switch_model as functions_mixture_model
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
-    N_particles = 2000
-    dim_particles = 3
+    N_particles = 1000
+    dim_particles = 2
     Time = 100
     dim_auxiliary_var = 2
     augment_M = False
@@ -579,17 +579,30 @@ if __name__ == '__main__':
     M_increase_until_acceptance = False
     M_target_multiple_N = target_ESS_ratio_reweighter
     covar_factor = 1.2
-    propagation_mechanism = 'Del_Moral'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
-    sampler_type = 'MC'
-    y_simulation = 'standard' # 'standard' 'neg_binomial'
+    #propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
+    #sampler_type = 'QMC'
+    #y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
     start_phase_ais = 5
     truncate_neg_binomial = False
     ancestor_sampling = "False" #"Hilbert"#False#"Hilbert"
     resample = True
-    autochoose_eps = 'ess_based' # ''ess_based quantile_based
+    #autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**6
     parallelize = False
     quantile_target = 0.3
+
+    Del_Moral = True
+
+    if Del_Moral:
+        propagation_mechanism = 'Del_Moral'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
+        sampler_type = 'MC'
+        y_simulation = 'standard' # 'standard' 'neg_binomial'
+        autochoose_eps = 'ess_based' # ''ess_based quantile_based
+    else: 
+        propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
+        sampler_type = 'QMC'
+        y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
+        autochoose_eps = 'quantile_based' # ''ess_based quantile_based
 
 
 

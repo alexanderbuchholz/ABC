@@ -15,6 +15,9 @@ import ipdb as pdb
 #import rpy2.robjects as robjects
 import rpy2.robjects.packages as rpackages
 import rpy2.robjects as robjects
+from scipy.stats import multivariate_normal
+from scipy.stats import gaussian_kde
+
 
 #from numba import jit
 randtoolbox = rpackages.importr('randtoolbox')
@@ -24,6 +27,7 @@ dim = 3
 exponent = 6
 #path_archive_simulations = '/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model'
 path_archive_simulations = '/home/alex/python_programming/ABC_results_storage/models_information'
+var = 0.1
 
 def simulator(theta):
     """
@@ -35,15 +39,11 @@ def simulator(theta):
     # add random seed
     random_seed = random.randrange(10**9)
     np.random.seed(seed=random_seed)
-    if False:
-        #pdb.set_trace()
-        y = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = np.identity(theta.shape[0]))
+    unif_random = np.random.rand()
+    if unif_random < 0.5:
+        y = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = var*np.identity(theta.shape[0]))
     else:
-        unif_random = np.random.rand()
-        if unif_random < 0.5:
-            y = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = np.identity(theta.shape[0]))
-        else:
-            y = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = np.identity(theta.shape[0]))
+        y = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = var*0.01*np.identity(theta.shape[0]))
     return y
 
 
@@ -105,6 +105,25 @@ def check_consistency_theta(theta_prop):
 def f_y_star(dim=2):
     y_star = np.zeros(dim)
     return y_star
+
+
+def true_posterior(theta):
+    dim, N = theta.shape
+    y_star = f_y_star(dim)
+    density = 0.5*multivariate_normal.pdf(theta.transpose(), y_star, np.eye(dim)*var)+0.5*multivariate_normal.pdf(theta.transpose(), y_star, 0.01*np.eye(dim)*var)
+    #pdb.set_trace()
+    if density.shape[0] != N:
+        raise ValueError('error in the dimensions of the input!')
+    return density
+
+def l1_distance(theta):
+    estimated_kde = gaussian_kde(theta)
+    evaluated_kde_points = estimated_kde.evaluate(theta)
+    evaluated_posterior_points = true_posterior(theta)
+    l1_distance_res = np.mean(abs(1-evaluated_posterior_points/evaluated_kde_points))
+    #pdb.set_trace()
+    return l1_distance_res
+
 
 def load_precomputed_data(dim, exponent):
     import os

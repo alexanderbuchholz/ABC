@@ -118,9 +118,9 @@ def l1_distance(theta):
     estimated_kde = gaussian_kde(theta)
     evaluated_kde_points = estimated_kde.evaluate(theta)
     evaluated_posterior_points = true_posterior(theta)
-    l1_distance = np.mean(abs(1-evaluated_posterior_points/evaluated_kde_points))
+    l1_distance_res = np.mean(abs(1-evaluated_posterior_points/evaluated_kde_points))
     #pdb.set_trace()
-    return l1_distance
+    return l1_distance_res
 
     
 
