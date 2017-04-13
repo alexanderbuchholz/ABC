@@ -9,7 +9,7 @@ import ipdb as pdb
 import pickle
 import numpy as np
 #if __name__ == '__main__':
-path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_13-4-17"
+path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_23-3-17"
 path2 = "/home/alex/python_programming/ABC_results_storage/simulation_results"
 import os
 os.chdir(path1)
@@ -23,7 +23,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tubercul
 #import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
 #import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
 #import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
-import simulation_parameters_mixture_model_13_4_17_laptop as simulation_parameters_model
+import simulation_parameters_mixture_model_23_3_17_desktop as simulation_parameters_model
 #import simulation_parameters_mixture_model_single_gaussian_dim3_30_3_17_desktop as simulation_parameters_model
 import f_rand_seq_gen
 import gaussian_densities_etc
@@ -231,9 +231,9 @@ if True:
     for N_particles in N_particles_list:
         MC_results =  f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, cum_sum=cum_sum)
         QMC_results =  f_summary_stats(simulation_parameters_model, sample_method = "QMC", particles=N_particles, cum_sum=cum_sum)
-        #RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, cum_sum=cum_sum)
+        RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, cum_sum=cum_sum)
         Del_Moral_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral', cum_sum=cum_sum)
-        #Sisson_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson', cum_sum=cum_sum)
+        Sisson_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson', cum_sum=cum_sum)
         #pdb.set_trace()
         print('code works for one dimension only!')
         
@@ -241,9 +241,9 @@ if True:
         print N_particles
         print MC_results[0]
         print QMC_results[0]
-        #print RQMC_results[0]
+        print RQMC_results[0]
         print Del_Moral_results[0]
-        #print Sisson_results[0]
+        print Sisson_results[0]
 
         sns.set_style("darkgrid")
         #sns.tsplot(time=MC_epsilons_inter, data=MC_means_inter, color='blue')
@@ -275,13 +275,15 @@ if True:
         plt.title('L1 distance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
         plot_no_double_epsilon_l1_distance(MC_results, 'MC')
         plot_no_double_epsilon_l1_distance(QMC_results, 'QMC')
+        plot_no_double_epsilon_l1_distance(RQMC_results, 'RQMC')
         plot_no_double_epsilon_l1_distance(Del_Moral_results, 'Del Moral')
+        plot_no_double_epsilon_l1_distance(Sisson_results, 'Sisson')
         plt.yscale('log')
         plt.xscale('log')
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
         plt.ylabel('L1 distance to true posterior')
-        #plt.savefig(str(N_particles)+'N_variance_epsilon.png')
+        #plt.savefig('l1distance_'+str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 
 
@@ -296,7 +298,7 @@ if True:
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
         plt.ylabel('MSE times cumulative budget')
-        #plt.savefig(str(N_particles)+'N_variance_epsilon.png')
+        #plt.savefig('mse_variance_budget'+str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 
         pdb.set_trace()
@@ -318,7 +320,7 @@ if True:
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
         plt.ylabel('MSE times cumulative budget')
-        #plt.savefig(str(N_particles)+'N_variance_epsilon.png')
+        #plt.savefig('mse_cum_budget'+str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 
 
