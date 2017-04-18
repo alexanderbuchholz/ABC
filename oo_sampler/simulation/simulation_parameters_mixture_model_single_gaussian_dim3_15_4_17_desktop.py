@@ -14,7 +14,8 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/class_method_smc")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
 
-path = "/home/alex/python_programming/ABC_results_storage/simulation_results_15-4-17"
+#path = "/home/alex/python_programming/ABC_results_storage/simulation_results_15-4-17"
+path = "/media/alex/ABC_results_storage/simulation_results_15-4-17"
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
 import functions_mixture_model_3 as functions_model
