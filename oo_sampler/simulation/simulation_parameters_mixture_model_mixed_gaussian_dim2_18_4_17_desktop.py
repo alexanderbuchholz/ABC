@@ -23,7 +23,7 @@ import functions_mixture_model as functions_model
 
 Time = 600
 repetitions = 40
-dim_particles = 3
+dim_particles = 2
 target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
 epsilon_target = functions_model.epsilon_target(dim_particles) #0.001 #0.25
