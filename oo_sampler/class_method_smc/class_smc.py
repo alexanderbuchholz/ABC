@@ -559,15 +559,17 @@ if __name__ == '__main__':
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/toggle_switch_model")
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/alpha_stable_model")
+    sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/lotka_volterra_model")
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
-    import functions_mixture_model as functions_mixture_model
+    #import functions_mixture_model as functions_mixture_model
     #import functions_toggle_switch_model as functions_mixture_model
+    import functions_lotka_volterra_model as functions_mixture_model
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
-    N_particles = 1000
-    dim_particles = 2
+    N_particles = 500
+    dim_particles = 3
     Time = 100
     dim_auxiliary_var = 2
     augment_M = False
@@ -591,7 +593,7 @@ if __name__ == '__main__':
     parallelize = False
     quantile_target = 0.3
 
-    Del_Moral = True
+    Del_Moral = False
 
     if Del_Moral:
         propagation_mechanism = 'Del_Moral'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
@@ -609,7 +611,7 @@ if __name__ == '__main__':
 
     model_description = model_description+'_'+sampler_type+'_'+propagation_mechanism+'_'+y_simulation
     save = False
-    mixture_components = 1
+    mixture_components = 20
     kernel = gaussian_densities_etc.uniform_kernel
     move_particle =gaussian_densities_etc.gaussian_move
     y_star = functions_mixture_model.f_y_star(dim_particles)

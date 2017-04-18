@@ -12,24 +12,24 @@ import ipdb as pdb
 
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/class_method_smc")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
+sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/lotka_volterra_model")
 
 #path = "/home/alex/python_programming/ABC_results_storage/simulation_results_15-4-17"
 path = "/media/alex/Transcend/ABC_results_storage/simulation_results_15-4-17"
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
-import functions_mixture_model_3 as functions_model
+import functions_lotka_volterra_model as functions_model
 #import functions_mixture_model as functions_model
 
 
-Time = 600
+Time = 200
 repetitions = 40
 dim_particles = 3
 target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
 epsilon_target = functions_model.epsilon_target(dim_particles) #0.001 #0.25
 epsilon_start = 4
-kwargs = {'N_particles_list': [3000, 5000, 10000],# 500, 750, 1500,   2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
+kwargs = {'N_particles_list': [500, 1000],# 500, 750, 1500,   2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
@@ -49,7 +49,7 @@ kwargs = {'N_particles_list': [3000, 5000, 10000],# 500, 750, 1500,   2500, 3000
             'resample' : True, #True,
             'autochoose_eps' : 'ess_based',
             'save':True,
-            'mixture_components' : 1,
+            'mixture_components' : 5,
             'y_star' : functions_model.f_y_star(dim_particles),
             'epsilon': np.linspace(epsilon_start, epsilon_target, Time),
             'kernel' : gaussian_densities_etc.gaussian_kernel,
