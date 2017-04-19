@@ -139,7 +139,7 @@ class smc_sampler(object):
             #pdb.set_trace()
             #self.auxialiary_particles[:,:,0] = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:,:,0], **kwargs)
 
-    def accept_reject_sampler(self, N_particles_AR, epsilon_target_accept_reject):
+    def accept_reject_sampler(self, N_particles_AR, percentile = None, epsilon_target_accept_reject=None):
         """
             sample particles to start with
 
@@ -157,15 +157,25 @@ class smc_sampler(object):
             M_simulator_inter = self.class_auxialiary_sampler.M_simulator
             self.class_auxialiary_sampler.M_simulator = 1
             self.auxialiary_particles_accept_reject = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles_AR_initial, **kwargs)
-            self.accept_reject_selector = self.auxialiary_particles_accept_reject < epsilon_target_accept_reject
+            if epsilon_target_accept_reject is not None:
+                self.accept_reject_selector = self.auxialiary_particles_accept_reject < epsilon_target_accept_reject
+            elif percentile is not None: 
+                self.accept_reject_selector = self.auxialiary_particles_accept_reject < np.percentile(self.auxialiary_particles_accept_reject, percentile*100)
+            else: 
+                self.accept_reject_selector = self.auxialiary_particles_accept_reject < 10*10
             #pdb.set_trace()
             self.particles_AR_posterior = self.particles_AR_initial[self.accept_reject_selector]
             self.class_auxialiary_sampler.M_simulator = M_simulator_inter 
             #self.auxialiary_particles[:,:,0] = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:,:,0], **kwargs)
 
-    def f_accept_reject_precalculated_particles(self, precalculated_particles, precalculated_auxialiary_particles, epsilon_target_accept_reject):
-        accept_reject_selector = precalculated_auxialiary_particles < epsilon_target_accept_reject
-        return precalculated_particles[:, accept_reject_selector]
+    def f_accept_reject_precalculated_particles(self, precalculated_particles, precalculated_auxialiary_particles, epsilon_target_accept_reject=None, percentile=None):
+        
+        if epsilon_target_accept_reject is not None:
+            accept_reject_selector = precalculated_auxialiary_particles < epsilon_target_accept_reject
+        elif percentile is not None:
+            #pdb.set_trace()
+            accept_reject_selector = precalculated_auxialiary_particles < np.percentile(precalculated_auxialiary_particles, percentile*100)
+        return np.atleast_2d(precalculated_particles)[:, accept_reject_selector]
 
 
     def propagate_particles(self, current_t, flag_failed_ESS=False, *args, **kwargs):
@@ -694,6 +704,11 @@ if __name__ == '__main__':
             plt.show()
             #plt.close('all')
 
+    if False:
+        pdb.set_trace()
+        test_sampler.accept_reject_sampler(1000)
+        posterior = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=0.1)
+        pdb.set_trace()
 
     #pdb.set_trace()
     #import yappi

@@ -64,6 +64,21 @@ def theta_sampler_mc(i, dim, n,*args, **kwargs):
         # sample gamma dist, theta1 is birth event proba
         return np.atleast_2d(u.transpose()) # Normalize theta in the end
 
+def theta_sampler_qmc(i, dim, n,*args, **kwargs):
+        """
+        rqmc sampler for the prior generation of the tuberculosis example
+        :param i: input counter, needed for rqmc initialisation
+        :return: np.array of size 3, normalized theta
+        """
+        random_seed = random.randrange(10**9)
+
+        u = np.array(randtoolbox.sobol(n=n, dim=dim, init=(i==0), scrambling=0, seed=random_seed)) # randtoolbox for sobol sequence
+        # sample gamma dist, theta1 is birth event proba
+        #print u
+        u = u*20-10
+        return np.atleast_2d(u.transpose())
+
+
 def theta_sampler_rqmc(i, dim, n,*args, **kwargs):
         """
         rqmc sampler for the prior generation of the tuberculosis example
