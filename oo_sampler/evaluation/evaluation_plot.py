@@ -9,7 +9,7 @@ import ipdb as pdb
 import pickle
 import numpy as np
 #if __name__ == '__main__':
-path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_23-3-17"
+path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_18-4-17"
 path2 = "/home/alex/python_programming/ABC_results_storage/simulation_results"
 import os
 os.chdir(path1)
@@ -23,7 +23,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tubercul
 #import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
 #import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
 #import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
-import simulation_parameters_mixture_model_23_3_17_desktop as simulation_parameters_model
+import simulation_parameters_mixture_model_mixed_gaussian_dim2_18_4_17_desktop as simulation_parameters_model
 #import simulation_parameters_mixture_model_single_gaussian_dim3_30_3_17_desktop as simulation_parameters_model
 import f_rand_seq_gen
 import gaussian_densities_etc
@@ -66,8 +66,10 @@ def f_summary_stats(parameters, sample_method="MC", particles=500, propagation_m
         #pdb.set_trace()
         means[:, :selector, i_simulation] = simulation["means_particles"][:, :selector]
         # calculate the L1 distances
-        for t_simulation in range(selector):
-            l1_distances[:, t_simulation, i_simulation] = simulation_parameters_model.functions_model.l1_distance(simulation["particles"][:, :, t_simulation])
+        try:
+            for t_simulation in range(selector):
+                l1_distances[:, t_simulation, i_simulation] = simulation_parameters_model.functions_model.l1_distance(simulation["particles"][:, :, t_simulation])
+        except: pdb.set_trace()
         vars[:, :selector, i_simulation] = np.atleast_3d(simulation["var_particles"])[0,:, :selector]
         final_ESS[:,i_simulation] = simulation["ESS"][selector-1]
         final_epsilon[:,i_simulation] = simulation["epsilon"][selector-1]
@@ -275,7 +277,7 @@ if True:
         plt.title('L1 distance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
         plot_no_double_epsilon_l1_distance(MC_results, 'MC')
         plot_no_double_epsilon_l1_distance(QMC_results, 'QMC')
-        plot_no_double_epsilon_l1_distance(RQMC_results, 'RQMC')
+        #plot_no_double_epsilon_l1_distance(RQMC_results, 'RQMC')
         plot_no_double_epsilon_l1_distance(Del_Moral_results, 'Del Moral')
         plot_no_double_epsilon_l1_distance(Sisson_results, 'Sisson')
         plt.yscale('log')
@@ -283,44 +285,38 @@ if True:
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
         plt.ylabel('L1 distance to true posterior')
-        #plt.savefig('l1distance_'+str(N_particles)+'N_variance_epsilon.png')
+        plt.savefig('l1distance_'+str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 
 
-        plt.title('MSE of variance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N:'+str(N_particles))
+        plt.title('MSE of variance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
         plot_no_double_epsilon_variance(MC_results, 'MC')
         plot_no_double_epsilon_variance(QMC_results, 'QMC')
         #plot_no_double_epsilon_variance(RQMC_results, 'RQMC')
         plot_no_double_epsilon_variance(Del_Moral_results, 'Del Moral')
-        #plot_no_double_epsilon_variance(Sisson_results, 'Sisson')
+        plot_no_double_epsilon_variance(Sisson_results, 'Sisson')
         plt.yscale('log')
         plt.xscale('log')
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
         plt.ylabel('MSE times cumulative budget')
-        #plt.savefig('mse_variance_budget'+str(N_particles)+'N_variance_epsilon.png')
+        plt.savefig('mse_variance_budget'+str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 
         pdb.set_trace()
-        plt.title('MSE for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N:'+str(N_particles))
+        plt.title('MSE for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
         plot_no_double_epsilon(MC_results, 'MC')
         plot_no_double_epsilon(QMC_results, 'QMC')
         #plot_no_double_epsilon(RQMC_results, 'RQMC')
         plot_no_double_epsilon(Del_Moral_results, 'Del Moral')
-        #plot_no_double_epsilon(Sisson_results, 'Sisson')
+        plot_no_double_epsilon(Sisson_results, 'Sisson')
 
-        #pdb.set_trace()
-        #plt.plot(MC_results[1][1][0,:,0], (MC_results[1][2][0,:]*MC_results[1][3].mean(axis=0))[:], label="MC")
-        #plt.plot(QMC_results[1][1][0,:,0], (QMC_results[1][2][0,:]*QMC_results[1][3].mean(axis=0))[:], label="QMC")
-        #plt.plot(RQMC_results[1][1][0,:,0], (RQMC_results[1][2][0,:]*RQMC_results[1][3].mean(axis=0))[:], label="RQMC")
-        #plt.plot(Del_Moral_results[1][1][0,:,0], Del_Moral_results[1][2][0,:]*Del_Moral_results[1][3][:,:].mean(axis=0), label="Del Moral")
-        #plt.plot(Sisson_results[1][1][0,:-1,0], (Sisson_results[1][2][0,:]*Sisson_results[1][3].mean(axis=0))[:-1], label="Sisson")
         plt.yscale('log')
         plt.xscale('log')
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
         plt.ylabel('MSE times cumulative budget')
-        #plt.savefig('mse_cum_budget'+str(N_particles)+'N_variance_epsilon.png')
+        plt.savefig('mse_cum_budget'+str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 
 

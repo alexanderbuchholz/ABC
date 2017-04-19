@@ -563,13 +563,13 @@ if __name__ == '__main__':
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
-    #import functions_mixture_model as functions_mixture_model
+    import functions_mixture_model_2 as functions_mixture_model
     #import functions_toggle_switch_model as functions_mixture_model
-    import functions_lotka_volterra_model as functions_mixture_model
+    #import functions_lotka_volterra_model as functions_mixture_model
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 500
-    dim_particles = 3
+    dim_particles = 1
     Time = 100
     dim_auxiliary_var = 2
     augment_M = False
@@ -611,7 +611,7 @@ if __name__ == '__main__':
 
     model_description = model_description+'_'+sampler_type+'_'+propagation_mechanism+'_'+y_simulation
     save = False
-    mixture_components = 20
+    mixture_components = 10
     kernel = gaussian_densities_etc.uniform_kernel
     move_particle =gaussian_densities_etc.gaussian_move
     y_star = functions_mixture_model.f_y_star(dim_particles)

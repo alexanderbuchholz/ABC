@@ -16,6 +16,9 @@ import ipdb as pdb
 import rpy2.robjects.packages as rpackages
 import rpy2.robjects as robjects
 #from numba import jit
+from scipy.stats import multivariate_normal
+from scipy.stats import gaussian_kde
+
 randtoolbox = rpackages.importr('randtoolbox')
 
 model_string = "mixture_gaussians_bimodal"
@@ -109,6 +112,26 @@ def f_y_star(dim=1):
     y_star = simulator(np.array([1.]), fixed_seed=True)
     return y_star
 #y_star = np.array([0,0])
+
+def true_posterior(theta):
+    dim, N = np.atleast_2d(theta).shape
+    #y_star = f_y_star(dim)
+    density = 0.5*multivariate_normal.pdf(theta.transpose(), np.ones(dim), np.eye(dim))+0.5*multivariate_normal.pdf(theta.transpose(), -1*np.ones(dim), np.eye(dim))
+    #pdb.set_trace()
+    if density.shape[0] != N:
+        raise ValueError('error in the dimensions of the input!')
+    return density
+
+def l1_distance(theta):
+    #pdb.set_trace()
+    selector = ~np.isnan(theta)
+    theta = np.atleast_2d(theta[selector])
+    estimated_kde = gaussian_kde(theta)
+    evaluated_kde_points = estimated_kde.evaluate(theta)
+    evaluated_posterior_points = true_posterior(theta)
+    l1_distance_res = np.mean(abs(1-evaluated_posterior_points/evaluated_kde_points))
+    #pdb.set_trace()
+    return l1_distance_res
 
     
 def load_precomputed_data(dim, exponent):

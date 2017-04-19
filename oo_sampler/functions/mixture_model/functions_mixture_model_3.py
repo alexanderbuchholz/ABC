@@ -115,6 +115,8 @@ def true_posterior(theta):
     return density
 
 def l1_distance(theta):
+    selector = ~np.isnan(theta)
+    theta = theta[selector]
     estimated_kde = gaussian_kde(theta)
     evaluated_kde_points = estimated_kde.evaluate(theta)
     evaluated_posterior_points = true_posterior(theta)
