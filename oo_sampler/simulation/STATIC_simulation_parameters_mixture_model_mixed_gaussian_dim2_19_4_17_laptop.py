@@ -156,7 +156,7 @@ quantiles = np.linspace(0.1, 0.01, num=length_quantiles)
 
 array_results_list = []
 sampler_list = ['mc', 'qmc', 'rqmc']
-repetitions = 40
+repetitions = 50
 for sampler in sampler_list:
     del test_sampler.f_initiate_particles
     #pdb.set_trace()
@@ -169,9 +169,9 @@ for sampler in sampler_list:
     else: raise ValueError('error in sampler!')
     array_results = np.zeros((2, length_quantiles, repetitions))
     for k_repetion in range(repetitions):
-        test_sampler.accept_reject_sampler(10000)
+        test_sampler.accept_reject_sampler(100000)
         for j_quantile in range(length_quantiles):
-            posterior = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), epsilon_target_accept_reject=quantiles[j_quantile])
+            posterior = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=quantiles[j_quantile])
             array_results[0, j_quantile, k_repetion] = posterior.mean()
             array_results[1, j_quantile, k_repetion] = posterior.var()
     array_results_list.append(array_results)
@@ -201,11 +201,11 @@ plt.show()
 
 # posterior qmc
 test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_qmc)
-test_sampler.accept_reject_sampler(100000)
+test_sampler.accept_reject_sampler(1000000)
 posterior_qmc = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), epsilon_target_accept_reject=0.01)
 
 test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_mc)
-test_sampler.accept_reject_sampler(100000)
+test_sampler.accept_reject_sampler(1000000)
 posterior_mc = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), epsilon_target_accept_reject=0.01)
 
 plt.title("Posterior distribution for epsilon = 0.01")
