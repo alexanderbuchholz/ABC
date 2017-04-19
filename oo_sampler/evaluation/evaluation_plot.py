@@ -290,11 +290,11 @@ if True:
 
 
         plt.title('MSE of variance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
-        plot_no_double_epsilon_variance(MC_results, 'MC')
-        plot_no_double_epsilon_variance(QMC_results, 'QMC')
-        #plot_no_double_epsilon_variance(RQMC_results, 'RQMC')
-        plot_no_double_epsilon_variance(Del_Moral_results, 'Del Moral')
-        plot_no_double_epsilon_variance(Sisson_results, 'Sisson')
+        plot_no_double_epsilon_variance(MC_results, 'MC', true_variance= simulation_parameters_model.functions_model.var)
+        plot_no_double_epsilon_variance(QMC_results, 'QMC', true_variance= simulation_parameters_model.functions_model.var)
+        #plot_no_double_epsilon_variance(RQMC_results, 'RQMC', true_variance= simulation_parameters_model.functions_model.var)
+        plot_no_double_epsilon_variance(Del_Moral_results, 'Del Moral', true_variance= simulation_parameters_model.functions_model.var)
+        plot_no_double_epsilon_variance(Sisson_results, 'Sisson', true_variance= simulation_parameters_model.functions_model.var)
         plt.yscale('log')
         plt.xscale('log')
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
