@@ -164,7 +164,7 @@ class smc_sampler(object):
             else: 
                 self.accept_reject_selector = self.auxialiary_particles_accept_reject < 10*10
             #pdb.set_trace()
-            self.particles_AR_posterior = self.particles_AR_initial[self.accept_reject_selector]
+            self.particles_AR_posterior = np.atleast_2d(self.particles_AR_initial)[:,self.accept_reject_selector.flatten()]
             self.class_auxialiary_sampler.M_simulator = M_simulator_inter 
             #self.auxialiary_particles[:,:,0] = self.class_auxialiary_sampler.f_auxialiary_sampler(self.particles[:,:,0], **kwargs)
 
@@ -175,6 +175,7 @@ class smc_sampler(object):
         elif percentile is not None:
             #pdb.set_trace()
             accept_reject_selector = precalculated_auxialiary_particles < np.percentile(precalculated_auxialiary_particles, percentile*100)
+        #pdb.set_trace()
         return np.atleast_2d(precalculated_particles)[:, accept_reject_selector]
 
 
@@ -580,28 +581,28 @@ if __name__ == '__main__':
     model_description = functions_mixture_model.model_string
     N_particles = 500
     dim_particles = 3
-    Time = 7
+    Time = 40
     dim_auxiliary_var = 2
-    augment_M = False
+    augment_M = True
     M_incrementer = 2
-    target_ESS_ratio_reweighter = 0.5
-    target_ESS_ratio_resampler = 0.5
+    target_ESS_ratio_reweighter = 0.3
+    target_ESS_ratio_resampler = 0.3
     epsilon_target = functions_mixture_model.epsilon_target(dim_particles)
     contracting_AIS = True
-    M_increase_until_acceptance = False
+    M_increase_until_acceptance = True
     M_target_multiple_N = target_ESS_ratio_reweighter
     covar_factor = 1.2
     #propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
     #sampler_type = 'QMC'
     #y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
-    start_phase_ais = 5
+    start_phase_ais = 40
     truncate_neg_binomial = False
     ancestor_sampling = "False" #"Hilbert"#False#"Hilbert"
     resample = True
     #autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**6
     parallelize = False
-    quantile_target = 0.3
+    quantile_target = 0.8
 
     Del_Moral = False
 
@@ -613,15 +614,15 @@ if __name__ == '__main__':
     else: 
         propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
         sampler_type = 'QMC'
-        y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
-        autochoose_eps = 'quantile_based' # ''ess_based quantile_based
+        y_simulation = 'standard' # 'standard' 'neg_binomial'
+        autochoose_eps = 'ess_based' # ''ess_based quantile_based
 
 
 
 
     model_description = model_description+'_'+sampler_type+'_'+propagation_mechanism+'_'+y_simulation
     save = False
-    mixture_components = 10
+    mixture_components = 5
     kernel = gaussian_densities_etc.uniform_kernel
     move_particle =gaussian_densities_etc.gaussian_move
     y_star = functions_mixture_model.f_y_star(dim_particles)

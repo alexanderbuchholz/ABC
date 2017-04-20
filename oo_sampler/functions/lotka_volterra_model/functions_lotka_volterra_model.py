@@ -40,7 +40,7 @@ def transform_u_to_prior(u):
     function that transform u to the correct prior
     """
     #import pdb; pdb.set_trace()
-    u = u*np.array([8.])+np.array([-2.])
+    u = np.exp(u*np.array([8.])+np.array([-6.]))
     return u
 
 
@@ -71,6 +71,21 @@ def theta_sampler_rqmc(i, dim, n,*args, **kwargs):
     u = transform_u_to_prior(u)
     return u.transpose()
 
+def theta_sampler_qmc(i, dim, n,*args, **kwargs):
+    """
+    rqmc sampler for the prior generation of the tuberculosis example
+    :param i: input counter, needed for rqmc initialisation
+    :return: np.array of size 3, normalized theta
+    """
+    random_seed = random.randrange(10**9)
+
+    u = np.array(randtoolbox.sobol(n=n, dim=dim, init=(i==0), scrambling=0, seed=random_seed)) # randtoolbox for sobol sequence
+    # sample gamma dist, theta1 is birth event proba
+    #print u
+    u = transform_u_to_prior(u)
+    return u.transpose()
+
+
 def delta(y_star, y):
     """
     Function to calculate the distance function of y and y star for the acceptance step
@@ -85,14 +100,16 @@ def exclude_theta(theta_prop):
     """
     function that excludes the theta values if not within the prior range
     """
+    
     alpha1 = theta_prop[0]
     alpha2 = theta_prop[1]
     alpha3 = theta_prop[2]
-    if np.array([alpha1 < np.exp(-2), alpha1 > np.exp(6)]).any():
+    if np.array([alpha1 < np.exp(-6), alpha1 > np.exp(2)]).any():
+        #import pdb; pdb.set_trace()
         return 0
-    if np.array([alpha2 < np.exp(-2), alpha2 > np.exp(6)]).any():
+    if np.array([alpha2 < np.exp(-6), alpha2 > np.exp(2)]).any():
         return 0
-    if np.array([alpha3 < np.exp(-2), alpha3 > np.exp(6)]).any():
+    if np.array([alpha3 < np.exp(-6), alpha3 > np.exp(2)]).any():
         return 0
     else: return 1
 
@@ -134,7 +151,7 @@ def precompute_save_data(exponent, dim):
 
 def epsilon_target(dim):
     if dim == 3:
-        return 10
+        return 500
     else:
         raise ValueError('epsilon_target not available for the chosen dimension')
     
