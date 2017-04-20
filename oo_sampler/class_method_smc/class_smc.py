@@ -573,14 +573,14 @@ if __name__ == '__main__':
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
-    import functions_mixture_model_2 as functions_mixture_model
+    #import functions_mixture_model_2 as functions_mixture_model
     #import functions_toggle_switch_model as functions_mixture_model
-    #import functions_lotka_volterra_model as functions_mixture_model
+    import functions_lotka_volterra_model as functions_mixture_model
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 500
-    dim_particles = 1
-    Time = 100
+    dim_particles = 3
+    Time = 7
     dim_auxiliary_var = 2
     augment_M = False
     M_incrementer = 2
@@ -711,10 +711,10 @@ if __name__ == '__main__':
         pdb.set_trace()
 
     #pdb.set_trace()
-    #import yappi
-    #yappi.start()
+    import yappi
+    yappi.start()
     test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)
-    #yappi.get_func_stats().print_all()
+    yappi.get_func_stats().print_all()
 
     pdb.set_trace()
     print(functions_mixture_model.l1_distance(test_sampler.particles[:,:,-1]))
