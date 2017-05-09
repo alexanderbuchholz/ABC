@@ -14,7 +14,7 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/class_method_smc")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
 
-path = "/media/alex/Transcend/ABC_results_storage/simulation_results_18-4-17"
+path = "/media/alex/Transcend/ABC_results_storage/simulation_results_9_5_17"
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
 import functions_mixture_model as functions_model
@@ -154,79 +154,84 @@ test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_rqmc)
 length_quantiles = 20
 quantiles = np.linspace(0.1, 0.005, num=length_quantiles)
 
-array_results_list = []
+
 sampler_list = ['mc', 'qmc', 'rqmc']
 repetitions = 50
-for sampler in sampler_list:
-    del test_sampler.f_initiate_particles
-    #pdb.set_trace()
-    if sampler == 'mc':
-        test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_mc)
-    elif sampler == 'qmc':
-        test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_qmc)
-    elif sampler == 'rqmc':
-        test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_rqmc)
-    else: raise ValueError('error in sampler!')
-    array_results = np.zeros((2, length_quantiles, repetitions))
-    for k_repetion in range(repetitions):
-        test_sampler.accept_reject_sampler(100000)
-        for j_quantile in range(length_quantiles):
-            posterior = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=quantiles[j_quantile])
-            array_results[0, j_quantile, k_repetion] = posterior.mean()
-            array_results[1, j_quantile, k_repetion] = posterior.var()
-    array_results_list.append(array_results)
-
+#pdb.set_trace()
 from matplotlib import pyplot as plt
-import matplotlib
-matplotlib.rcParams.update({'font.size': 22})
-plt = matplotlib.pyplot
-plt.hist(array_results_list[0][0,0,:]); plt.show()
-pdb.set_trace()
+plt.figure()
+import pickle
+dim_list = range(1,6)
+N_particles = 10**6
+import os
+os.chdir(path)
+for dim_particles in dim_list:
+    array_results_list = []
+    for sampler in sampler_list:
+        test_sampler.dim_particles = dim_particles
+        del test_sampler.f_initiate_particles
+        #pdb.set_trace()
+        if sampler == 'mc':
+            test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_mc)
+        elif sampler == 'qmc':
+            test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_qmc)
+        elif sampler == 'rqmc':
+            test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_rqmc)
+        else: raise ValueError('error in sampler!')
+        array_results = np.zeros((2, length_quantiles, repetitions, dim_particles))
+        for k_repetion in range(repetitions):
+            test_sampler.accept_reject_sampler(N_particles)
+            for j_quantile in range(length_quantiles):
+                posterior = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=quantiles[j_quantile])
+                #pdb.set_trace()
+                array_results[0, j_quantile, k_repetion, :] = posterior.mean(axis=1)
+                array_results[1, j_quantile, k_repetion, :] = posterior.var(axis=1)
+        array_results_list.append(array_results)
+    pickle.dump(array_results_list, open("static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "wb") )
+    #pdb.set_trace()
 
-plt.title("Variance of the variance estimator", fontsize=18)
-plt.plot(quantiles, array_results_list[0].var(axis=2)[1,:], label="MC", linewidth=3)
-plt.plot(quantiles, array_results_list[1].var(axis=2)[1,:], label="QMC", linewidth=3)
-plt.plot(quantiles, array_results_list[2].var(axis=2)[1,:], label="RQMC", linewidth=3)
-plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
-plt.yscale('log')
-plt.legend(fontsize=14)
-plt.savefig("variance_of_variance_estimator.png")
-plt.show()
+
+    plt.title("Variance of the variance estimator, dimension "+str(dim_particles), fontsize=18)
+    plt.plot(quantiles, array_results_list[0].var(axis=2).sum(axis=2)[1,:], label="MC", linewidth=3)
+    plt.plot(quantiles, array_results_list[1].var(axis=2).sum(axis=2)[1,:], label="QMC", linewidth=3)
+    plt.plot(quantiles, array_results_list[2].var(axis=2).sum(axis=2)[1,:], label="RQMC", linewidth=3)
+    plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
+    plt.yscale('log')
+    plt.legend(fontsize=14)
+    plt.savefig("variance_of_variance_estimator_dim"+str(dim_particles)+".png")
+    plt.clf()
 
 
-plt.title("Variance of the mean estimator", fontsize=18)
-plt.plot(quantiles, array_results_list[0].var(axis=2)[0,:], label="MC", linewidth=3)
-plt.plot(quantiles, array_results_list[1].var(axis=2)[0,:], label="QMC", linewidth=3)
-plt.plot(quantiles, array_results_list[2].var(axis=2)[0,:], label="RQMC", linewidth=3)
-plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
-plt.yscale('log')
-plt.legend(fontsize=14)
-plt.savefig("variance_of_mean_estimator.png")
-plt.show()
+    plt.title("Variance of the mean estimator, dimension "+str(dim_particles), fontsize=18)
+    plt.plot(quantiles, array_results_list[0].var(axis=2).sum(axis=2)[0,:], label="MC", linewidth=3)
+    plt.plot(quantiles, array_results_list[1].var(axis=2).sum(axis=2)[0,:], label="QMC", linewidth=3)
+    plt.plot(quantiles, array_results_list[2].var(axis=2).sum(axis=2)[0,:], label="RQMC", linewidth=3)
+    plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
+    plt.yscale('log')
+    plt.legend(fontsize=14)
+    plt.savefig("variance_of_mean_estimator_dim"+str(dim_particles)+".png")
+    plt.clf()
 
 # posterior qmc
-test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_qmc)
-test_sampler.accept_reject_sampler(1000000)
-posterior_qmc = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), epsilon_target_accept_reject=0.01)
+if False:
+    test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_qmc)
+    test_sampler.accept_reject_sampler(1000000)
+    posterior_qmc = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), epsilon_target_accept_reject=0.01)
 
-test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_mc)
-test_sampler.accept_reject_sampler(1000000)
-posterior_mc = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), epsilon_target_accept_reject=0.01)
+    test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_mc)
+    test_sampler.accept_reject_sampler(1000000)
+    posterior_mc = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), epsilon_target_accept_reject=0.01)
 
-plt.title("Posterior distribution for $\epsilon$ = 0.01", fontsize=18)
-plt.xlabel('theta', fontsize=14); plt.ylabel('density', fontsize=14); 
-sns.distplot(posterior_mc.flatten(), label="MC posterior")
-sns.distplot(posterior_qmc.flatten(), label="QMC posterior")
-plt.legend(fontsize=14)
-plt.savefig("posterior_distribution_mixed_gaussian.png")
-plt.show()
+    plt.title("Posterior distribution for $\epsilon$ = 0.01", fontsize=18)
+    plt.xlabel('theta', fontsize=14); plt.ylabel('density', fontsize=14); 
+    sns.distplot(posterior_mc.flatten(), label="MC posterior")
+    sns.distplot(posterior_qmc.flatten(), label="QMC posterior")
+    plt.legend(fontsize=14)
+    plt.savefig("posterior_distribution_mixed_gaussian.png")
+    plt.show()
 
-#import yappi
-#yappi.start()
-#test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)
-#yappi.get_func_stats().print_all()
-
-pdb.set_trace()
-pdb.set_trace()
-
+    #import yappi
+    #yappi.start()
+    #test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)
+    #yappi.get_func_stats().print_all()
 

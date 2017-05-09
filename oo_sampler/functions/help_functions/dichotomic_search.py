@@ -4,8 +4,8 @@ Created on Mon Nov 21 21:09:15 2016
 
 @author: alex
 """
-import numpy as np
-def f_dichotomic_search(intervall, function, N_max_steps=100, tolerance=0.0000001):
+import numpy as np	
+def f_dichotomic_search(intervall, function, N_max_steps=10000, tolerance=0.000001):
     """
         function that does a dichotomic for the root of a function
     """
@@ -38,6 +38,16 @@ def f_dichotomic_search(intervall, function, N_max_steps=100, tolerance=0.000000
 
 if __name__ =="__main__":
     intervall = np.array([-10.,10.])
-    def test_function(x):
-        return x**3
-    print f_dichotomic_search(intervall, test_function)
+    def test_function1(x):
+        return(x-2.)*(x-11.)*(x+12.)
+    def test_function2(x):
+        return(-3.*x+5)
+    def test_function3(x):
+        return(-3.+np.exp(x))
+    def test_function4(x):
+        return(5.-np.exp(x))
+
+    print f_dichotomic_search(intervall, test_function1)
+    print f_dichotomic_search(intervall, test_function2)
+    print f_dichotomic_search(intervall, test_function3)
+    print f_dichotomic_search(intervall, test_function4)
