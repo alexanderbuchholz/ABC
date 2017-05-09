@@ -162,7 +162,7 @@ class smc_sampler(object):
             elif percentile is not None: 
                 self.accept_reject_selector = self.auxialiary_particles_accept_reject < np.percentile(self.auxialiary_particles_accept_reject, percentile*100)
             else: 
-                self.accept_reject_selector = self.auxialiary_particles_accept_reject < 10*10
+                self.accept_reject_selector = self.auxialiary_particles_accept_reject < 10**10
             #pdb.set_trace()
             self.particles_AR_posterior = np.atleast_2d(self.particles_AR_initial)[:,self.accept_reject_selector.flatten()]
             self.class_auxialiary_sampler.M_simulator = M_simulator_inter 
