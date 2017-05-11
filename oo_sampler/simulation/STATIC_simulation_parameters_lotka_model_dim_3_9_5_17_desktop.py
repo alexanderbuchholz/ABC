@@ -45,7 +45,7 @@ filename = functions_model.model_string+'_negative_binomial_uniform_kernel_1_VB_
 
 #import plot_bivariate_scatter_hist
 import matplotlib.pyplot as plt
-#import seaborn as sns
+import seaborn as sns
 import pandas as pd
 import sys
 model_description = functions_model.model_string
@@ -160,70 +160,90 @@ N_particles = 10**5
 dim_particles = 3
 import os
 #os.chdir(path)
-array_results_list = []
-for sampler in sampler_list:
-    test_sampler.dim_particles = dim_particles
-    del test_sampler.f_initiate_particles
-    #pdb.set_trace()
-    if sampler == 'mc':
-        test_sampler.setInitiationFunction(functions_model.theta_sampler_mc)
-    elif sampler == 'qmc':
-        test_sampler.setInitiationFunction(functions_model.theta_sampler_qmc)
-    elif sampler == 'rqmc':
-        test_sampler.setInitiationFunction(functions_model.theta_sampler_rqmc)
-    else: raise ValueError('error in sampler!')
-    array_results = np.zeros((2, length_quantiles, repetitions, dim_particles))
-    for k_repetion in range(repetitions):
-        test_sampler.accept_reject_sampler(N_particles)
-        for j_quantile in range(length_quantiles):
-            posterior = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=quantiles[j_quantile])
-            #pdb.set_trace()
-            array_results[0, j_quantile, k_repetion, :] = posterior.mean(axis=1)
-            array_results[1, j_quantile, k_repetion, :] = posterior.var(axis=1)
-    array_results_list.append(array_results)
-pickle.dump(array_results_list, open(functions_model.model_string+"static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "wb") )
-pdb.set_trace()
+if False:
+    array_results_list = []
+    for sampler in sampler_list:
+        test_sampler.dim_particles = dim_particles
+        del test_sampler.f_initiate_particles
+        #pdb.set_trace()
+        if sampler == 'mc':
+            test_sampler.setInitiationFunction(functions_model.theta_sampler_mc)
+        elif sampler == 'qmc':
+            test_sampler.setInitiationFunction(functions_model.theta_sampler_qmc)
+        elif sampler == 'rqmc':
+            test_sampler.setInitiationFunction(functions_model.theta_sampler_rqmc)
+        else: raise ValueError('error in sampler!')
+        array_results = np.zeros((2, length_quantiles, repetitions, dim_particles))
+        for k_repetion in range(repetitions):
+            test_sampler.accept_reject_sampler(N_particles)
+            for j_quantile in range(length_quantiles):
+                posterior = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=quantiles[j_quantile])
+                #pdb.set_trace()
+                array_results[0, j_quantile, k_repetion, :] = posterior.mean(axis=1)
+                array_results[1, j_quantile, k_repetion, :] = posterior.var(axis=1)
+        array_results_list.append(array_results)
+    pickle.dump(array_results_list, open(functions_model.model_string+"static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "wb") )
+    pdb.set_trace()
 
 
-plt.title("Variance of the variance estimator, dimension "+str(dim_particles), fontsize=18)
-plt.plot(quantiles, array_results_list[0].var(axis=2).sum(axis=2)[1,:], label="MC", linewidth=3)
-plt.plot(quantiles, array_results_list[1].var(axis=2).sum(axis=2)[1,:], label="QMC", linewidth=3)
-plt.plot(quantiles, array_results_list[2].var(axis=2).sum(axis=2)[1,:], label="RQMC", linewidth=3)
-plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
-plt.yscale('log')
-plt.legend(fontsize=14)
-plt.savefig(functions_model.model_string+"variance_of_variance_estimator_dim"+str(dim_particles)+".png")
-plt.clf()
+    plt.title("Variance of the variance estimator, dimension "+str(dim_particles), fontsize=18)
+    plt.plot(quantiles, array_results_list[0].var(axis=2).sum(axis=2)[1,:], label="MC", linewidth=3)
+    plt.plot(quantiles, array_results_list[1].var(axis=2).sum(axis=2)[1,:], label="QMC", linewidth=3)
+    plt.plot(quantiles, array_results_list[2].var(axis=2).sum(axis=2)[1,:], label="RQMC", linewidth=3)
+    plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
+    plt.yscale('log')
+    plt.legend(fontsize=14)
+    plt.savefig(functions_model.model_string+"variance_of_variance_estimator_dim"+str(dim_particles)+".png")
+    plt.clf()
 
 
-plt.title("Variance of the mean estimator, dimension "+str(dim_particles), fontsize=18)
-plt.plot(quantiles, array_results_list[0].var(axis=2).sum(axis=2)[0,:], label="MC", linewidth=3)
-plt.plot(quantiles, array_results_list[1].var(axis=2).sum(axis=2)[0,:], label="QMC", linewidth=3)
-plt.plot(quantiles, array_results_list[2].var(axis=2).sum(axis=2)[0,:], label="RQMC", linewidth=3)
-plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
-plt.yscale('log')
-plt.legend(fontsize=14)
-plt.savefig(functions_model.model_string+"variance_of_mean_estimator_dim"+str(dim_particles)+".png")
-plt.clf()
+    plt.title("Variance of the mean estimator, dimension "+str(dim_particles), fontsize=18)
+    plt.plot(quantiles, array_results_list[0].var(axis=2).sum(axis=2)[0,:], label="MC", linewidth=3)
+    plt.plot(quantiles, array_results_list[1].var(axis=2).sum(axis=2)[0,:], label="QMC", linewidth=3)
+    plt.plot(quantiles, array_results_list[2].var(axis=2).sum(axis=2)[0,:], label="RQMC", linewidth=3)
+    plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
+    plt.yscale('log')
+    plt.legend(fontsize=14)
+    plt.savefig(functions_model.model_string+"variance_of_mean_estimator_dim"+str(dim_particles)+".png")
+    plt.clf()
 
 # posterior qmc
-if False:
+if True:
     test_sampler.setInitiationFunction(functions_model.theta_sampler_qmc)
-    test_sampler.accept_reject_sampler(1000000)
-    posterior_qmc = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), epsilon_target_accept_reject=0.01)
+    test_sampler.accept_reject_sampler(N_particles)
+    posterior_qmc = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=0.001)
 
     test_sampler.setInitiationFunction(functions_model.theta_sampler_mc)
-    test_sampler.accept_reject_sampler(1000000)
-    posterior_mc = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), epsilon_target_accept_reject=0.01)
+    test_sampler.accept_reject_sampler(N_particles)
+    posterior_mc = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=0.001)
 
-    plt.title("Posterior distribution for $\epsilon$ = 0.01", fontsize=18)
-    plt.xlabel('theta', fontsize=14); plt.ylabel('density', fontsize=14); 
-    sns.distplot(posterior_mc.flatten(), label="MC posterior")
-    sns.distplot(posterior_qmc.flatten(), label="QMC posterior")
+    
+    pdb.set_trace()
+    import pandas as pd
+    #from pandas.plotting import scatter_matrix
+    df_mc = pd.DataFrame(posterior_mc.transpose(), columns=['1', '2', '3'])
+    df_mc['type'] = 'mc'
+    df_qmc = pd.DataFrame(posterior_qmc.transpose(), columns=['1', '2', '3'])
+    df_qmc['type'] = 'qmc'
+    frames = [df_mc, df_qmc]
+    result = pd.concat(frames)
+    sns.pairplot(df_mc); plt.show()
+    sns.pairplot(df_qmc); plt.show()
+    sns.pairplot(result, hue='type', palette="husl", plot_kws={"s":40, "alpha":.5,'lw':1, 'edgecolor':'k'}); plt.show()
+
+    pdb.set_trace()
+    '''g = sns.PairGrid(df_qmc)
+    g.map_diag(sns.kdeplot)
+    g.map_offdiag(sns.kdeplot, cmap="Blues_d", n_levels=6)
+
+    sns.kdeplot(posterior_mc[0,:], posterior_mc[1,:], label="MC posterior", cmap="Reds", shade=True, shade_lowest=False)
+    sns.kdeplot(posterior_qmc[0,:], posterior_qmc[1,:], label="QMC posterior", cmap="Blues", shade=True, shade_lowest=False)
+    sns.jointplot(x=posterior_mc[0,:], y=posterior_mc[1,:], kind="kde")
+
     plt.legend(fontsize=14)
     plt.savefig("posterior_distribution_mixed_gaussian.png")
     plt.show()
-
+'''
     #import yappi
     #yappi.start()
     #test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)
