@@ -24,7 +24,7 @@ sys.path.append(root_path+"/ABC/oo_sampler/functions/help_functions")
 sys.path.append(root_path+"/ABC/oo_sampler/functions/parallelize")
 
 
-path = "/media/alex/Transcend/ABC_results_storage/simulation_results_12_5_17"
+path = "/simulation_results_12_5_17_tuberculosis"
 import gaussian_densities_etc
 import functions_tuberculosis_model as functions_model
 #import functions_mixture_model as functions_model
@@ -201,7 +201,7 @@ if True:
         list_repetitions = range(repetitions)
         result_inter = functions_parallelize.parallelize_partial_over_chunks(partial_parallel_sampler, list_repetitions)
         results_list[sampler] = result_inter
-        pdb.set_trace()
+        #pdb.set_trace()
     pickle.dump(results_list, open(functions_model.model_string+"means_static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "wb") )
     #pickle.dump(array_results_list_posterior_distance, open(functions_model.model_string+"particles_distances_static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "wb") )
     #pdb.set_trace()
