@@ -10,16 +10,18 @@ import numpy as np
 import sys
 import ipdb as pdb
 
+root_path = "/home/alex/python_programming"
 
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/class_method_smc")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/toggle_switch_model")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/alpha_stable_model")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/lotka_volterra_model")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
+sys.path.append(root_path+"/ABC/oo_sampler/class_method_smc")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/help_functions")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/mixture_model")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/mixture_model")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/toggle_switch_model")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/tuberculosis_model")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/alpha_stable_model")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/lotka_volterra_model")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/help_functions")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/parallelize")
 
 
 path = "/media/alex/Transcend/ABC_results_storage/simulation_results_12_5_17"
@@ -147,7 +149,7 @@ quantiles = np.linspace(0.1, 0.005, num=length_quantiles)
 
 
 sampler_list = ['mc', 'qmc', 'rqmc']
-repetitions = 8
+repetitions = 4
 #pdb.set_trace()
 from matplotlib import pyplot as plt
 #plt.figure()
@@ -156,6 +158,7 @@ N_particles = 10**2
 dim_particles = 2
 import os
 #os.chdir(path)
+import functions_parallelize
 
 def parallel_sampler(iter, test_sampler, N_particles, quantiles):
     """
@@ -180,24 +183,6 @@ def parallel_sampler(iter, test_sampler, N_particles, quantiles):
     return(results)
 
 
-from multiprocessing import Process, Pipe
-from itertools import izip
-import multiprocessing
-
-def spawn(f):
-    def fun(pipe,x):
-        pipe.send(f(x))
-        pipe.close()
-    return fun
-
-def parmap(f,X):
-    pipe=[Pipe() for x in X]
-    proc=[Process(target=spawn(f),args=(c,x)) for x,(p,c) in izip(X,pipe)]
-    [p.start() for p in proc]
-    [p.join() for p in proc]
-    return [p.recv() for (p,c) in pipe]
-
-
 if True:
     results_list = {}
     for sampler in sampler_list:
@@ -212,19 +197,11 @@ if True:
         elif sampler == 'rqmc':
             test_sampler.setInitiationFunction(functions_model.theta_sampler_rqmc)
         else: raise ValueError('error in sampler!')
-        array_results = np.zeros((2, length_quantiles, repetitions, dim_particles))
-        array_results_posterior_distance_sampler = []
         partial_parallel_sampler = partial(parallel_sampler, test_sampler=test_sampler, N_particles=N_particles, quantiles=quantiles)
-        NUM_CORES = multiprocessing.cpu_count()
-        #pdb.set_trace()
         list_repetitions = range(repetitions)
-        chunks = [list_repetitions[i:i + NUM_CORES] for i in range(0, len(list_repetitions), NUM_CORES)] 
-        for chunk in chunks:
-            F_results = parmap(partial_parallel_sampler, chunks)
-            results_list_intra_sampler.append(F_results)
-        # unlists the results and puts them in one list
-        results_list[sampler] = [item for sublist in results_list_intra_sampler for item in sublist]
-        #pdb.set_trace()
+        result_inter = functions_parallelize.parallelize_partial_over_chunks(partial_parallel_sampler, list_repetitions)
+        results_list[sampler] = result_inter
+        pdb.set_trace()
     pickle.dump(results_list, open(functions_model.model_string+"means_static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "wb") )
     #pickle.dump(array_results_list_posterior_distance, open(functions_model.model_string+"particles_distances_static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "wb") )
     #pdb.set_trace()
