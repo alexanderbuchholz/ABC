@@ -24,7 +24,7 @@ sys.path.append(root_path+"/ABC/oo_sampler/functions/help_functions")
 sys.path.append(root_path+"/ABC/oo_sampler/functions/parallelize")
 
 
-path = "/simulation_results_12_5_17_tuberculosis"
+path = root_path+"/simulation_results_12_5_17_tuberculosis"
 import gaussian_densities_etc
 import functions_tuberculosis_model as functions_model
 #import functions_mixture_model as functions_model
