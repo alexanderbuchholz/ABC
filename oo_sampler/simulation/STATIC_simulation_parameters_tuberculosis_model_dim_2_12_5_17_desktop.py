@@ -5,6 +5,7 @@ Created on Mon Jan  9 09:26:07 2017
 @author: alex
 Simulation started on friday 15:45 20.1.2017
 """
+from functools import partial
 import numpy as np
 import sys
 import ipdb as pdb
@@ -21,23 +22,18 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/lotka_vo
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
 
 
-path = "/media/alex/Transcend/ABC_results_storage/simulation_results_9_5_17"
+path = "/media/alex/Transcend/ABC_results_storage/simulation_results_12_5_17"
 import gaussian_densities_etc
-#import functions_tuberculosis_model as functions_model
+import functions_tuberculosis_model as functions_model
 #import functions_mixture_model as functions_model
-import functions_lotka_volterra_model as functions_model
+#import functions_lotka_volterra_model as functions_model
 from class_smc import smc_sampler
 import functions_propagate_reweight_resample
 
 Time = 600
-dim_particles = 3
+dim_particles = 2
 repetitions = 4
-N_particles = 10000
-target_ESS_ratio_resampler = 0.3
-target_ESS_ratio_reweighter = 0.3
-epsilon_target = functions_model.epsilon_target(dim_particles) #0.001 #0.25
-
-K_repetitions = range(repetitions)
+N_particles = 10
 #filename = functions_model.model_string+'_dim_'+str(dim_particles)+'_adaptive_M_autochoose_eps_gaussian_kernel'
 filename = functions_model.model_string+'_negative_binomial_uniform_kernel_1_VB_component_fixed_epsilon_schedule_algo_only_dim3'
 
@@ -151,21 +147,64 @@ quantiles = np.linspace(0.1, 0.005, num=length_quantiles)
 
 
 sampler_list = ['mc', 'qmc', 'rqmc']
-repetitions = 50
+repetitions = 8
 #pdb.set_trace()
 from matplotlib import pyplot as plt
 #plt.figure()
 import pickle
-N_particles = 10**5
-dim_particles = 3
+N_particles = 10**2
+dim_particles = 2
 import os
 #os.chdir(path)
-if False:
-    array_results_list = []
+
+def parallel_sampler(iter, test_sampler, N_particles, quantiles):
+    """
+    the function that will be parallelized 
+    """
+    test_sampler.accept_reject_sampler(N_particles)
+    particles = test_sampler.particles_AR_posterior
+    distances = test_sampler.auxialiary_particles_accept_reject
+    results = {}
+    results['particles'] = particles
+    results['distances'] = distances
+    means_list = []
+    vars_list = []
+    for j_quantile in range(length_quantiles):
+        posterior = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=quantiles[j_quantile])
+        #pdb.set_trace()
+        means_list.append(posterior.mean(axis=1))
+        vars_list.append(np.cov(posterior))
+    results['means'] = means_list
+    results['vars'] = vars_list
+    results['quantiles'] = quantiles
+    return(results)
+
+
+from multiprocessing import Process, Pipe
+from itertools import izip
+import multiprocessing
+
+def spawn(f):
+    def fun(pipe,x):
+        pipe.send(f(x))
+        pipe.close()
+    return fun
+
+def parmap(f,X):
+    pipe=[Pipe() for x in X]
+    proc=[Process(target=spawn(f),args=(c,x)) for x,(p,c) in izip(X,pipe)]
+    [p.start() for p in proc]
+    [p.join() for p in proc]
+    return [p.recv() for (p,c) in pipe]
+
+
+if True:
+    results_list = {}
     for sampler in sampler_list:
         test_sampler.dim_particles = dim_particles
         del test_sampler.f_initiate_particles
         #pdb.set_trace()
+        results_list_intra_sampler = []
         if sampler == 'mc':
             test_sampler.setInitiationFunction(functions_model.theta_sampler_mc)
         elif sampler == 'qmc':
@@ -174,17 +213,23 @@ if False:
             test_sampler.setInitiationFunction(functions_model.theta_sampler_rqmc)
         else: raise ValueError('error in sampler!')
         array_results = np.zeros((2, length_quantiles, repetitions, dim_particles))
-        for k_repetion in range(repetitions):
-            test_sampler.accept_reject_sampler(N_particles)
-            for j_quantile in range(length_quantiles):
-                posterior = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=quantiles[j_quantile])
-                #pdb.set_trace()
-                array_results[0, j_quantile, k_repetion, :] = posterior.mean(axis=1)
-                array_results[1, j_quantile, k_repetion, :] = posterior.var(axis=1)
-        array_results_list.append(array_results)
-    pickle.dump(array_results_list, open(functions_model.model_string+"static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "wb") )
-    pdb.set_trace()
+        array_results_posterior_distance_sampler = []
+        partial_parallel_sampler = partial(parallel_sampler, test_sampler=test_sampler, N_particles=N_particles, quantiles=quantiles)
+        NUM_CORES = multiprocessing.cpu_count()
+        #pdb.set_trace()
+        list_repetitions = range(repetitions)
+        chunks = [list_repetitions[i:i + NUM_CORES] for i in range(0, len(list_repetitions), NUM_CORES)] 
+        for chunk in chunks:
+            F_results = parmap(partial_parallel_sampler, chunks)
+            results_list_intra_sampler.append(F_results)
+        # unlists the results and puts them in one list
+        results_list[sampler] = [item for sublist in results_list_intra_sampler for item in sublist]
+        #pdb.set_trace()
+    pickle.dump(results_list, open(functions_model.model_string+"means_static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "wb") )
+    #pickle.dump(array_results_list_posterior_distance, open(functions_model.model_string+"particles_distances_static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "wb") )
+    #pdb.set_trace()
 
+if False:
 
     plt.title("Variance of the variance estimator, dimension "+str(dim_particles), fontsize=18)
     plt.plot(quantiles, array_results_list[0].var(axis=2).sum(axis=2)[1,:], label="MC", linewidth=3)

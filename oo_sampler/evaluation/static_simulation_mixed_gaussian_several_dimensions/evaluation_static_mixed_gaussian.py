@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 import ipdb as pdb
 import numpy as np
 
-dim_max = 4
+dim_max = 8
 mc_results = np.zeros((dim_max, 2, 50))
 qmc_results = np.zeros((dim_max, 2, 50))
 rqmc_results = np.zeros((dim_max, 2, 50))

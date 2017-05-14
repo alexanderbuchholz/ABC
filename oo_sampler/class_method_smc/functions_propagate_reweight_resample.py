@@ -58,7 +58,7 @@ class simulator_sampler():
         """
         parallel simulation
         we directly return the value of the distance, this is a scalar !
-        return the two smallest distances that are below the threshold and 
+        return the two smallest distances that are below the threshold and
         the number of tries necessary
         """
         pdb.set_trace()
@@ -89,7 +89,7 @@ class simulator_sampler():
         #pdb.set_trace()
         return aux_particles_indvidual, aux_particles_tries_until_success
 
-    def f_negative_binomial_race(self, particles, epsilon_target, quantile_target_negative_binomial=0.99, n_successfull_tries=2):
+    def f_negative_binomial_race(self, particles, epsilon_target, quantile_target_negative_binomial=0.95, n_successfull_tries=2):
         """
         """
         N_particles = particles.shape[1]

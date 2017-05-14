@@ -20,7 +20,7 @@ import random
 #from numba import jit
 from simulator_p import simulator
 randtoolbox = rpackages.importr('randtoolbox')
-StableEstim = rpackages.importr('StableEstim')
+#StableEstim = rpackages.importr('StableEstim')
 
 model_string = "tuberculosis_model"
 
