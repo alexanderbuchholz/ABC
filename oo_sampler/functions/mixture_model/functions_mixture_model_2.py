@@ -18,11 +18,11 @@ import rpy2.robjects as robjects
 #from numba import jit
 from scipy.stats import multivariate_normal
 from scipy.stats import gaussian_kde
-
+import ot
 randtoolbox = rpackages.importr('randtoolbox')
 
 model_string = "mixture_gaussians_bimodal"
-dim = 1
+dim = 2
 exponent = 6
 #path_archive_simulations = '/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model'
 path_archive_simulations = '/home/alex/python_programming/ABC_results_storage/models_information'
@@ -45,9 +45,7 @@ def simulator(theta, fixed_seed=False):
         y1 = np.random.multivariate_normal(mean= -np.atleast_1d(theta.squeeze()), cov = np.identity(theta.shape[0]), size=50)
         y2 = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = np.identity(theta.shape[0]), size=50)
         y = np.vstack((y1,y2))
-        q75, q25 = np.percentile(y, [75 ,25])
-        iqr = q75 - q25
-        return iqr
+        return y
 
 
 
@@ -100,8 +98,14 @@ def delta(y_star, y):
     :param y: simulated data
     :return: returns float difference according to distance function
     """
-    dif_y = np.linalg.norm(y_star-y)
-    return(dif_y)
+
+
+    N = y.shape[0]
+    M=ot.dist(y_star, y)
+    M/=M.max()
+    a,b = ot.unif(N),ot.unif(N)
+    G0=ot.emd2(a, b, M)
+    return(G0)
 
 def exclude_theta(theta_prop):
     """
@@ -122,9 +126,9 @@ def check_consistency_theta(theta_prop):
 #y_star = np.array([0,0])
 def f_y_star(dim=1):
     #pdb.set_trace()
-    if dim != 1:
-        raise ValueError("dimension needs to be 1 !")
-    y_star = simulator(np.array([1.]), fixed_seed=True)
+    #if dim != 1:
+    #    raise ValueError("dimension needs to be 1 !")
+    y_star = simulator(np.ones(dim), fixed_seed=True)
     return y_star
 #y_star = np.array([0,0])
 
@@ -148,7 +152,6 @@ def l1_distance(theta):
     #pdb.set_trace()
     return l1_distance_res
 
-    
 def load_precomputed_data(dim, exponent):
     import os
     current_path = os.getcwd()
@@ -177,7 +180,7 @@ def epsilon_target(dim):
         raise ValueError('epsilon target not available')
 
 if __name__ == '__main__':
-    precompute_values = False
+    precompute_values = True
     if precompute_values:
         precompute_save_data(exponent, dim)
     if True:

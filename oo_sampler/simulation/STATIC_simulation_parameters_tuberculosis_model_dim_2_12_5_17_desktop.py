@@ -149,12 +149,12 @@ quantiles = np.linspace(0.1, 0.005, num=length_quantiles)
 
 
 sampler_list = ['mc', 'qmc', 'rqmc']
-repetitions = 4
+repetitions = 8
 #pdb.set_trace()
 from matplotlib import pyplot as plt
 #plt.figure()
 import pickle
-N_particles = 10**2
+N_particles = 10**6
 dim_particles = 2
 import os
 #os.chdir(path)

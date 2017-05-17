@@ -11,11 +11,18 @@ def spawn(f):
     return fun
 
 def parmap(f,X):
+    results_list = []
     pipe=[Pipe() for x in X]
     proc=[Process(target=spawn(f),args=(c,x)) for x,(p,c) in izip(X,pipe)]
+    #import ipdb; ipdb.set_trace()
+    #import ipdb; ipdb.set_trace()
     [p.start() for p in proc]
+    for (p,c) in pipe:
+        results_list.append(p.recv())
     [p.join() for p in proc]
-    return [p.recv() for (p,c) in pipe]
+    #[p.terminate() for p in proc]
+    
+    return results_list
 
 def parallelize_partial_over_chunks(partial_parallel_sampler, list_repetitions):
     NUM_CORES = multiprocessing.cpu_count()

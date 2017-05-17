@@ -7,10 +7,11 @@ functions that define how to propagate, reweight and resample
 import numpy as np
 import ipdb as pdb
 import sys
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions")
-sys.path.append("/home/alex/python_programming/ABC/help_functions")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/hilbert")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/propagater_smc/VB")
+root_path = "/home/alex/python_programming"
+sys.path.append(root_path+"/ABC/oo_sampler/functions")
+sys.path.append(root_path+"/ABC/help_functions")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/hilbert")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/propagater_smc/VB")
 import f_rand_seq_gen
 import gaussian_densities_etc
 import function_vb_class_sampler

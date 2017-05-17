@@ -12,7 +12,8 @@ import ipdb as pdb
 import time
 from scipy.stats import multivariate_normal
 import sys
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
+root_path = "/home/alex/python_programming"
+sys.path.append(root_path+"/ABC/oo_sampler/functions/help_functions")
 import gaussian_densities_etc
 import functions_propagate_reweight_resample
 
@@ -574,9 +575,9 @@ if __name__ == '__main__':
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
-    #import functions_mixture_model_2 as functions_mixture_model
+    import functions_mixture_model_1 as functions_mixture_model
     #import functions_toggle_switch_model as functions_mixture_model
-    import functions_lotka_volterra_model as functions_mixture_model
+    #import functions_lotka_volterra_model as functions_mixture_model
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 500
