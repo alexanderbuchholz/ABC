@@ -575,13 +575,13 @@ if __name__ == '__main__':
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
-    import functions_mixture_model_1 as functions_mixture_model
+    import functions_mixture_model_2 as functions_mixture_model
     #import functions_toggle_switch_model as functions_mixture_model
     #import functions_lotka_volterra_model as functions_mixture_model
     #import functions_mixture_model
     model_description = functions_mixture_model.model_string
     N_particles = 500
-    dim_particles = 3
+    dim_particles = 2
     Time = 40
     dim_auxiliary_var = 2
     augment_M = True
@@ -615,7 +615,7 @@ if __name__ == '__main__':
     else: 
         propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
         sampler_type = 'QMC'
-        y_simulation = 'standard' # 'standard' 'neg_binomial'
+        y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
         autochoose_eps = 'ess_based' # ''ess_based quantile_based
 
 

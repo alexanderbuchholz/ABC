@@ -20,7 +20,7 @@ sys.path.append(root_path+"/ABC/oo_sampler/functions/mixture_model")
 path = root_path+"/ABC_results_storage/simulation_results_15-5-17"
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
-import functions_mixture_model as functions_model
+import functions_mixture_model_2 as functions_model
 #import functions_mixture_model as functions_model
 
 
@@ -31,7 +31,7 @@ target_ESS_ratio_resampler = 0.3
 target_ESS_ratio_reweighter = 0.3
 epsilon_target = functions_model.epsilon_target(dim_particles) #0.001 #0.25
 epsilon_start = 4
-kwargs = {'N_particles_list': [1000],# 500, 750, 1500,   2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
+kwargs = {'N_particles_list': [1000, 2000, 4000],# 500, 750, 1500,   2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,

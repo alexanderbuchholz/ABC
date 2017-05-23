@@ -176,11 +176,13 @@ def epsilon_target(dim):
     if dim == 1:
         return 0.005    # corresponds to the 0.05 percentile (0.0005) of 10**6 simulations 
                         # we keep 200 observations
+    if dim ==2:
+        return 0.00062439293679199183
     else:
         raise ValueError('epsilon target not available')
 
 if __name__ == '__main__':
-    precompute_values = True
+    precompute_values = False
     if precompute_values:
         precompute_save_data(exponent, dim)
     if True:
