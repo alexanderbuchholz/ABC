@@ -184,8 +184,9 @@ if False:
         array_results_list.append(array_results)
     pickle.dump(array_results_list, open(functions_model.model_string+"static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "wb") )
     pdb.set_trace()
-
-
+if True:
+    array_results_list = pickle.load(open(functions_model.model_string+"static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "rb") )
+    pdb.set_trace()
     plt.title("Variance of the variance estimator, dimension "+str(dim_particles), fontsize=18)
     plt.plot(quantiles, array_results_list[0].var(axis=2).sum(axis=2)[1,:], label="MC", linewidth=3)
     plt.plot(quantiles, array_results_list[1].var(axis=2).sum(axis=2)[1,:], label="QMC", linewidth=3)
@@ -195,7 +196,7 @@ if False:
     plt.legend(fontsize=14)
     plt.savefig(functions_model.model_string+"variance_of_variance_estimator_dim"+str(dim_particles)+".png")
     plt.clf()
-
+    pdb.set_trace()
 
     plt.title("Variance of the mean estimator, dimension "+str(dim_particles), fontsize=18)
     plt.plot(quantiles, array_results_list[0].var(axis=2).sum(axis=2)[0,:], label="MC", linewidth=3)
@@ -208,7 +209,7 @@ if False:
     plt.clf()
 
 # posterior qmc
-if True:
+if False:
     test_sampler.setInitiationFunction(functions_model.theta_sampler_qmc)
     test_sampler.accept_reject_sampler(N_particles)
     posterior_qmc = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=0.001)
