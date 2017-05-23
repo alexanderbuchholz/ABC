@@ -207,10 +207,11 @@ def plot_no_double_epsilon_l1_distance(results, label):
         #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
 
 def plot_no_double_epsilon_ESS(results, label):
-    pdb.set_trace()
+    #pdb.set_trace()
     if label == 'Del Moral':
-        plt.plot(results[1][1][0,:-1,0], (results[1][-1].mean(axis=2))[0,:], label=label, linewidth=3)
+        plt.plot(results[1][1][0,:-1,0], (results[1][-1].mean(axis=2))[0,:-1], label=label, linewidth=3)
     elif label == 'Sisson':
+        #pdb.set_trace()
         plt.plot(results[1][1][0,:-1,0], (results[1][-1].mean(axis=2))[0,:-1], label=label, linewidth=3)
     else:
         epsilon_list = results[1][1][0,:,0]
@@ -278,10 +279,10 @@ if True:
         plot_no_double_epsilon_ESS(Sisson_results, 'Sisson')
         #plt.yscale('log')
         plt.xscale('log')
-        plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
+        plt.legend(loc='lower right', numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
         plt.ylabel('ESS')
-        plt.savefig('l1distance_'+str(N_particles)+'N_variance_epsilon.png')
+        plt.savefig('ESS_'+str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 
 
