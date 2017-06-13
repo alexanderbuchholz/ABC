@@ -279,7 +279,7 @@ if True:
         plot_no_double_epsilon_ESS(Sisson_results, 'Sisson')
         #plt.yscale('log')
         plt.xscale('log')
-        plt.legend(loc='lower right', numpoints=1, ncol=3, fontsize=14)
+        plt.legend( numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
         plt.ylabel('ESS')
         plt.savefig('ESS_'+str(N_particles)+'N_variance_epsilon.png')

@@ -132,7 +132,7 @@ class simulator_sampler():
                     aux_particles[:,list_particles_to_iterate] = 10000000000
                     del list_particles_to_iterate[iteration_of_particle]
                     counter_completed_particles += 1
-            if iterations_total > 10**6:
+            if iterations_total > 5*10**4:
                 print("break the negative binomial loop because too many iterations!")
                 break # break if the total number of iterations gets too large
         #pdb.set_trace()

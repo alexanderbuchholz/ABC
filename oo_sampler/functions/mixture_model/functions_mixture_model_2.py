@@ -104,6 +104,7 @@ def delta(y_star, y):
     M=ot.dist(y_star, y)
     M/=M.max()
     a,b = ot.unif(N),ot.unif(N)
+    #pdb.set_trace()
     G0=ot.emd2(a, b, M)
     return(G0)
 
@@ -167,6 +168,7 @@ def precompute_save_data(exponent, dim):
     theta_array = theta_sampler_rqmc(i=0, dim=dim, n=n)
     y_diff_array = np.zeros(n)
     for i in xrange(n):
+        #pdb.set_trace()
         y_diff_array[i] = delta(y_star, simulator(theta_array[:, i]))
     precomputed_data = {'theta_values': theta_array, 'y_diff_values': y_diff_array}
     with open(model_string+'_dim_'+str(dim)+'_npower_'+str(exponent)+'.p', 'wb') as handle:
