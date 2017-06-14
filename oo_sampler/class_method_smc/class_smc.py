@@ -590,13 +590,13 @@ if __name__ == '__main__':
     target_ESS_ratio_resampler = 0.3
     epsilon_target = functions_mixture_model.epsilon_target(dim_particles)
     contracting_AIS = True
-    M_increase_until_acceptance = True
+    M_increase_until_acceptance = False
     M_target_multiple_N = target_ESS_ratio_reweighter
     covar_factor = 1.2
     #propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
     #sampler_type = 'QMC'
     #y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
-    start_phase_ais = 40
+    start_phase_ais = 10
     truncate_neg_binomial = False
     ancestor_sampling = "False" #"Hilbert"#False#"Hilbert"
     resample = True
