@@ -157,52 +157,57 @@ quantiles = np.linspace(0.1, 0.005, num=length_quantiles)
 array_results_list = []
 sampler_list = ['mc', 'qmc', 'rqmc']
 repetitions = 50
-for sampler in sampler_list:
-    del test_sampler.f_initiate_particles
-    #pdb.set_trace()
-    if sampler == 'mc':
-        test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_mc)
-    elif sampler == 'qmc':
-        test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_qmc)
-    elif sampler == 'rqmc':
-        test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_rqmc)
-    else: raise ValueError('error in sampler!')
-    array_results = np.zeros((2, length_quantiles, repetitions))
-    for k_repetion in range(repetitions):
-        test_sampler.accept_reject_sampler(100000)
-        for j_quantile in range(length_quantiles):
-            posterior = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=quantiles[j_quantile])
-            array_results[0, j_quantile, k_repetion] = posterior.mean()
-            array_results[1, j_quantile, k_repetion] = posterior.var()
-    array_results_list.append(array_results)
 
 from matplotlib import pyplot as plt
 import matplotlib
 matplotlib.rcParams.update({'font.size': 22})
 plt = matplotlib.pyplot
-plt.hist(array_results_list[0][0,0,:]); plt.show()
-pdb.set_trace()
 
-plt.title("Variance of the variance estimator", fontsize=18)
-plt.plot(quantiles, array_results_list[0].var(axis=2)[1,:], label="MC", linewidth=3)
-plt.plot(quantiles, array_results_list[1].var(axis=2)[1,:], label="QMC", linewidth=3)
-plt.plot(quantiles, array_results_list[2].var(axis=2)[1,:], label="RQMC", linewidth=3)
-plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
-plt.yscale('log')
-plt.legend(fontsize=14)
-plt.savefig("variance_of_variance_estimator.png")
-plt.show()
+if True: # do not resimulate all the results
 
+    for sampler in sampler_list:
+        del test_sampler.f_initiate_particles
+        #pdb.set_trace()
+        if sampler == 'mc':
+            test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_mc)
+        elif sampler == 'qmc':
+            test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_qmc)
+        elif sampler == 'rqmc':
+            test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_rqmc)
+        else: raise ValueError('error in sampler!')
+        array_results = np.zeros((2, length_quantiles, repetitions))
+        for k_repetion in range(repetitions):
+            test_sampler.accept_reject_sampler(100000)
+            for j_quantile in range(length_quantiles):
+                posterior = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=quantiles[j_quantile])
+                array_results[0, j_quantile, k_repetion] = posterior.mean()
+                array_results[1, j_quantile, k_repetion] = posterior.var()
+        array_results_list.append(array_results)
 
-plt.title("Variance of the mean estimator", fontsize=18)
-plt.plot(quantiles, array_results_list[0].var(axis=2)[0,:], label="MC", linewidth=3)
-plt.plot(quantiles, array_results_list[1].var(axis=2)[0,:], label="QMC", linewidth=3)
-plt.plot(quantiles, array_results_list[2].var(axis=2)[0,:], label="RQMC", linewidth=3)
-plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
-plt.yscale('log')
-plt.legend(fontsize=14)
-plt.savefig("variance_of_mean_estimator.png")
-plt.show()
+    plt.hist(array_results_list[0][0,0,:]); plt.show()
+    pdb.set_trace()
+    
+    sns.set(style="ticks")
+    plt.title("Variance of the variance estimator", fontsize=18)
+    plt.plot(quantiles, array_results_list[0].var(axis=2)[1,:], label="MC", linewidth=3)
+    plt.plot(quantiles, array_results_list[1].var(axis=2)[1,:], label="QMC", linewidth=3)
+    plt.plot(quantiles, array_results_list[2].var(axis=2)[1,:], label="RQMC", linewidth=3)
+    plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
+    plt.yscale('log')
+    plt.legend(fontsize=14)
+    plt.savefig("variance_of_variance_estimator.png")
+    plt.show()
+
+    sns.set(style="ticks")
+    plt.title("Variance of the mean estimator", fontsize=18)
+    plt.plot(quantiles, array_results_list[0].var(axis=2)[0,:], label="MC", linewidth=3)
+    plt.plot(quantiles, array_results_list[1].var(axis=2)[0,:], label="QMC", linewidth=3)
+    plt.plot(quantiles, array_results_list[2].var(axis=2)[0,:], label="RQMC", linewidth=3)
+    plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
+    plt.yscale('log')
+    plt.legend(fontsize=14)
+    plt.savefig("variance_of_mean_estimator.png")
+    plt.show()
 
 # posterior qmc
 test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_qmc)
@@ -212,11 +217,14 @@ posterior_qmc = test_sampler.f_accept_reject_precalculated_particles(test_sample
 test_sampler.setInitiationFunction(functions_mixture_model.theta_sampler_mc)
 test_sampler.accept_reject_sampler(1000000)
 posterior_mc = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), epsilon_target_accept_reject=0.01)
+pdb.set_trace()
 
+sns.set(style="ticks")
 plt.title("Posterior distribution for $\epsilon$ = 0.01", fontsize=18)
 plt.xlabel('theta', fontsize=14); plt.ylabel('density', fontsize=14); 
 sns.distplot(posterior_mc.flatten(), label="MC posterior")
 sns.distplot(posterior_qmc.flatten(), label="QMC posterior")
+plt.plot(np.linspace(-1,1,100), functions_model.true_posterior(np.atleast_2d(np.linspace(-1,1,100))), label="True posterior")
 plt.legend(fontsize=14)
 plt.savefig("posterior_distribution_mixed_gaussian.png")
 plt.show()
