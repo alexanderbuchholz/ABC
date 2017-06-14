@@ -17,7 +17,7 @@ sys.path.append(root_path+"/ABC/oo_sampler/functions/parallelize")
 sys.path.append(root_path+"/ABC/oo_sampler/functions/mixture_model")
 
 #path = "/media/alex/Transcend/ABC_results_storage/simulation_results_18-4-17"
-path = root_path+"/ABC_results_storage/simulation_results_15-5-17"
+path = root_path+"/ABC_results_storage/simulation_results_14-6-17"
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
 import functions_mixture_model_2 as functions_model
@@ -107,8 +107,8 @@ if __name__ == '__main__':
     # simulation QMC
         kwargs['propagation_mechanism'] = 'AIS'
         kwargs['sampler_type'] = 'QMC'
-        kwargs['augment_M'] = False
-        kwargs['inititation_particles'] = functions_model.theta_sampler_rqmc
+        kwargs['augment_M'] = True
+        kwargs['inititation_particles'] = functions_model.theta_sampler_qmc
         kwargs['kernel'] = gaussian_densities_etc.uniform_kernel
         kwargs['covar_factor'] = 1.2
         kwargs['M_increase_until_acceptance'] = False

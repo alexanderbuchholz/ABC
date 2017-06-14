@@ -596,14 +596,14 @@ if __name__ == '__main__':
     #propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
     #sampler_type = 'QMC'
     #y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
-    start_phase_ais = 5
+    start_phase_ais = 40
     truncate_neg_binomial = False
     ancestor_sampling = "False" #"Hilbert"#False#"Hilbert"
     resample = True
     #autochoose_eps = 'quantile_based' # ''ess_based quantile_based
     computational_budget = 10**6
     parallelize = False
-    quantile_target = 0.8
+    quantile_target = 0.3
 
     Del_Moral = False
 
@@ -616,14 +616,14 @@ if __name__ == '__main__':
         propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
         sampler_type = 'QMC'
         y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
-        autochoose_eps = 'ess_based' # ''ess_based quantile_based
+        autochoose_eps = 'quantile_based' # ''ess_based quantile_based
 
 
 
 
     model_description = model_description+'_'+sampler_type+'_'+propagation_mechanism+'_'+y_simulation
     save = False
-    mixture_components = 5
+    mixture_components = 5  
     kernel = gaussian_densities_etc.uniform_kernel
     move_particle =gaussian_densities_etc.gaussian_move
     y_star = functions_mixture_model.f_y_star(dim_particles)

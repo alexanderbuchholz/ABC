@@ -179,7 +179,8 @@ def epsilon_target(dim):
         return 0.005    # corresponds to the 0.05 percentile (0.0005) of 10**6 simulations 
                         # we keep 200 observations
     if dim ==2:
-        return 0.00062439293679199183
+        return 0.005
+        #return 0.00062439293679199183
     else:
         raise ValueError('epsilon target not available')
 
