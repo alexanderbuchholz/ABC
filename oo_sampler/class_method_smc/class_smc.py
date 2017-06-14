@@ -596,7 +596,7 @@ if __name__ == '__main__':
     #propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
     #sampler_type = 'QMC'
     #y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
-    start_phase_ais = 40
+    start_phase_ais = 5
     truncate_neg_binomial = False
     ancestor_sampling = "False" #"Hilbert"#False#"Hilbert"
     resample = True

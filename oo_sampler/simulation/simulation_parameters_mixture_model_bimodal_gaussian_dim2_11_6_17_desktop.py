@@ -27,11 +27,11 @@ import functions_mixture_model_2 as functions_model
 Time = 600
 repetitions = 49
 dim_particles = 2
-target_ESS_ratio_resampler = 0.3
-target_ESS_ratio_reweighter = 0.3
+target_ESS_ratio_resampler = 0.5
+target_ESS_ratio_reweighter = 0.5
 epsilon_target = functions_model.epsilon_target(dim_particles) #0.001 #0.25
 epsilon_start = 4
-kwargs = {'N_particles_list': [1000],# 500, 750, 1500,   2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
+kwargs = {'N_particles_list': [500],# 500, 750, 1500,   2500, 3000, 4000, 5000],#,],#,  3000, 4000, 5000], #[100,200,300,400,500,750,1000], #[1500, 2000, 2500, 3000, 4000, 5000],
             'model_description' : functions_model.model_string,
             'dim_particles' : dim_particles,
             'Time' : Time,
@@ -51,7 +51,7 @@ kwargs = {'N_particles_list': [1000],# 500, 750, 1500,   2500, 3000, 4000, 5000]
             'resample' : True, #True,
             'autochoose_eps' : 'ess_based',
             'save':True,
-            'mixture_components' : 10,
+            'mixture_components' : 5,
             'y_star' : functions_model.f_y_star(dim_particles),
             'epsilon': np.linspace(epsilon_start, epsilon_target, Time),
             'kernel' : gaussian_densities_etc.gaussian_kernel,
