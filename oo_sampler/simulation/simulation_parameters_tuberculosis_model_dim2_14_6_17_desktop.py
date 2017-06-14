@@ -120,9 +120,9 @@ if __name__ == '__main__':
         kwargs['parallelize'] = False
         del partial_parallel_smc
         partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
-        str(datetime.now())
+        print str(datetime.now())
         partial_parallel_smc(filenames_list[0])
-        str(datetime.now())
+        print str(datetime.now())
         pdb.set_trace()
         functions_parallelize.parallelize_partial_over_chunks(partial_parallel_smc, filenames_list[1:])
 
