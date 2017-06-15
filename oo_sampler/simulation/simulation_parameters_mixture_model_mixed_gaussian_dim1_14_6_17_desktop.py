@@ -10,6 +10,7 @@ import sys
 import ipdb as pdb
 
 root_path = "/home/alex/python_programming"
+root_path = "/home/ubuntu"
 
 sys.path.append(root_path+"/ABC/oo_sampler/class_method_smc")
 sys.path.append(root_path+"/ABC/oo_sampler/functions/help_functions")
