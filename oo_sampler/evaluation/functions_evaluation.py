@@ -9,7 +9,12 @@ import ipdb as pdb
 import pickle
 import numpy as np
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 root_path = "/home/alex/python_programming"
+#root_path = "/home/ubuntu"
+
 import sys
 sys.path.append(root_path+"/ABC/oo_sampler/simulation")
 sys.path.append(root_path+"/ABC/oo_sampler/functions")
@@ -60,7 +65,7 @@ def f_summary_stats(parameters, sample_method="MC", particles=500, propagation_m
         # calculate the L1 distances
         try:
             for t_simulation in range(selector):
-                l1_distances[:, t_simulation, i_simulation] = parameters.functions_model.l1_distance(simulation["particles"][:, :, t_simulation])
+                l1_distances[:, t_simulation, i_simulation] = 0#parameters.functions_model.l1_distance(simulation["particles"][:, :, t_simulation])
         except: pdb.set_trace()
         vars[:, :selector, i_simulation] = np.atleast_3d(simulation["var_particles"])[0, :, :selector]
         final_ESS[:,i_simulation] = simulation["ESS"][selector-1]
@@ -93,7 +98,7 @@ def f_summary_stats(parameters, sample_method="MC", particles=500, propagation_m
     epsilons = epsilons[:,:len(simulation["epsilon"]),:]
     ESS = ESS[:,:len(simulation["ESS"]),:]
     var_all = means_all.var(axis=2)
-    vars_vars = vars_all.var(axis=2)
+    vars_vars = np.nanvar(vars_all, axis=2)
     vars_means = vars_all.mean(axis=2)
     means_last = np.nanmean(means_all[:,-1,:], axis=1)
     vars_vars_last = vars_vars[:,-1]
@@ -106,7 +111,7 @@ def f_summary_stats(parameters, sample_method="MC", particles=500, propagation_m
     number_simulations_mean = final_number_simulations.mean()
     number_simulations = number_simulations[0,:, :selector]
     #pdb.set_trace()
-    return [means_last, means_var_last, vars_means_last, vars_vars_last, ESS_mean, epsilon_mean, time_mean, number_simulations_mean], [means_all, epsilons, means_all.var(axis=2), number_simulations, vars_vars, vars_all.mean(axis=2), vars_all, l1_distances, ESS]
+    return [means_last, means_var_last, vars_means_last, vars_vars_last, ESS_mean, epsilon_mean, time_mean, number_simulations_mean], [means_all, epsilons, means_all.nanvar(axis=2), number_simulations, vars_vars, vars_all.mean(axis=2), vars_all, l1_distances, ESS]
 
 def function_flatten_results(_results, dim, method="other"):
     _means_inter = _results[1][0][dim, :, :].flatten()
@@ -141,7 +146,7 @@ def plot_no_double_epsilon_variance(results, label, true_variance=1):
         #pdb.set_trace()
         plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3)
     elif label == 'Sisson':
-        pdb.set_trace()
+        #pdb.set_trace()
         plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3].mean(axis=0))[:-1], label=label, linewidth=3)
     else:
         #epsilon_list = results[1][1][0,:,0]
