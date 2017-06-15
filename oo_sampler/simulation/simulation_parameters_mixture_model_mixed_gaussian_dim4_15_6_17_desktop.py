@@ -18,7 +18,7 @@ sys.path.append(root_path+"/ABC/oo_sampler/functions/parallelize")
 sys.path.append(root_path+"/ABC/oo_sampler/functions/mixture_model")
 
 #path = "/media/alex/Transcend/ABC_results_storage/simulation_results_18-4-17"
-path = root_path+"/ABC_results_storage/simulation_results_14-6-17"
+path = root_path+"/ABC_results_storage/simulation_results_15-6-17"
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
 import functions_mixture_model as functions_model
@@ -27,7 +27,7 @@ import functions_mixture_model as functions_model
 
 Time = 600
 repetitions = 49
-dim_particles = 1
+dim_particles = 4
 target_ESS_ratio_resampler = 0.5
 target_ESS_ratio_reweighter = 0.5
 epsilon_target = functions_model.epsilon_target(dim_particles) #0.001 #0.25
