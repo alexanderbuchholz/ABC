@@ -12,12 +12,13 @@ import numpy as np
 #path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_18-4-17"
 #path2 = "/home/alex/python_programming/ABC_results_storage/simulation_results"
 import os
-
+root_path = "/home/alex/python_programming"
 import sys
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/simulation")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
-sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tuberculosis_model")
+sys.path.append(root_path+"/ABC/oo_sampler/simulation")
+sys.path.append(root_path+"/ABC/oo_sampler/functions")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/help_functions")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/tuberculosis_model")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/mixture_model")
 #import sisson_simulation_parameters_mixture_model
 #import simulation_parameters_mixture_model_3_2_17 as simulation_parameters_model
 #import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
@@ -25,7 +26,9 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/tubercul
 #import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
 #import simulation_parameters_mixture_model_mixed_gaussian_dim2_18_4_17_desktop as simulation_parameters_model
 
-import simulation_parameters_mixture_model_mixed_gaussian_dim2_16_5_17_desktop as simulation_parameters_model
+#import simulation_parameters_mixture_model_mixed_gaussian_dim2_16_5_17_desktop as simulation_parameters_model
+import simulation_parameters_mixture_model_mixed_gaussian_dim1_14_6_17_desktop as simulation_parameters_model
+
 
 path = simulation_parameters_model.path
 os.chdir(path)
@@ -232,9 +235,17 @@ if True:
         RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, cum_sum=cum_sum)
         Del_Moral_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral', cum_sum=cum_sum)
         Sisson_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson', cum_sum=cum_sum)
-        #pdb.set_trace()
-        print('code works for one dimension only!')
-        
+
+        results_summary_to_save = {}
+        results_summary_to_save['MC'] = MC_results
+        results_summary_to_save['QMC'] = QMC_results
+        results_summary_to_save['RQMC'] = RQMC_results
+        results_summary_to_save['Del_Moral'] = Del_Moral_results
+        results_summary_to_save['Sisson'] = Sisson_results
+        import pickle
+        pickle.dump( results_summary_to_save, open( str(N_particles)+"_results_summary_to_save.p", "wb" ) )
+        pdb.set_trace()
+
         print simulation_parameters_model.filename
         print N_particles
         print MC_results[0]
@@ -389,7 +400,8 @@ def f_accept_reject_precalculated_particles(precalculated_particles, precalculat
 
 simulation_RQMC = pickle.load( open("mixture_gaussians_diff_variance_adaptive_M_autochoose_eps_gaussian_kernel_1_VB_component14_RQMC10_AIS_750_simulation_abc_epsilon_0.001_60.p", "rb"))
 simulation_MC = pickle.load( open("mixture_gaussians_diff_variance_adaptive_M_autochoose_eps_gaussian_kernel_1_VB_component14_MC10_AIS_750_simulation_abc_epsilon_0.001_60.p", "rb"))
-os.chdir(path2)
+#os.chdir(path2)
+
 #simulation_sisson = pickle.load( open("tuberculosis_true_sission17_MC1_AIS_200_simulation_abc_epsilon_24.p", "rb"))
 
 #simulation_MC = pickle.load( open("adaptive_M_autochoose_eps_uniform_kernel10_MC2_AIS_5000_simulation_abc_epsilon_30.p", "rb"))
