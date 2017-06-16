@@ -14,11 +14,11 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/class_method_smc")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model")
 
-path = "/media/alex/Transcend/ABC_results_storage/simulation_results_14_6_17"
+#path = "/media/alex/Transcend/ABC_results_storage/simulation_results_14_6_17"
+path = "/home/alex/python_programming/ABC_results_storage/simulation_results_15-6-17"
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
-import functions_model as functions_model
-#import functions_mixture_model as functions_model
+import functions_mixture_model as functions_model
 from class_smc import smc_sampler
 import functions_propagate_reweight_resample
 
@@ -49,7 +49,6 @@ sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/lotka_vo
 sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
 #import functions_tuberculosis_model as functions_mixture_model
 #import functions_alpha_stable_model as functions_mixture_model
-import functions_model as functions_model
 #import functions_toggle_switch_model as functions_mixture_model
 #import functions_lotka_volterra_model as functions_mixture_model
 #import functions_mixture_model
@@ -166,8 +165,10 @@ N_particles = 10**6
 import os
 os.chdir(path)
 for dim_particles in dim_list:
+    print 'dim'+str(dim_particles)
     array_results_list = []
     for sampler in sampler_list:
+        
         test_sampler.dim_particles = dim_particles
         del test_sampler.f_initiate_particles
         #pdb.set_trace()
@@ -180,6 +181,7 @@ for dim_particles in dim_list:
         else: raise ValueError('error in sampler!')
         array_results = np.zeros((2, length_quantiles, repetitions, dim_particles))
         for k_repetion in range(repetitions):
+            print 'rep'+str(k_repetion)
             test_sampler.accept_reject_sampler(N_particles)
             for j_quantile in range(length_quantiles):
                 posterior = test_sampler.f_accept_reject_precalculated_particles(test_sampler.particles_AR_posterior, test_sampler.auxialiary_particles_accept_reject.flatten(), percentile=quantiles[j_quantile])
@@ -188,10 +190,10 @@ for dim_particles in dim_list:
                 array_results[1, j_quantile, k_repetion, :] = posterior.var(axis=1)
         array_results_list.append(array_results)
     pickle.dump(array_results_list, open("static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "wb") )
-    #pdb.set_trace()
+    pdb.set_trace()
 
 
-    plt.title("Variance of the variance estimator, dimension "+str(dim_particles), fontsize=18)
+    #plt.title("Variance of the variance estimator, dimension "+str(dim_particles), fontsize=18)
     plt.plot(quantiles, array_results_list[0].var(axis=2).sum(axis=2)[1,:], label="MC", linewidth=3)
     plt.plot(quantiles, array_results_list[1].var(axis=2).sum(axis=2)[1,:], label="QMC", linewidth=3)
     plt.plot(quantiles, array_results_list[2].var(axis=2).sum(axis=2)[1,:], label="RQMC", linewidth=3)
@@ -202,7 +204,7 @@ for dim_particles in dim_list:
     plt.clf()
 
 
-    plt.title("Variance of the mean estimator, dimension "+str(dim_particles), fontsize=18)
+    #plt.title("Variance of the mean estimator, dimension "+str(dim_particles), fontsize=18)
     plt.plot(quantiles, array_results_list[0].var(axis=2).sum(axis=2)[0,:], label="MC", linewidth=3)
     plt.plot(quantiles, array_results_list[1].var(axis=2).sum(axis=2)[0,:], label="QMC", linewidth=3)
     plt.plot(quantiles, array_results_list[2].var(axis=2).sum(axis=2)[0,:], label="RQMC", linewidth=3)

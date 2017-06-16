@@ -4,38 +4,28 @@ Created on Mon Jan  9 09:21:52 2017
     evaluation of results
 @author: alex
 """
-# pylint: disable=C0321
 import ipdb as pdb
 import pickle
 import numpy as np
 
-from functions_evaluation import *
-#if __name__ == '__main__':
-#path1 = "/home/alex/python_programming/ABC_results_storage/simulation_results_18-4-17"
-#path2 = "/home/alex/python_programming/ABC_results_storage/simulation_results"
 import os
 root_path = "/home/alex/python_programming"
 import sys
 sys.path.append(root_path+"/ABC/oo_sampler/simulation")
 sys.path.append(root_path+"/ABC/oo_sampler/functions")
+sys.path.append(root_path+"/ABC/oo_sampler/evaluation")
 sys.path.append(root_path+"/ABC/oo_sampler/functions/help_functions")
 sys.path.append(root_path+"/ABC/oo_sampler/functions/tuberculosis_model")
 sys.path.append(root_path+"/ABC/oo_sampler/functions/mixture_model")
-#import sisson_simulation_parameters_mixture_model
-#import simulation_parameters_mixture_model_3_2_17 as simulation_parameters_model
-#import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
-#import a17_1_17_sisson_simulation_parameters_tuberculosis_model as sisson_simulation_parameters_mixture_model
-#import simulation_parameters_mixture_model_17_2_17 as simulation_parameters_model
-#import simulation_parameters_mixture_model_mixed_gaussian_dim2_18_4_17_desktop as simulation_parameters_model
 
-#import simulation_parameters_mixture_model_mixed_gaussian_dim2_16_5_17_desktop as simulation_parameters_model
-#import simulation_parameters_mixture_model_mixed_gaussian_dim1_14_6_17_desktop as simulation_parameters_model
 import simulation_parameters_mixture_model_bimodal_gaussian_dim2_11_6_17_desktop as simulation_parameters_model
+from functions_evaluation import *
 
+path_current = os.getcwd()
 
 path = simulation_parameters_model.path
 os.chdir(path)
-#import simulation_parameters_mixture_model_single_gaussian_dim3_30_3_17_desktop as simulation_parameters_model
+
 import f_rand_seq_gen
 import gaussian_densities_etc
 
@@ -45,50 +35,64 @@ import seaborn as sns
 import pandas as pd
 
 
+name_qmc = 'mixture_gaussians_bimodal_negative_binomial_uniform_kernel_1_VB_component_fixed_epsilon_schedule_algo_only_dim3_4_QMC2_AIS_500_simulation_abc_epsilon_0.005.p'
+posterior_plot = pickle.load(open(name_qmc, "rb"))
+sns.kdeplot(posterior_plot['particles'][0,:,-1], posterior_plot['particles'][1,:,-1])
+plt.xlabel('x1')
+plt.ylabel('x2')
+plt.savefig('posterior_bimodal.png')
+plt.show()
 
 
-if True:
+pdb.set_trace()
+
+if False:
     N_particles_list = simulation_parameters_model.kwargs['N_particles_list']
+    MC_means = []
+    RQMC_means = []
+    cum_sum = True
     for N_particles in N_particles_list:
-        results_summary_to_save = pickle.load(open( str(N_particles)+"_results_summary_to_save.p", "rb" ) )
-        #pdb.set_trace()
-        MC_results = results_summary_to_save['MC']
-        QMC_results = results_summary_to_save['QMC']
-        RQMC_results = results_summary_to_save['RQMC']
-        Del_Moral_results = results_summary_to_save['Del_Moral']
-        Sisson_results = results_summary_to_save['Sisson']
+        MC_results =  f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, cum_sum=cum_sum)
+        QMC_results =  f_summary_stats(simulation_parameters_model, sample_method = "QMC", particles=N_particles, cum_sum=cum_sum)
+        RQMC_results = f_summary_stats(simulation_parameters_model, sample_method = "RQMC", particles=N_particles, cum_sum=cum_sum)
+        Del_Moral_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'Del_Moral', cum_sum=cum_sum)
+        Sisson_results = f_summary_stats(simulation_parameters_model, sample_method = "MC", particles=N_particles, propagation_method = 'true_sisson', cum_sum=cum_sum)
 
-        print simulation_parameters_model.filename
-        print N_particles
-        print MC_results[0]
-        print QMC_results[0]
-        print RQMC_results[0]
-        print Del_Moral_results[0]
-        print Sisson_results[0]
-        pdb.set_trace()
-        sns.set_style("darkgrid")
-        if False: 
-            MC_means_inter, MC_epsilons_inter = function_flatten_results(MC_results, 0)
-            QMC_means_inter, QMC_epsilons_inter = function_flatten_results(QMC_results, 0)
-            RQMC_means_inter, RQMC_epsilons_inter = function_flatten_results(RQMC_results, 0)
-            Del_Moral_means_inter, Del_Moral_epsilons_inter = function_flatten_results(Del_Moral_results, 0, method="Del_Moral")
-            #Sisson_means_inter, Sisson_epsilons_inter = function_flatten_results(Sisson_results, 0)
-
-            plt.title('means and epsilon for N:'+str(N_particles))
-            #plt.scatter(MC_epsilons_inter, MC_means_inter, lw=0.5, alpha=1, color='blue', label="MC")
-            plt.scatter(QMC_epsilons_inter, QMC_means_inter, lw=0.5, alpha=1, color='cyan', label="QMC")
-            plt.scatter(RQMC_epsilons_inter, RQMC_means_inter, lw=0.5, alpha=1, color='green', label="RQMC")
-            plt.scatter(Del_Moral_epsilons_inter, Del_Moral_means_inter, color='red', label='Del Moral')
-            #plt.scatter(Sisson_epsilons_inter, Sisson_means_inter, color='yellow', label='Sisson')
-            #plt.yscale('log')
-            plt.xscale('log')
-            plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
-            plt.xlabel('epsilon')
-            plt.ylabel('means')
-            #plt.savefig(str(N_particles)+'N_means_epsilon.png')
-            plt.show()
+        results_summary_to_save = {}
+        results_summary_to_save['MC'] = MC_results
+        results_summary_to_save['QMC'] = QMC_results
+        results_summary_to_save['RQMC'] = RQMC_results
+        results_summary_to_save['Del_Moral'] = Del_Moral_results
+        results_summary_to_save['Sisson'] = Sisson_results
+        import pickle
+        pickle.dump(results_summary_to_save, open(str(N_particles)+"_results_summary_to_save.p", "wb" ))
 
 
+
+N_particles_list = simulation_parameters_model.kwargs['N_particles_list']
+for N_particles in N_particles_list:
+    results_summary_to_save = pickle.load(open( str(N_particles)+"_results_summary_to_save.p", "rb" ) )
+
+    os.chdir(path_current)
+    #pdb.set_trace()
+    MC_results = results_summary_to_save['MC']
+    QMC_results = results_summary_to_save['QMC']
+    RQMC_results = results_summary_to_save['RQMC']
+    Del_Moral_results = results_summary_to_save['Del_Moral']
+    Sisson_results = results_summary_to_save['Sisson']
+
+    print simulation_parameters_model.filename
+    print N_particles
+    print MC_results[0]
+    print QMC_results[0]
+    print RQMC_results[0]
+    print Del_Moral_results[0]
+    print Sisson_results[0]
+    pdb.set_trace()
+    sns.set_style("darkgrid")
+
+
+    if False:
         plt.title('ESS for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
         plot_no_double_epsilon_ESS(MC_results, 'MC')
         plot_no_double_epsilon_ESS(QMC_results, 'QMC')
@@ -103,53 +107,71 @@ if True:
         plt.savefig('ESS_'+str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 
-        if False:
-            plt.title('L1 distance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
-            plot_no_double_epsilon_l1_distance(MC_results, 'MC')
-            plot_no_double_epsilon_l1_distance(QMC_results, 'QMC')
-            plot_no_double_epsilon_l1_distance(RQMC_results, 'RQMC')
-            plot_no_double_epsilon_l1_distance(Del_Moral_results, 'Del Moral')
-            plot_no_double_epsilon_l1_distance(Sisson_results, 'Sisson')
-            plt.yscale('log')
-            plt.xscale('log')
-            plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
-            plt.xlabel('epsilon')
-            plt.ylabel('L1 distance to true posterior')
-            plt.savefig('l1distance_'+str(N_particles)+'N_variance_epsilon.png')
-            plt.show()
-
-        if False:
-            #plt.title('MSE of variance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
-            plot_no_double_epsilon_variance(MC_results, 'MC', true_variance= simulation_parameters_model.functions_model.var)
-            plot_no_double_epsilon_variance(QMC_results, 'QMC', true_variance= simulation_parameters_model.functions_model.var)
-            plot_no_double_epsilon_variance(RQMC_results, 'RQMC', true_variance= simulation_parameters_model.functions_model.var)
-            plot_no_double_epsilon_variance(Del_Moral_results, 'Del Moral', true_variance= simulation_parameters_model.functions_model.var)
-            plot_no_double_epsilon_variance(Sisson_results, 'Sisson', true_variance= simulation_parameters_model.functions_model.var)
-            plt.yscale('log')
-            plt.xscale('log')
-            plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
-            plt.xlabel('epsilon')
-            plt.ylabel('MSE times cumulative budget')
-            plt.savefig('mse_variance_budget'+str(N_particles)+'N_variance_epsilon.png')
-            plt.show()
-
-        pdb.set_trace()
-        #plt.title('MSE for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
-        plot_no_double_epsilon(MC_results, 'MC')
-        plot_no_double_epsilon(QMC_results, 'QMC')
-        plot_no_double_epsilon(RQMC_results, 'RQMC')
-        plot_no_double_epsilon(Del_Moral_results, 'Del Moral')
-        plot_no_double_epsilon(Sisson_results, 'Sisson')
+    if False:
+        plt.title('L1 distance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
+        plot_no_double_epsilon_l1_distance(MC_results, 'MC')
+        plot_no_double_epsilon_l1_distance(QMC_results, 'QMC')
+        plot_no_double_epsilon_l1_distance(RQMC_results, 'RQMC')
+        plot_no_double_epsilon_l1_distance(Del_Moral_results, 'Del Moral')
+        plot_no_double_epsilon_l1_distance(Sisson_results, 'Sisson')
         plt.yscale('log')
         plt.xscale('log')
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
-        plt.ylabel('MSE times cumulative budget')
-        plt.savefig('mse_cum_budget'+str(N_particles)+'N_variance_epsilon.png')
+        plt.ylabel('L1 distance to true posterior')
+        plt.savefig('l1distance_'+str(N_particles)+'N_variance_epsilon.png')
         plt.show()
+
+    if True:
+        #plt.title('MSE of variance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
+        plot_no_double_epsilon_variance_simple(MC_results, 'MC')
+        plot_no_double_epsilon_variance_simple(QMC_results, 'QMC')
+        plot_no_double_epsilon_variance_simple(RQMC_results, 'RQMC')
+        plot_no_double_epsilon_variance_simple(Del_Moral_results, 'Del Moral')
+        plot_no_double_epsilon_variance_simple(Sisson_results, 'Sisson')
+        plt.yscale('log')
+        plt.xscale('log')
+        plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
+        plt.xlabel('epsilon', fontsize=14)
+        plt.ylabel('Variance times cumulative budget', fontsize=14)
+        plt.savefig('variance_variance_budget'+str(N_particles)+'N_variance_epsilon.png')
+        plt.show()
+
+    pdb.set_trace()
+    #plt.title('MSE for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
+    plot_no_double_epsilon(MC_results, 'MC')
+    plot_no_double_epsilon(QMC_results, 'QMC')
+    plot_no_double_epsilon(RQMC_results, 'RQMC')
+    plot_no_double_epsilon(Del_Moral_results, 'Del Moral')
+    plot_no_double_epsilon(Sisson_results, 'Sisson')
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
+    plt.xlabel('epsilon', fontsize=14)
+    plt.ylabel('Variance times cumulative budget', fontsize=14)
+    plt.savefig('variance_mean_cum_budget'+str(N_particles)+'N_variance_epsilon.png')
+    plt.show()
+
+
+    plot_no_double_epsilon_number_simulations(MC_results, 'MC')
+    plot_no_double_epsilon_number_simulations(QMC_results, 'QMC')
+    plot_no_double_epsilon_number_simulations(RQMC_results, 'RQMC')
+    plot_no_double_epsilon_number_simulations(Del_Moral_results, 'Del Moral')
+    plot_no_double_epsilon_number_simulations(Sisson_results, 'Sisson')
+    #plt.yscale('log')
+    plt.xscale('log')
+    plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
+    plt.xlabel('epsilon', fontsize=14)
+    plt.ylabel('Cumulative number of simulations', fontsize=14)
+    plt.savefig('number_simulations_cum_budget'+str(N_particles)+'N_variance_epsilon.png')
+    plt.show()
 
 
 pdb.set_trace()
+
+
+
+
 
 if False:
     dim = 1

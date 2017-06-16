@@ -110,7 +110,7 @@ def f_summary_stats(parameters, sample_method="MC", particles=500, propagation_m
     time_mean = final_simulation_time.mean()
     number_simulations_mean = final_number_simulations.mean()
     number_simulations = number_simulations[0,:, :selector]
-    #pdb.set_trace()
+    pdb.set_trace()
     return [means_last, means_var_last, vars_means_last, vars_vars_last, ESS_mean, epsilon_mean, time_mean, number_simulations_mean], [means_all, epsilons, np.nanvar(means_all, axis=2), number_simulations, vars_vars, vars_all.mean(axis=2), vars_all, l1_distances, ESS]
 
 def function_flatten_results(_results, dim, method="other"):
@@ -138,6 +138,21 @@ def plot_no_double_epsilon(results, label):
         plt.plot(results[1][1][0,:,0], (results[1][2][0,:]*results[1][3].mean(axis=0))[:], label=label, linewidth=3)
         #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
 
+def plot_no_double_epsilon_number_simulations(results, label):
+    if label == 'Del Moral':
+        #pdb.set_trace()
+        plt.plot(results[1][1][0,:-1,0], (results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3)
+    elif label == 'Sisson':
+        plt.plot(results[1][1][0,:-1,0], (results[1][3].mean(axis=0))[:-1], label=label, linewidth=3)
+    else:
+        epsilon_list = results[1][1][0,:,0]
+        epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
+        #pdb.set_trace()
+        #var_list = results[1][2][0,:] #(results[1][2][0,:]*results[1][3].mean(axis=0))[:]
+        plt.plot(results[1][1][0,:,0], (results[1][3].mean(axis=0))[:], label=label, linewidth=3)
+        #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
+
+
 def plot_no_double_epsilon_variance(results, label, true_variance=1):
     #pdb.set_trace()
     vars_all = results[1][6][0,:]
@@ -155,6 +170,19 @@ def plot_no_double_epsilon_variance(results, label, true_variance=1):
         #var_list = results[1][2][0,:] #(results[1][2][0,:]*results[1][3].mean(axis=0))[:]
         plt.plot(results[1][1][0,:,0], (mse_vars_all*results[1][3].mean(axis=0))[:], label=label, linewidth=3)
         #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
+
+def plot_no_double_epsilon_variance_simple(results, label):
+    #pdb.set_trace()
+    vars_all = results[1][6]
+    mse_vars_all = np.nanvar(vars_all, axis=2).sum(axis=0)
+    if label == 'Del Moral':
+        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3)
+    elif label == 'Sisson':
+        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3].mean(axis=0))[:-1], label=label, linewidth=3)
+    else:
+        plt.plot(results[1][1][0,:,0], (mse_vars_all*results[1][3].mean(axis=0))[:], label=label, linewidth=3)
+        #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
+
 
 def plot_no_double_epsilon_l1_distance(results, label):
     #pdb.set_trace()
