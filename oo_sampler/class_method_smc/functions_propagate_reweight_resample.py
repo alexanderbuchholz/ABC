@@ -115,6 +115,9 @@ class simulator_sampler():
                     y_proposed = self.simulator(particle_n)
                     distance = self.delta(y_proposed, self.y_star)
                     if distance < epsilon_target:
+                        try:
+                            aux_particles[int(indicator_successfull_tries[i_particle]), int(i_particle)] = distance
+                        except: pdb.set_trace()
                         aux_particles[int(indicator_successfull_tries[i_particle]), int(i_particle)] = distance
                         indicator_successfull_tries[i_particle] += 1
                         #pdb.set_trace()
@@ -129,13 +132,13 @@ class simulator_sampler():
                         break
                 else: # particle is excluded, not admissible
                     aux_particles_tries[:, i_particle] = np.inf
-                    aux_particles[:,list_particles_to_iterate] = 10000000000
+                    aux_particles[:, i_particle] = 10000000000
                     del list_particles_to_iterate[iteration_of_particle]
                     counter_completed_particles += 1
             if iterations_total > 10**5:
                 print("break the negative binomial loop because too many iterations!")
                 break # break if the total number of iterations gets too large
-        #pdb.set_trace()
+        pdb.set_trace()
         aux_particles[:,list_particles_to_iterate] = 10000000000
         aux_particles_tries[:,list_particles_to_iterate] = np.inf
         return aux_particles, aux_particles_tries
