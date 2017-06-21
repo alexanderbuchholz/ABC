@@ -8,6 +8,8 @@ import numpy as np
 import ipdb as pdb
 import sys
 root_path = "/home/alex/python_programming"
+#root_path = "/home/ubuntu"
+
 sys.path.append(root_path+"/ABC/oo_sampler/functions")
 sys.path.append(root_path+"/ABC/help_functions")
 sys.path.append(root_path+"/ABC/oo_sampler/functions/hilbert")
