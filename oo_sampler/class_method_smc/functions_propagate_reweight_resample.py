@@ -127,18 +127,21 @@ class simulator_sampler():
                     else:
                         aux_particles_tries[:, i_particle] += 1
                     # break routine
-                    iteration_of_particle += 1 # counts the iterations, needed to select the right element to delete
-                    if counter_completed_particles >= quantile_target_negative_binomial*N_particles:
-                        break
+
                 else: # particle is excluded, not admissible
                     aux_particles_tries[:, i_particle] = np.inf
                     aux_particles[:, i_particle] = 10000000000
                     del list_particles_to_iterate[iteration_of_particle]
                     counter_completed_particles += 1
+
+                iteration_of_particle += 1 # counts the iterations, needed to select the right element to delete
+                if counter_completed_particles >= quantile_target_negative_binomial*N_particles:
+                    break
+
             if iterations_total > 10**5:
                 print("break the negative binomial loop because too many iterations!")
                 break # break if the total number of iterations gets too large
-        pdb.set_trace()
+        #pdb.set_trace()
         aux_particles[:,list_particles_to_iterate] = 10000000000
         aux_particles_tries[:,list_particles_to_iterate] = np.inf
         return aux_particles, aux_particles_tries
