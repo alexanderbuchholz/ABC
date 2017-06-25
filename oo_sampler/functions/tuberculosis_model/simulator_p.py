@@ -6,8 +6,8 @@ from scipy.stats import itemfreq, gamma, norm
 import random
 import cProfile
 import bisect
-#from numba import jit
-#from numba import autojit
+from numba import jit
+from numba import autojit
 #from numba import float64, int32
 import pdb
 #import line_profiler
@@ -66,14 +66,16 @@ def calc_W_cum(X_cum, N_alive):
 	return X_cum/N_alive
 
 
-#@autojit()
+@autojit()
 def inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum):
 	    # sample position
             u = random.random()
-            selector_geneotype = bisect.bisect_left(W_cum, u)
+            selector_geneotype = np.searchsorted(W_cum, u)
+            #selector_geneotype = bisect.bisect_left(W_cum, u)
 
             u = random.random()
-            selector_event = bisect.bisect_left(theta_cum, u)
+            #selector_event = bisect.bisect_left(theta_cum, u)
+            selector_event = np.searchsorted(theta_cum, u)
             #selector_geneotype = multinomial_sample_cum(W_cum)
             #selector_event = multinomial_sample_cum(theta_cum)
 
@@ -140,13 +142,15 @@ def inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
 	return X
 '''
 #@profile
+#@autojit
+@jit(nopython=True)
 def loop(theta, N):
         X = np.zeros(N) # number of geneotypes vector (pop size)
-	X_cum = np.ones(N, dtype=np.float)
+	X_cum = np.ones(N)#, dtype=np.float)
         G = np.zeros(N) # geneotypes vector
         X[0] = 1
         G[0] =  1
-	N_alive = np.array([1.])
+	N_alive = 1.
         #W = X/X.sum(axis=1) # population weight vector
         W_cum = np.copy(X_cum)
 	theta_cum = np.cumsum(theta)/np.sum(theta)
@@ -157,10 +161,12 @@ def loop(theta, N):
         while icounter < N:
 ###################################
                 u = random.random()
-                selector_geneotype = bisect.bisect_left(W_cum, u)
+                #selector_geneotype = bisect.bisect_left(W_cum, u)
+                selector_geneotype = np.searchsorted(W_cum, u)
 
                 u = random.random()
-                selector_event = bisect.bisect_left(theta_cum, u)
+                #selector_event = bisect.bisect_left(theta_cum, u)
+                selector_event = np.searchsorted(theta_cum, u)
                 #selector_geneotype = multinomial_sample_cum(W_cum)
                 #selector_event = multinomial_sample_cum(theta_cum)
 
@@ -176,7 +182,8 @@ def loop(theta, N):
                 elif selector_event==1:
                         death_counter = death_counter+1
                         # check whether we do not kill the single individual
-                        if (N_alive-1.)>0:
+                        #pdb.set_trace()
+                        if (N_alive-1.)>0.:
                                 X[selector_geneotype] -= 1.0
                                 N_alive -= 1.
                                 X_cum[selector_geneotype:] -= 1.

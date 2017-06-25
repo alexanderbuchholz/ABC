@@ -127,9 +127,9 @@ def function_flatten_results(_results, dim, method="other"):
 def plot_no_double_epsilon(results, label):
     if label == 'Del Moral':
         #pdb.set_trace()
-        plt.plot(results[1][1][0,:-1,0], (results[1][2][0,:]*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3)
+        plt.plot(results[1][1][0,:-1,0], (results[1][2][0,:]*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3, linestyle='dashed')
     elif label == 'Sisson':
-        plt.plot(results[1][1][0,:-1,0], (results[1][2][0,:]*results[1][3].mean(axis=0))[:-1], label=label, linewidth=3)
+        plt.plot(results[1][1][0,:-1,0], (results[1][2][0,:]*results[1][3].mean(axis=0))[:-1], label=label, linewidth=3, linestyle='dotted')
     else:
         epsilon_list = results[1][1][0,:,0]
         epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
@@ -141,9 +141,9 @@ def plot_no_double_epsilon(results, label):
 def plot_no_double_epsilon_number_simulations(results, label):
     if label == 'Del Moral':
         #pdb.set_trace()
-        plt.plot(results[1][1][0,:-1,0], (results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3)
+        plt.plot(results[1][1][0,:-1,0], (results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3, linestyle='dashed')
     elif label == 'Sisson':
-        plt.plot(results[1][1][0,:-1,0], (results[1][3].mean(axis=0))[:-1], label=label, linewidth=3)
+        plt.plot(results[1][1][0,:-1,0], (results[1][3].mean(axis=0))[:-1], label=label, linewidth=3, linestyle='dotted')
     else:
         epsilon_list = results[1][1][0,:,0]
         epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
@@ -159,10 +159,10 @@ def plot_no_double_epsilon_variance(results, label, true_variance=1):
     mse_vars_all = ((vars_all-true_variance)**2).mean(axis=1)
     if label == 'Del Moral':
         #pdb.set_trace()
-        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3)
+        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3, linestyle='dashed')
     elif label == 'Sisson':
         #pdb.set_trace()
-        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3].mean(axis=0))[:-1], label=label, linewidth=3)
+        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3].mean(axis=0))[:-1], label=label, linewidth=3, linestyle='dotted')
     else:
         #epsilon_list = results[1][1][0,:,0]
         #epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
@@ -176,9 +176,9 @@ def plot_no_double_epsilon_variance_simple(results, label):
     vars_all = results[1][6]
     mse_vars_all = np.nanvar(vars_all, axis=2).sum(axis=0)
     if label == 'Del Moral':
-        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3)
+        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3, linestyle='dashed')
     elif label == 'Sisson':
-        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3].mean(axis=0))[:-1], label=label, linewidth=3)
+        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3].mean(axis=0))[:-1], label=label, linewidth=3, linestyle='dotted')
     else:
         plt.plot(results[1][1][0,:,0], (mse_vars_all*results[1][3].mean(axis=0))[:], label=label, linewidth=3)
         #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
@@ -188,23 +188,23 @@ def plot_no_double_epsilon_l1_distance(results, label):
     #pdb.set_trace()
     if label == 'Del Moral':
         #pdb.set_trace()
-        plt.plot(results[1][1][0,:-1,0], (results[1][-2].mean(axis=2))[0,:], label=label, linewidth=3)
+        plt.plot(results[1][1][0,:-1,0], (results[1][-2].mean(axis=2))[0,:], label=label, linewidth=3, linestyle='dashed')
     elif label == 'Sisson':
-        plt.plot(results[1][1][0,:-1,0], (results[1][-2].mean(axis=2))[0,:-1], label=label, linewidth=3)
+        plt.plot(results[1][1][0,:-1,0], (results[1][-2].mean(axis=2))[0,:-1], label=label, linewidth=3, linestyle='dotted')
     else:
         epsilon_list = results[1][1][0,:,0]
         epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
-        pdb.set_trace()
+        #pdb.set_trace()
         plt.plot(results[1][1][0,:,0], (results[1][-2].mean(axis=2))[0,:], label=label, linewidth=3)
         #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
 
 def plot_no_double_epsilon_ESS(results, label):
     #pdb.set_trace()
     if label == 'Del Moral':
-        plt.plot(results[1][1][0,:-1,0], (results[1][-1].mean(axis=2))[0,:-1], label=label, linewidth=3)
+        plt.plot(results[1][1][0,:-1,0], (results[1][-1].mean(axis=2))[0,:-1], label=label, linewidth=3, linestyle='dashed')
     elif label == 'Sisson':
         #pdb.set_trace()
-        plt.plot(results[1][1][0,:-1,0], (results[1][-1].mean(axis=2))[0,:-1], label=label, linewidth=3)
+        plt.plot(results[1][1][0,:-1,0], (results[1][-1].mean(axis=2))[0,:-1], label=label, linewidth=3, linestyle='dotted')
     else:
         epsilon_list = results[1][1][0,:,0]
         epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]

@@ -195,7 +195,7 @@ def epsilon_target(dim):
     elif dim == 2:
         return 0.25
     elif dim == 3:
-        return 1
+        return 0.1
     else:
         raise ValueError('epsilon target not available')
     

@@ -10,7 +10,7 @@ import pickle
 import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
-path1 = "/home/alex/inter_simulation_results//simulations_results_12_5_17_tuberculosis"
+path1 = "/home/alex/inter_simulation_results/simulations_results_12_5_17_tuberculosis"
 import os
 os.chdir(path1)
 
@@ -23,10 +23,10 @@ mc_results = tuberculosis_results['mc']
 qmc_results = tuberculosis_results['qmc']
 rqmc_results = tuberculosis_results['rqmc']
 M_repetitions = len(mc_results)
-
+pdb.set_trace()
 distances = mc_results[0]['distances'].flatten()
 #quantiles_list = [0.5, 1, 2, 10]
-quantiles_list = np.linspace(0.1, 10, 20)
+quantiles_list = np.linspace(0.05, 10, 20)
 thresholds  = np.percentile(distances, quantiles_list)
 number_thresholds = len(quantiles_list)
 means_result = np.zeros(shape=(2,M_repetitions,number_thresholds, 3))
@@ -43,14 +43,18 @@ pdb.set_trace()
 variances_posterior = means_result.var(axis=1)
 
 # plot of the variance reduction
-plt.title('Variance reduction for the tuberculosis model', fontsize=18)
-plt.plot(quantiles_list, variances_posterior[1,:,0]/variances_posterior[1,:,1], linewidth=3, label='mc/qmc')
-plt.plot(quantiles_list, variances_posterior[1,:,0]/variances_posterior[1,:,2], linewidth=3, label='mc/rqmc')
+#plt.title('Variance reduction for the tuberculosis model', fontsize=18)
+sns.set_palette("husl")
+sns.set_style("whitegrid", {'axes.grid' : False})
+plt.plot(quantiles_list, variances_posterior[1,:,0]/variances_posterior[1,:,1], linewidth=3, label='MC/QMC', linestyle='dashed')
+plt.plot(quantiles_list, variances_posterior[1,:,0]/variances_posterior[1,:,2], linewidth=3, label='MC/RQMC', linestyle='dotted')
 #plt.xscale('log')
-plt.ylabel('Variance reduction factor', fontsize=14); plt.xlabel('Quantile of distance', fontsize=14)
+plt.ylabel('Variance reduction factor', fontsize=14); plt.xlabel('Quantile of distance in percent', fontsize=14)
 plt.legend(fontsize=14, loc=2)
 plt.savefig('variance_reduction_tuberculosis.png')
 plt.show()
+
+
 
 
 

@@ -164,11 +164,50 @@ if __name__ == '__main__':
     #import ipdb; ipdb.set_trace()
     print delta(y,y_star)
     # save the true data
+    plot_result = True
+    if plot_result:
+        from matplotlib import pyplot as plt
+        import seaborn as sns
+        sns.set_style("whitegrid", {'axes.grid' : False})
+        sns.set_palette("husl")
+        import ipdb; ipdb.set_trace()
+        
+        test = load_precomputed_data(dim, exponent)
+        selector = np.argmin(test['y_diff_values'])
+        min_theta = test['theta_values'][:,selector]
+        N = 1000
+        y_values = np.zeros((N,16,2))
+        for i in range(N):
+            y_values[i,:,:] = simulator(min_theta)
+        
+        ipdb.set_trace()
+        sns.tsplot(y_values[:,:,0]); plt.show()
+        ipdb.set_trace()
+        #true_theta = np.array([ 1.00626479,  0.68721715,  0.02604606])
+        y = simulator(min_theta)
+        plt.plot(y_star[:,0], linewidth=3, linestyle='dashed', label="y*")
+        plt.plot(y_star[:,1], linewidth=3, linestyle='dashed')
+        plt.plot(y[:,0], linewidth=3, label="y")
+        plt.plot(y[:,1], linewidth=3)
+        plt.legend(fontsize=14)
+        plt.xlabel("t", fontsize=14)
+        plt.ylabel("X", fontsize=14)
+        plt.savefig('timeseries_lotka_volterra.png')
+        plt.show()
+
+        x = np.linspace(0, 15, 31)
+        data = np.sin(x) + np.random.rand(10, 31) + np.random.randn(10, 1)
+        ax = sns.tsplot(data=data)
+
+
+
+
+
     if False:
-        test = load_precomputed_data(exponent,dim)
+        test = load_precomputed_data(dim, exponent)
         import pdb; pdb.set_trace()
 
-    precompute_values = True
+    precompute_values = False
     if precompute_values:
         precompute_save_data(exponent, dim)
     save_y_star = True

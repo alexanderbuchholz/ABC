@@ -24,7 +24,7 @@ class smc_sampler(object):
             (dim_particles, N_particles, T_time)
 
     """
-    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small', y_simulation = 'neg_binomial', start_phase_ais= 20, quantile_target=0.3, truncate_neg_binomial=True, quantile_target_negative_binomial=0.99):
+    def __init__(self, N_particles, dim_particles, Time, ESS_treshold_resample=None, ESS_treshold_incrementer = None, dim_auxiliary_var = 0, augment_M=False, epsilon_target=0.05, contracting_AIS=False, M_incrementer=5, M_increase_until_acceptance=True, M_target_multiple_N=1., computational_budget=None, save_size='small', y_simulation = 'neg_binomial', start_phase_ais= 20, quantile_target=0.3, truncate_neg_binomial=True, quantile_target_negative_binomial=0.95):
         """
             set the data structures of the class
             set the random generator that will drive the stochastic propagation
@@ -575,12 +575,12 @@ if __name__ == '__main__':
     sys.path.append("/home/alex/python_programming/ABC/oo_sampler/functions/help_functions")
     #import functions_tuberculosis_model as functions_mixture_model
     #import functions_alpha_stable_model as functions_mixture_model
-    import functions_mixture_model_2 as functions_mixture_model
+    #import functions_mixture_model_2 as functions_mixture_model
     #import functions_toggle_switch_model as functions_mixture_model
     #import functions_lotka_volterra_model as functions_mixture_model
-    #import functions_mixture_model
+    import functions_mixture_model
     model_description = functions_mixture_model.model_string
-    N_particles = 500
+    N_particles = 800
     dim_particles = 2
     Time = 40
     dim_auxiliary_var = 2
@@ -596,7 +596,7 @@ if __name__ == '__main__':
     #propagation_mechanism = 'AIS'# AIS 'Del_Moral'#'nonparametric' #"true_sisson" neg_binomial
     #sampler_type = 'QMC'
     #y_simulation = 'neg_binomial' # 'standard' 'neg_binomial'
-    start_phase_ais = 10
+    start_phase_ais = 5
     truncate_neg_binomial = False
     ancestor_sampling = "False" #"Hilbert"#False#"Hilbert"
     resample = True
@@ -692,7 +692,7 @@ if __name__ == '__main__':
     #test_sampler.reweight_particles(0)
     resampler = functions_propagate_reweight_resample.resampler_particles(N_particles)
     test_sampler.setResampleFunction(resampler.f_resampling)
-    if True:
+    if False:
         precomputed_data = functions_mixture_model.load_precomputed_data(dim_particles, functions_mixture_model.exponent)
         precalculated_particles = precomputed_data['theta_values']
         precalculated_auxialiary_particles = precomputed_data['y_diff_values']
@@ -713,10 +713,10 @@ if __name__ == '__main__':
         pdb.set_trace()
 
     #pdb.set_trace()
-    import yappi
-    yappi.start()
+    #import yappi
+    #yappi.start()
     test_sampler.iterate_smc(resample=resample, save=save, modified_sampling=propagation_mechanism)
-    yappi.get_func_stats().print_all()
+    #yappi.get_func_stats().print_all()
 
     pdb.set_trace()
     print(functions_mixture_model.l1_distance(test_sampler.particles[:,:,-1]))

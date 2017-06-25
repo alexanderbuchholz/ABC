@@ -185,12 +185,14 @@ if False:
     pickle.dump(array_results_list, open(functions_model.model_string+"static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "wb") )
     pdb.set_trace()
 if True:
+    sns.set_style("whitegrid", {'axes.grid' : False})
+    sns.set_palette("husl")
     array_results_list = pickle.load(open(functions_model.model_string+"static_simulation_gaussian_mixuture_dim"+str(dim_particles)+".p", "rb") )
     pdb.set_trace()
-    plt.title("Variance of the variance estimator, dimension "+str(dim_particles), fontsize=18)
+    #plt.title("Variance of the variance estimator, dimension "+str(dim_particles), fontsize=18)
     plt.plot(quantiles, array_results_list[0].var(axis=2).sum(axis=2)[1,:], label="MC", linewidth=3)
-    plt.plot(quantiles, array_results_list[1].var(axis=2).sum(axis=2)[1,:], label="QMC", linewidth=3)
-    plt.plot(quantiles, array_results_list[2].var(axis=2).sum(axis=2)[1,:], label="RQMC", linewidth=3)
+    plt.plot(quantiles, array_results_list[1].var(axis=2).sum(axis=2)[1,:], label="QMC", linewidth=3, linestyle='dashed')
+    plt.plot(quantiles, array_results_list[2].var(axis=2).sum(axis=2)[1,:], label="RQMC", linewidth=3, linestyle='dotted')
     plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
     plt.yscale('log')
     plt.legend(fontsize=14)
@@ -198,15 +200,32 @@ if True:
     plt.clf()
     pdb.set_trace()
 
-    plt.title("Variance of the mean estimator, dimension "+str(dim_particles), fontsize=18)
+    #plt.title("Variance of the mean estimator, dimension "+str(dim_particles), fontsize=18)
     plt.plot(quantiles, array_results_list[0].var(axis=2).sum(axis=2)[0,:], label="MC", linewidth=3)
-    plt.plot(quantiles, array_results_list[1].var(axis=2).sum(axis=2)[0,:], label="QMC", linewidth=3)
-    plt.plot(quantiles, array_results_list[2].var(axis=2).sum(axis=2)[0,:], label="RQMC", linewidth=3)
+    plt.plot(quantiles, array_results_list[1].var(axis=2).sum(axis=2)[0,:], label="QMC", linewidth=3, linestyle='dashed')
+    plt.plot(quantiles, array_results_list[2].var(axis=2).sum(axis=2)[0,:], label="RQMC", linewidth=3, linestyle='dotted')
     plt.xlabel('Quantile of distance', fontsize=14); plt.ylabel('Variance of estimator', fontsize=14)
     plt.yscale('log')
     plt.legend(fontsize=14)
     plt.savefig(functions_model.model_string+"variance_of_mean_estimator_dim"+str(dim_particles)+".png")
     plt.clf()
+
+    print "posterior mean smallest quantile"
+    print "MC"
+    print array_results_list[0][0,0,:,:].mean(axis=0)
+    print "QMC"
+    print array_results_list[1][0,0,:,:].mean(axis=0)
+    print "RQMC"
+    print array_results_list[2][0,0,:,:].mean(axis=0)
+    
+    print "posterior var smallest quantile"
+    print "MC"
+    print array_results_list[0][1,0,:,:].mean(axis=0)
+    print "QMC"
+    print array_results_list[1][1,0,:,:].mean(axis=0)
+    print "RQMC"
+    print array_results_list[2][1,0,:,:].mean(axis=0)
+
 
 # posterior qmc
 if False:

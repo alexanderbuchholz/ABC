@@ -34,7 +34,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-
+sns.set_style("whitegrid", {'axes.grid' : False})
+sns.set_palette("husl")
 name_qmc = 'mixture_gaussians_bimodal_negative_binomial_uniform_kernel_1_VB_component_fixed_epsilon_schedule_algo_only_dim3_4_QMC2_AIS_500_simulation_abc_epsilon_0.005.p'
 posterior_plot = pickle.load(open(name_qmc, "rb"))
 sns.kdeplot(posterior_plot['particles'][0,:,-1], posterior_plot['particles'][1,:,-1])
@@ -93,6 +94,7 @@ for N_particles in N_particles_list:
 
 
     if False:
+        sns.set_style("whitegrid", {'axes.grid' : False})
         plt.title('ESS for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
         plot_no_double_epsilon_ESS(MC_results, 'MC')
         plot_no_double_epsilon_ESS(QMC_results, 'QMC')
@@ -124,6 +126,7 @@ for N_particles in N_particles_list:
 
     if True:
         #plt.title('MSE of variance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
+        sns.set_style("whitegrid", {'axes.grid' : False})
         plot_no_double_epsilon_variance_simple(MC_results, 'MC')
         plot_no_double_epsilon_variance_simple(QMC_results, 'QMC')
         plot_no_double_epsilon_variance_simple(RQMC_results, 'RQMC')
@@ -139,6 +142,7 @@ for N_particles in N_particles_list:
 
     pdb.set_trace()
     #plt.title('MSE for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
+    sns.set_style("whitegrid", {'axes.grid' : False})
     plot_no_double_epsilon(MC_results, 'MC')
     plot_no_double_epsilon(QMC_results, 'QMC')
     plot_no_double_epsilon(RQMC_results, 'RQMC')
@@ -152,7 +156,7 @@ for N_particles in N_particles_list:
     plt.savefig('variance_mean_cum_budget'+str(N_particles)+'N_variance_epsilon.png')
     plt.show()
 
-
+    sns.set_style("whitegrid", {'axes.grid' : False})
     plot_no_double_epsilon_number_simulations(MC_results, 'MC')
     plot_no_double_epsilon_number_simulations(QMC_results, 'QMC')
     plot_no_double_epsilon_number_simulations(RQMC_results, 'RQMC')

@@ -34,4 +34,4 @@ if __name__ == '__main__':
     theta = np.array([1, 0.005, 0.6])
     print simulator(theta)
     print y_star_function()
-    #pdb.set_trace()
+    pdb.set_trace()

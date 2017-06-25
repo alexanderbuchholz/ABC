@@ -14,7 +14,8 @@ import pandas as pd
 sys.path.append(root_path+"/ABC/oo_sampler/functions")
 
 sys.path.append(root_path+"/ABC/oo_sampler/functions/help_functions")
-sys.path.append(root_path+"/ABC/oo_sampler/functions/mixture_model")
+sys.path.append(root_path+"/ABC/oo_sampler/functions/lotka_volterra_model")
+
 sys.path.append(root_path+"/ABC")
 from functions_static_simulation import *
 
@@ -36,9 +37,9 @@ if __name__ == '__main__':
     theta_sampler_list = [theta_sampler_mc, theta_sampler_qmc, theta_sampler_rqmc]
     sampler_type_list = ['MC', 'QMC', 'RQMC']
 
-    dim_list = [1,2,4,8]
-    N_simulations = 10**6
-    M_repetitions = 40
+    dim_list = [3]
+    N_simulations = 10**4
+    M_repetitions = 1
     threshold_quantiles = np.linspace(10, 0.01, 100)
     quantile_single = 0.1
 

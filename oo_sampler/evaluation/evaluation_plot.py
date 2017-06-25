@@ -30,7 +30,9 @@ sys.path.append(root_path+"/ABC/oo_sampler/functions/mixture_model")
 
 #import simulation_parameters_mixture_model_mixed_gaussian_dim2_16_5_17_desktop as simulation_parameters_model
 #import simulation_parameters_mixture_model_mixed_gaussian_dim1_14_6_17_desktop as simulation_parameters_model
-import simulation_parameters_mixture_model_bimodal_gaussian_dim2_11_6_17_desktop as simulation_parameters_model
+#import simulation_parameters_mixture_model_bimodal_gaussian_dim2_11_6_17_desktop as simulation_parameters_model
+
+import simulation_parameters_mixture_model_mixed_gaussian_dim3_15_6_17_desktop as simulation_parameters_model
 
 
 path = simulation_parameters_model.path
@@ -66,7 +68,7 @@ if True:
         print Del_Moral_results[0]
         print Sisson_results[0]
         pdb.set_trace()
-        sns.set_style("darkgrid")
+
         if False: 
             MC_means_inter, MC_epsilons_inter = function_flatten_results(MC_results, 0)
             QMC_means_inter, QMC_epsilons_inter = function_flatten_results(QMC_results, 0)
@@ -88,8 +90,9 @@ if True:
             #plt.savefig(str(N_particles)+'N_means_epsilon.png')
             plt.show()
 
-
-        plt.title('ESS for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
+        sns.set_style("whitegrid", {'axes.grid' : False})
+        sns.set_palette("husl")
+        #plt.title('ESS for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
         plot_no_double_epsilon_ESS(MC_results, 'MC')
         plot_no_double_epsilon_ESS(QMC_results, 'QMC')
         plot_no_double_epsilon_ESS(RQMC_results, 'RQMC')
@@ -103,8 +106,9 @@ if True:
         plt.savefig('ESS_'+str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 
-        if False:
-            plt.title('L1 distance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
+        if True:
+            #plt.title('L1 distance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
+            pdb.set_trace()
             plot_no_double_epsilon_l1_distance(MC_results, 'MC')
             plot_no_double_epsilon_l1_distance(QMC_results, 'QMC')
             plot_no_double_epsilon_l1_distance(RQMC_results, 'RQMC')
@@ -118,7 +122,8 @@ if True:
             plt.savefig('l1distance_'+str(N_particles)+'N_variance_epsilon.png')
             plt.show()
 
-        if False:
+        if True:
+            sns.set_style("whitegrid", {'axes.grid' : False})
             #plt.title('MSE of variance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
             plot_no_double_epsilon_variance(MC_results, 'MC', true_variance= simulation_parameters_model.functions_model.var)
             plot_no_double_epsilon_variance(QMC_results, 'QMC', true_variance= simulation_parameters_model.functions_model.var)
@@ -134,6 +139,7 @@ if True:
             plt.show()
 
         pdb.set_trace()
+        sns.set_style("whitegrid", {'axes.grid' : False})
         #plt.title('MSE for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
         plot_no_double_epsilon(MC_results, 'MC')
         plot_no_double_epsilon(QMC_results, 'QMC')
