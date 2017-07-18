@@ -124,6 +124,10 @@ def function_flatten_results(_results, dim, method="other"):
     return _means_inter, _epsilons_inter
 
 
+def function_print_results_latex(_results):
+    print "var mean", 'var var', "ESS mean", "number simulations_mean", "final epsilon"
+    print _results[0][1].sum(), _results[0][3].sum(), _results[0][4],  _results[0][-1], _results[0][5]
+
 def plot_no_double_epsilon(results, label):
     if label == 'Del Moral':
         #pdb.set_trace()

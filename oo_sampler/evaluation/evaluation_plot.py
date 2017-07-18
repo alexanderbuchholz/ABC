@@ -30,9 +30,9 @@ sys.path.append(root_path+"/ABC/oo_sampler/functions/mixture_model")
 
 #import simulation_parameters_mixture_model_mixed_gaussian_dim2_16_5_17_desktop as simulation_parameters_model
 #import simulation_parameters_mixture_model_mixed_gaussian_dim1_14_6_17_desktop as simulation_parameters_model
-#import simulation_parameters_mixture_model_bimodal_gaussian_dim2_11_6_17_desktop as simulation_parameters_model
+import simulation_parameters_mixture_model_bimodal_gaussian_dim2_11_6_17_desktop as simulation_parameters_model
 
-import simulation_parameters_mixture_model_mixed_gaussian_dim3_15_6_17_desktop as simulation_parameters_model
+#import simulation_parameters_mixture_model_mixed_gaussian_dim3_15_6_17_desktop as simulation_parameters_model
 
 
 path = simulation_parameters_model.path
@@ -60,9 +60,19 @@ if True:
         Del_Moral_results = results_summary_to_save['Del_Moral']
         Sisson_results = results_summary_to_save['Sisson']
 
+        
         print simulation_parameters_model.filename
+
+        function_print_results_latex(MC_results)
+        function_print_results_latex(QMC_results)
+        function_print_results_latex(RQMC_results)
+        function_print_results_latex(Del_Moral_results)
+        print "correction del moral"
+        print Del_Moral_results[1][-1][:,-2,:].mean()
+        function_print_results_latex(Sisson_results)
+
         print N_particles
-        print MC_results[0]
+        print MC_results[0][1]
         print QMC_results[0]
         print RQMC_results[0]
         print Del_Moral_results[0]

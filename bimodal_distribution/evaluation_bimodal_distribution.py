@@ -82,6 +82,17 @@ for N_particles in N_particles_list:
     Del_Moral_results = results_summary_to_save['Del_Moral']
     Sisson_results = results_summary_to_save['Sisson']
 
+    pdb.set_trace()
+    function_print_results_latex(MC_results)
+    function_print_results_latex(QMC_results)
+    function_print_results_latex(RQMC_results)
+    function_print_results_latex(Del_Moral_results)
+    print "correction ESS del moral"
+    print Del_Moral_results[1][-1][:,-2,:].mean()
+    function_print_results_latex(Sisson_results)
+
+
+
     print simulation_parameters_model.filename
     print N_particles
     print MC_results[0]
