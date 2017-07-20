@@ -141,3 +141,19 @@ if __name__ == '__main__':
         filenames_list = [filename+'_'+str(k) for k in K_repetitions]
         partial_parallel_smc(filenames_list[0])
         functions_parallelize.parallelize_partial_over_chunks(partial_parallel_smc, filenames_list[1:])
+    if True:
+        kwargs['dim_auxiliary_var'] = 40
+        #del partial_parallel_smc
+        partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
+        filename = filename_base+'_m'+str(kwargs['dim_auxiliary_var'])
+        filenames_list = [filename+'_'+str(k) for k in K_repetitions]
+        partial_parallel_smc(filenames_list[0])
+        functions_parallelize.parallelize_partial_over_chunks(partial_parallel_smc, filenames_list[1:])
+    if False:
+        kwargs['dim_auxiliary_var'] = 80
+        del partial_parallel_smc
+        partial_parallel_smc = partial(parallel_simulation.set_up_parallel_abc_sampler, **kwargs)
+        filename = filename_base+'_m'+str(kwargs['dim_auxiliary_var'])
+        filenames_list = [filename+'_'+str(k) for k in K_repetitions]
+        partial_parallel_smc(filenames_list[0])
+        functions_parallelize.parallelize_partial_over_chunks(partial_parallel_smc, filenames_list[1:])

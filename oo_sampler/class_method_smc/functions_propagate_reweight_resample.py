@@ -624,7 +624,7 @@ class reweighter_particles():
         ESS_before_reweighting = partial_f_ESS(previous_epsilon)
         if ESS_before_reweighting < self.target_ESS_reweighter:
             print 'ESS breakdown!'
-        pdb.set_trace()
+        #pdb.set_trace()
         variances_normalisation_constant = gaussian_densities_etc.f_kernel_value(epsilon_current, aux_particles, self.kernel).var(axis=0)
         means_normalisation_constant = gaussian_densities_etc.f_kernel_value(epsilon_current, aux_particles, self.kernel).mean(axis=0)
         weights_next, particles_mean, particles_var, ESS = reweight_particles(epsilon_current,
