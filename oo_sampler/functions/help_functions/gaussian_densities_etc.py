@@ -100,7 +100,7 @@ def student_density(x, mu, sigma, df=5):
         raise NameError("The dimensions of the input don't match")
 
 
-def f_kernel_value(epsilon_t, delta_values, f_kernel):
+def OLD_f_kernel_value(epsilon_t, delta_values, f_kernel):
     """
     function that returns the kernel values for an array of several y values
     """
@@ -108,6 +108,18 @@ def f_kernel_value(epsilon_t, delta_values, f_kernel):
     #kernel_values = np.zeros(multiple_y)
     #pdb.set_trace()
     kernel_values = epsilon_t*f_kernel(delta_values/ epsilon_t)
+    #for i_multiple_y in range(multiple_y):
+    #    kernel_values[i_multiple_y] = epsilon_t*f_kernel(delta_values[i_multiple_y]/ epsilon_t)
+    return kernel_values
+
+def f_kernel_value(epsilon_t, delta_values, f_kernel):
+    """
+    function that returns the kernel values for an array of several y values
+    """
+    #multiple_y = delta_values.shape[0]
+    #kernel_values = np.zeros(multiple_y)
+    #pdb.set_trace()
+    kernel_values = f_kernel(delta_values/ epsilon_t)
     #for i_multiple_y in range(multiple_y):
     #    kernel_values[i_multiple_y] = epsilon_t*f_kernel(delta_values[i_multiple_y]/ epsilon_t)
     return kernel_values
@@ -152,6 +164,9 @@ def weighted_choice(weights, u):
 
 # define kernels that can be used for the ABC
 def uniform_kernel(x):
+    return((np.abs(x)<1)*1.)
+
+def OLD_uniform_kernel(x):
     return(0.5*(np.abs(x)<1))
 
 def gaussian_kernel(x):
