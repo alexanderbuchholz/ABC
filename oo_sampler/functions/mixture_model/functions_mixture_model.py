@@ -27,7 +27,7 @@ dim = 3
 exponent = 6
 #path_archive_simulations = '/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model'
 path_archive_simulations = '/home/alex/python_programming/ABC_results_storage/models_information'
-var = 0.1
+var = 1
 
 def simulator(theta):
     """
@@ -46,15 +46,16 @@ def simulator(theta):
         y = np.random.multivariate_normal(mean=np.atleast_1d(theta.squeeze()), cov = var*0.01*np.identity(theta.shape[0]))
     return y
 
-def simulator_vectorized(theta):
+def simulator_vectorized(theta, m = 1):
     """
     a vectorized version of the simulator that makes the simulation much faster
     """
     dim, N = theta.shape
-    y_crude = np.random.multivariate_normal(mean=np.zeros(dim), cov=np.eye(dim), size=N).reshape(dim,N)*var
-    u_vector_selector = np.random.rand(N)<0.5
-    y_crude = y_crude*(0.01**u_vector_selector)
-    y = theta+y_crude
+    y_crude = np.random.multivariate_normal(mean=np.zeros(dim), cov=np.eye(dim), size=(N,m)).reshape(dim,N,m)*var
+    u_vector_selector = np.random.rand(N,m)<0.5
+    y_crude_transformed = y_crude*(0.01**u_vector_selector)[np.newaxis,:,:]
+    y = np.tile(theta[:,:,np.newaxis],(1,1,m))+y_crude_transformed
+    
     return(y)
 
 
@@ -116,8 +117,11 @@ def delta_vectorized(y_star, y):
     :param y: simulated data
     :return: returns float difference according to distance function
     """
-    difference = y_star[:, np.newaxis]-y
-    dif_y = (difference**2).sum(axis=0)**0.5
+    if len(y.shape)>2:
+        difference = y_star[:, np.newaxis, np.newaxis]-y
+    else:
+        difference = y_star[:, np.newaxis]-y
+    dif_y = (difference**2.).sum(axis=0)**0.5
     return(dif_y)
 
 
@@ -202,6 +206,11 @@ def epsilon_target(dim):
 
 
 if __name__ == '__main__':
+    theta = theta_sampler_mc(0, 3, 10)
+    y_star = f_y_star(dim=3)
+    y = simulator_vectorized(theta, m = 2)
+    #pdb.set_trace()
+    delta_vectorized(y_star, y)
     precompute_values = False
     if precompute_values:
         precompute_save_data(exponent, dim)

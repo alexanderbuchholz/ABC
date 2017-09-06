@@ -42,6 +42,7 @@ def f_summary_stats(parameters, sample_method="MC", particles=500, propagation_m
     #for i_simulation in range(32):
         if propagation_method == 'true_sisson':
             try:
+                sample_method = 'QMC'
                 simulation = pickle.load( open( parameters.filename+str(i_simulation)+"_"+sample_method+str(1)+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+".p", "rb" ) )
             except:
                 simulation = pickle.load( open( parameters.filename+'_'+str(i_simulation)+"_"+sample_method+str(1)+"_"+str(propagation_method)+"_"+str(particles)+"_simulation_abc_epsilon_"+str(parameters.epsilon_target)+".p", "rb" ) )
@@ -110,7 +111,7 @@ def f_summary_stats(parameters, sample_method="MC", particles=500, propagation_m
     time_mean = final_simulation_time.mean()
     number_simulations_mean = final_number_simulations.mean()
     number_simulations = number_simulations[0,:, :selector]
-    pdb.set_trace()
+    #pdb.set_trace()
     return [means_last, means_var_last, vars_means_last, vars_vars_last, ESS_mean, epsilon_mean, time_mean, number_simulations_mean], [means_all, epsilons, np.nanvar(means_all, axis=2), number_simulations, vars_vars, vars_all.mean(axis=2), vars_all, l1_distances, ESS]
 
 def function_flatten_results(_results, dim, method="other"):
@@ -126,7 +127,8 @@ def function_flatten_results(_results, dim, method="other"):
 
 def function_print_results_latex(_results):
     print "var mean", 'var var', "ESS mean", "number simulations_mean", "final epsilon"
-    print _results[0][1].sum(), _results[0][3].sum(), _results[0][4],  _results[0][-1], _results[0][5]
+    #pdb.set_trace()
+    print _results[0][1].sum(), _results[0][3].sum(), _results[1][-1].mean(),  _results[0][-1], _results[0][5]
 
 def plot_no_double_epsilon(results, label):
     if label == 'Del Moral':
@@ -139,7 +141,7 @@ def plot_no_double_epsilon(results, label):
         epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
         #pdb.set_trace()
         #var_list = results[1][2][0,:] #(results[1][2][0,:]*results[1][3].mean(axis=0))[:]
-        plt.plot(results[1][1][0,:,0], (results[1][2][0,:]*results[1][3].mean(axis=0))[:], label=label, linewidth=3)
+        plt.plot(results[1][1][0,epsilon_selector,0], (results[1][2][0,:]*results[1][3].mean(axis=0))[epsilon_selector], label=label, linewidth=3)
         #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
 
 def plot_no_double_epsilon_number_simulations(results, label):
@@ -160,7 +162,11 @@ def plot_no_double_epsilon_number_simulations(results, label):
 def plot_no_double_epsilon_variance(results, label, true_variance=1):
     #pdb.set_trace()
     vars_all = results[1][6][0,:]
-    mse_vars_all = ((vars_all-true_variance)**2).mean(axis=1)
+    if true_variance is None : 
+        mse_vars_all = vars_all.var(axis=1)
+    else: 
+        mse_vars_all = ((vars_all-true_variance)**2).mean(axis=1)
+
     if label == 'Del Moral':
         #pdb.set_trace()
         plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3, linestyle='dashed')
@@ -168,11 +174,11 @@ def plot_no_double_epsilon_variance(results, label, true_variance=1):
         #pdb.set_trace()
         plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3].mean(axis=0))[:-1], label=label, linewidth=3, linestyle='dotted')
     else:
-        #epsilon_list = results[1][1][0,:,0]
-        #epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
+        epsilon_list = results[1][1][0,:,0]
+        epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
         #pdb.set_trace()
         #var_list = results[1][2][0,:] #(results[1][2][0,:]*results[1][3].mean(axis=0))[:]
-        plt.plot(results[1][1][0,:,0], (mse_vars_all*results[1][3].mean(axis=0))[:], label=label, linewidth=3)
+        plt.plot(results[1][1][0,epsilon_selector,0], (mse_vars_all*results[1][3].mean(axis=0))[epsilon_selector], label=label, linewidth=3)
         #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
 
 def plot_no_double_epsilon_variance_simple(results, label):

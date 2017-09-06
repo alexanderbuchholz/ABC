@@ -18,7 +18,7 @@ sys.path.append(root_path+"/ABC/oo_sampler/functions/parallelize")
 sys.path.append(root_path+"/ABC/oo_sampler/functions/tuberculosis_model")
 
 #path = "/media/alex/Transcend/ABC_results_storage/simulation_results_18-4-17"
-path = root_path+"/ABC_results_storage/simulation_results_14-6-17"
+path = root_path+"/ABC_results_storage/simulations_results_27_8_17_tuberculosis"
 import gaussian_densities_etc
 #import functions_tuberculosis_model as functions_model
 import functions_tuberculosis_model as functions_model

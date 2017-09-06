@@ -37,6 +37,7 @@ if __name__ == '__main__':
     sampler_type_list = ['MC', 'QMC', 'RQMC']
 
     dim_list = [1,2,4,8]
+    dim_list = [2]
     N_simulations = 10**6
     M_repetitions = 40
     threshold_quantiles = np.linspace(10, 0.01, 100)
@@ -44,11 +45,12 @@ if __name__ == '__main__':
 
     
     pdb.set_trace()
-    vars_to_save = pickle.load(open('backup_vars.p', "rb"))
+    vars_to_save = pickle.load(open('backup_means.p', "rb"))
     list_distributions_mc_var = vars_to_save[0]
     list_distributions_qmc_var = vars_to_save[1]
     list_distributions_rqmc_var = vars_to_save[2]
-    plot_violin_plot(list_distributions_mc_var, list_distributions_qmc_var, list_distributions_rqmc_var, 'var')
+    plot_violin_plot(list_distributions_mc_var, list_distributions_qmc_var, list_distributions_rqmc_var, 'mean')
+    #plot_violin_plot(list_distributions_mc_var, list_distributions_qmc_var, list_distributions_rqmc_var, 'var')
     pdb.set_trace()
 
     list_distributions_mc_mean = {}
@@ -59,7 +61,7 @@ if __name__ == '__main__':
     list_distributions_rqmc_var = {}
     for dim in dim_list:
         y_star = functions_model.f_y_star(dim)
-        instance_compare_samplers = compare_sampling_methods(M_repetitions, simulator, delta, dim, N_simulations, y_star)
+        instance_compare_samplers = compare_sampling_methods(M_repetitions, simulator, delta, dim, N_simulations, y_star, m_intra=10)
 
         instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, theta_sampler_list, sampler_type_list)
         name_plot = "mean_mixed_gaussian_static_dim_%s.png" % (dim)

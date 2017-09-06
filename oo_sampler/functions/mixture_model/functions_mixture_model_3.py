@@ -24,7 +24,7 @@ randtoolbox = rpackages.importr('randtoolbox')
 model_string = "single_gaussian"
 dim = 1
 exponent = 6
-var = 0.1
+var = 1.
 #path_archive_simulations = '/home/alex/python_programming/ABC/oo_sampler/functions/mixture_model'
 path_archive_simulations = '/home/alex/python_programming/ABC_results_storage/models_information'
 
@@ -45,6 +45,16 @@ def simulator(theta):
         raise ValueError('no simulation')
     return y
 
+
+def simulator_vectorized(theta, m = 1):
+    """
+    a vectorized version of the simulator that makes the simulation much faster
+    """
+    dim, N = theta.shape
+    y_crude = np.random.multivariate_normal(mean=np.zeros(dim), cov=np.eye(dim), size=(N,m)).reshape(dim,N,m)*var
+    y = np.tile(theta[:,:,np.newaxis],(1,1,m))+y_crude
+    
+    return(y)
 
 
 def theta_sampler_mc(i, dim, n,*args, **kwargs):
@@ -99,6 +109,21 @@ def delta(y_star, y):
     """
     dif_y = np.linalg.norm(y_star-y)
     return(dif_y)
+
+def delta_vectorized(y_star, y):
+    """
+    Function to calculate the distance function of y and y star for the acceptance step
+    :param y_star:  observed data
+    :param y: simulated data
+    :return: returns float difference according to distance function
+    """
+    if len(y.shape)>2:
+        difference = y_star[:, np.newaxis, np.newaxis]-y
+    else:
+        difference = y_star[:, np.newaxis]-y
+    dif_y = (difference**2.).sum(axis=0)**0.5
+    return(dif_y)
+
 
 def exclude_theta(theta_prop):
     """

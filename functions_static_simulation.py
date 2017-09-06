@@ -1,4 +1,12 @@
-def simulation_joint_distribution(simulator, delta, theta_sampler, dim, N_simulations, y_star, simulator_vectorized=False):
+import pandas as pd
+import numpy as np
+from matplotlib import pyplot as plt
+import seaborn as sns
+sns.set_style("whitegrid", {'axes.grid' : False})
+import ipdb as pdb
+import copy
+
+def simulation_joint_distribution(simulator, delta, theta_sampler, dim, N_simulations, y_star, simulator_vectorized=False, m_intra=1):
     """
     a function that simulates the static joint distribution,
     contains a vectorized version that makes the simulation much faster
@@ -6,25 +14,26 @@ def simulation_joint_distribution(simulator, delta, theta_sampler, dim, N_simula
     returns the prior values and the associated distances
     """
     prior_values = theta_sampler(0, dim, N_simulations)
-    distances = np.zeros(N_simulations)
+    distances = np.zeros((N_simulations, m_intra))
     #pdb.set_trace()
     if simulator_vectorized:
-        y_pseudo = simulator(prior_values)
+        y_pseudo = simulator(prior_values, m_intra)
         distances = delta(y_star, y_pseudo)
         #pdb.set_trace()
     else:
+        raise ValueError('error in implementation')
         for iteration in range(N_simulations):
             y_pseudo = simulator(prior_values[:, iteration])
             distances[iteration] = delta(y_pseudo, y_star)
     return(prior_values, distances)
 
 
-def repeat_joint_simulation(M_repetitions, simulator, delta, theta_sampler, dim, N_simulations, y_star, simulator_vectorized=False):
+def repeat_joint_simulation(M_repetitions, simulator, delta, theta_sampler, dim, N_simulations, y_star, simulator_vectorized=False, m_intra=1):
     """
     iterates the simulation such that we can asses the posterior variance 
     """
     reference_table_theta = np.zeros((dim, N_simulations, M_repetitions))
-    reference_table_distances = np.zeros((1, N_simulations, M_repetitions))
+    reference_table_distances = np.zeros((1, N_simulations, m_intra, M_repetitions))
     for m_iteration in range(M_repetitions):
         prior_values, distances = simulation_joint_distribution(
                             simulator, 
@@ -33,9 +42,10 @@ def repeat_joint_simulation(M_repetitions, simulator, delta, theta_sampler, dim,
                             dim, 
                             N_simulations, 
                             y_star, 
-                            simulator_vectorized=simulator_vectorized)
+                            simulator_vectorized=simulator_vectorized,
+                            m_intra = m_intra)
         reference_table_theta[:, :, m_iteration] = prior_values
-        reference_table_distances[:, :, m_iteration] = distances
+        reference_table_distances[:, :, :, m_iteration] = distances
     return(reference_table_theta, reference_table_distances)
 
 def extract_mean_reference_table(reference_table_theta, reference_table_distances, threshold, target_function):
@@ -46,9 +56,13 @@ def extract_mean_reference_table(reference_table_theta, reference_table_distance
     results_list  = []
     for m_iteration in range(M_repetitions):
         #pdb.set_trace()
-        selector = reference_table_distances[:, :, m_iteration]<threshold
-        selected_thetas = reference_table_theta[:, selector.flatten(), m_iteration]
-        results_list.append(target_function(selected_thetas))
+        weights = reference_table_distances[:, :, :, m_iteration]<threshold
+        weights = weights.mean(axis=2)
+        #selector = reference_table_distances[:, :, :, m_iteration]<threshold
+        weighted_thetas = reference_table_theta[:, :, m_iteration]*weights
+        #selected_thetas = reference_table_theta[:, selector.flatten(), m_iteration]
+        #results_list.append(target_function(selected_thetas))
+        results_list.append(target_function(weighted_thetas))
     return(results_list)
 
 def target_function_mean(x):
@@ -82,7 +96,8 @@ class compare_sampling_methods(object):
         dim, 
         N_simulations,
         y_star,
-        simulator_vectorized=True):
+        simulator_vectorized=True,
+        m_intra = 1):
 
         self.M_repetitions = M_repetitions
         self.simulator = simulator
@@ -91,6 +106,7 @@ class compare_sampling_methods(object):
         self.N_simulations = N_simulations
         self.y_star = y_star
         self.simulator_vectorized = simulator_vectorized
+        self.m_intra = m_intra
 
     def generate_samples(self, theta_sampler, sampler_type):
         """
@@ -105,7 +121,8 @@ class compare_sampling_methods(object):
             self.dim,
             self.N_simulations,
             self.y_star,
-            simulator_vectorized=self.simulator_vectorized)
+            simulator_vectorized=self.simulator_vectorized, 
+            m_intra=self.m_intra)
 
         if sampler_type == 'MC':
             self.reference_table_theta_mc = copy.copy(reference_table_theta)
@@ -191,7 +208,7 @@ class compare_sampling_methods(object):
             del self.reference_table_distances_rqmc
 
     
-    def simulate_and_extract(self, threshold_list, quantile_single, target_function, theta_sampler_list, sampler_type_list):
+    def simulate_and_extract(self, threshold_quantiles, quantile_single, target_function, theta_sampler_list, sampler_type_list):
         """
         function that iterates the simulations and extracts the information
         """
@@ -224,6 +241,7 @@ def plot_violin_plot(dict_dimensions_mc, dict_dimensions_qmc, dict_dimensions_rq
     """
     a function that makes a violin plot
     """
+    
     dimensions = dict_dimensions_mc.keys()
     results_list = []
     for dim in dimensions:
@@ -242,8 +260,16 @@ def plot_violin_plot(dict_dimensions_mc, dict_dimensions_qmc, dict_dimensions_rq
     results_total = pd.concat(results_list)
     if type_col == 'var':
         results_total['log_var'] = np.log(results_total['var'])
-        sns.violinplot(x="dim", y='log_var', hue="type", data=results_total, palette="muted")
+        sns.set(font_scale=1.5)
+        sns.set_style("whitegrid", {'axes.grid' : False})
+        sns.boxplot(x="dim", y='log_var', hue="type", data=results_total, palette="muted")
+        
     else:
-        sns.violinplot(x="dim", y=type_col, hue="type", data=results_total, palette="muted")
+        sns.set(font_scale=1.5)
+        sns.set_style("whitegrid", {'axes.grid' : False})
+        sns.boxplot(x="dim", y=type_col, hue="type", data=results_total, palette="muted")
     plt.savefig(type_col+"violinplot_of_estimator_several_dim"+".png")
     plt.show()
+
+if __name__ == '__main_':
+    pass

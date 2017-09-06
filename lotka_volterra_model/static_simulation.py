@@ -28,9 +28,9 @@ from functions_static_simulation import *
 
 
 if __name__ == '__main__':
-    import functions_mixture_model as functions_model
-    simulator = functions_model.simulator_vectorized
-    delta = functions_model.delta_vectorized
+    import functions_lotka_volterra_model as functions_model
+    simulator = functions_model.simulator
+    delta = functions_model.delta
     theta_sampler_mc = functions_model.theta_sampler_mc
     theta_sampler_rqmc = functions_model.theta_sampler_rqmc
     theta_sampler_qmc = functions_model.theta_sampler_qmc

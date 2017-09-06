@@ -27,7 +27,7 @@ model_string = "tuberculosis_model"
 dim = 2
 exponent = 4
 path_archive_simulations = '/home/alex/python_programming/ABC_results_storage/models_information'
-
+var = None
 import cython
 #@jit
 @cython.wraparound(False)

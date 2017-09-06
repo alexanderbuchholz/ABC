@@ -30,7 +30,8 @@ sys.path.append(root_path+"/ABC/oo_sampler/functions/mixture_model")
 
 #import simulation_parameters_mixture_model_mixed_gaussian_dim2_16_5_17_desktop as simulation_parameters_model
 #import simulation_parameters_mixture_model_mixed_gaussian_dim1_14_6_17_desktop as simulation_parameters_model
-import simulation_parameters_mixture_model_bimodal_gaussian_dim2_11_6_17_desktop as simulation_parameters_model
+#import simulation_parameters_mixture_model_bimodal_gaussian_dim2_11_6_17_desktop as simulation_parameters_model
+import simulation_parameters_tuberculosis_model_dim2_14_6_17_desktop as simulation_parameters_model
 
 #import simulation_parameters_mixture_model_mixed_gaussian_dim3_15_6_17_desktop as simulation_parameters_model
 
@@ -116,7 +117,7 @@ if True:
         plt.savefig('ESS_'+str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 
-        if True:
+        if False:
             #plt.title('L1 distance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
             pdb.set_trace()
             plot_no_double_epsilon_l1_distance(MC_results, 'MC')
@@ -144,7 +145,7 @@ if True:
             plt.xscale('log')
             plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
             plt.xlabel('epsilon')
-            plt.ylabel('MSE times cumulative budget')
+            plt.ylabel('Variance times cumulative budget')
             plt.savefig('mse_variance_budget'+str(N_particles)+'N_variance_epsilon.png')
             plt.show()
 
@@ -160,7 +161,7 @@ if True:
         plt.xscale('log')
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
-        plt.ylabel('MSE times cumulative budget')
+        plt.ylabel('Variance times cumulative budget')
         plt.savefig('mse_cum_budget'+str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 
