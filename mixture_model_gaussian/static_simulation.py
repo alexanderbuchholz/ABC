@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     dim_list = [1,2,4,8]
     dim_list = [1]
-    m_intra = 10
+    m_intra = 15
     N_simulations = 10**6
     M_repetitions = 40
     #threshold_quantiles = np.linspace(10, 0.01, 100)
