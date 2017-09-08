@@ -59,17 +59,24 @@ def extract_mean_reference_table(reference_table_theta, reference_table_distance
         weights = reference_table_distances[:, :, :, m_iteration]<threshold
         weights = weights.mean(axis=2)
         #selector = reference_table_distances[:, :, :, m_iteration]<threshold
-        weighted_thetas = reference_table_theta[:, :, m_iteration]*weights
+        thetas = reference_table_theta[:, :, m_iteration]
         #selected_thetas = reference_table_theta[:, selector.flatten(), m_iteration]
         #results_list.append(target_function(selected_thetas))
-        results_list.append(target_function(weighted_thetas))
+        results_list.append(target_function(thetas, weights))
     return(results_list)
 
-def target_function_mean(x):
-    return(x.mean(axis=1).sum())
+def target_function_mean(x, weights):
+    #pdb.set_trace()
+    res = np.average(x, axis=1, weights=weights[0,:]).sum()
+    # res = x.mean(axis=1).sum()
+    return(res)
 
-def target_function_var(x):
-    return(x.var(axis=1).sum())
+def target_function_var(x, weights):
+    average = np.average(x, axis=1, weights=weights[0,:])
+    variance = np.average((x-average)**2, axis=1, weights=weights[0,:])  # Fast and numerically precise
+    res = variance.sum()
+    #return(x.var(axis=1).sum())
+    return(res)
 
 def loop_extraction_reference_talbe_aggregated(reference_table_theta, reference_table_distances, threshold_list, target_function):
     variance_results = np.zeros(len(threshold_list))
@@ -141,13 +148,17 @@ class compare_sampling_methods(object):
             raise ValueError('type of sampler does not exit !')
         
 
-    def extract_information_aggregated_variance(self, threshold_quantiles, target_function, sampler_type):
+    def extract_information_aggregated_variance(self, threshold_quantiles, target_function, sampler_type, fixed_thresholds=True):
         """
         function that applies the extraction to the simulated results
         """
+        if fixed_thresholds: 
+            self.threshold_list = threshold_quantiles
+        else: 
+            self.threshold_list = np.percentile(self.reference_table_distances_mc[0, :, 0], threshold_quantiles)
 
         if sampler_type == 'MC':
-            self.threshold_list = np.percentile(self.reference_table_distances_mc[0, :, 0], threshold_quantiles)
+            #self.threshold_list = np.percentile(self.reference_table_distances_mc[0, :, 0], threshold_quantiles)
             print("extract variance MC")
             self.variance_results_mc = loop_extraction_reference_talbe_aggregated(
                 self.reference_table_theta_mc,
@@ -221,18 +232,24 @@ class compare_sampling_methods(object):
             self.extract_information_distribution(quantile_single, target_function, sampler_type)
 
 
-def plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, name_plot):
+def plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, name_plot, fixed_thresholds=True):
     """
     a function that plots the variance reduction and that saves the figure
     """
     sns.set_style("whitegrid", {'axes.grid' : False})
+    axes = plt.gca()
+    axes.set_ylim([10**(-7),10**(-3)])
     plt.plot(threshold_quantiles, instance_compare_samplers.variance_results_mc, label='MC', linewidth=3, linestyle='dashed')
     plt.plot(threshold_quantiles, instance_compare_samplers.variance_results_qmc, label='QMC', linewidth=3, linestyle='dotted')
     plt.plot(threshold_quantiles, instance_compare_samplers.variance_results_rqmc, label='RQMC', linewidth=3)
     #plt.xscale('log')
     plt.yscale('log')
     plt.ylabel('Variance of the estimator', fontsize='14')
-    plt.xlabel('Quantile of distance to y* in percent', fontsize='14')
+    if fixed_thresholds:
+        axes.set_ylim([10**(-7),10**(-3)])
+        plt.xlabel('Acceptance treshold epsilon', fontsize='14')
+    else:
+        plt.xlabel('Quantile of distance to y* in percent', fontsize='14')
     plt.legend(fontsize='14')
     plt.savefig(name_plot)
     plt.clf()

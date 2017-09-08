@@ -37,10 +37,12 @@ if __name__ == '__main__':
     sampler_type_list = ['MC', 'QMC', 'RQMC']
 
     dim_list = [1,2,4,8]
-    dim_list = [2]
+    dim_list = [1]
+    m_intra = 10
     N_simulations = 10**6
     M_repetitions = 40
-    threshold_quantiles = np.linspace(10, 0.01, 100)
+    #threshold_quantiles = np.linspace(10, 0.01, 100)
+    threshold_quantiles = np.linspace(2, 0.01, 20)
     quantile_single = 0.1
 
     
@@ -61,10 +63,11 @@ if __name__ == '__main__':
     list_distributions_rqmc_var = {}
     for dim in dim_list:
         y_star = functions_model.f_y_star(dim)
-        instance_compare_samplers = compare_sampling_methods(M_repetitions, simulator, delta, dim, N_simulations, y_star, m_intra=10)
+        instance_compare_samplers = compare_sampling_methods(M_repetitions, simulator, delta, dim, N_simulations, y_star, m_intra=m_intra)
 
         instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, theta_sampler_list, sampler_type_list)
-        name_plot = "mean_mixed_gaussian_static_dim_%s.png" % (dim)
+        name_plot = "mean_mixed_gaussian_static_dim_%s_m_%s.png" % (dim, m_intra)
+        print 'now plotting'
         plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, name_plot)
 
         list_distributions_mc_mean[str(dim)] = instance_compare_samplers.distribution_results_mc
@@ -72,7 +75,8 @@ if __name__ == '__main__':
         list_distributions_rqmc_mean[str(dim)] = instance_compare_samplers.distribution_results_rqmc
 
         instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_var, theta_sampler_list, sampler_type_list)
-        name_plot = "var_mixed_gaussian_static_dim_%s.png" % (dim)
+        name_plot = "var_mixed_gaussian_static_dim_%s_m_%s.png" % (dim, m_intra)
+        print 'now plotting'
         plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, name_plot)
 
         list_distributions_mc_var[str(dim)] = instance_compare_samplers.distribution_results_mc
