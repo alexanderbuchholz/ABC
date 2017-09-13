@@ -121,7 +121,8 @@ if __name__ == '__main__':
 
     def plot_results(type_plot, mean_var_during, var_mean_during, var_after, m_intra=m_intra):
         #pdb.set_trace()
-        plt.plot(mean_var_during.mean(axis=1), label="Variance estimator intra "+type_plot, linewidth=3, linestyle='dashed')
+        #plt.plot(mean_var_during.mean(axis=1), label="Variance estimator intra "+type_plot, linewidth=3, linestyle='dashed')
+        plt.plot(mean_var_during[:,0], label="Variance estimator intra "+type_plot, linewidth=3, linestyle='dashed')
         #plt.plot(mean_var_during[:,0], label="Mean Var "+type_plot, linewidth=3, linestyle='dashed')
 
         #plt.plot(var_mean_during.mean(axis=1), label="Var Mean "+type_plot, linewidth=3, linestyle='dashed')
@@ -146,6 +147,7 @@ if __name__ == '__main__':
     plot_results("RQMC", mean_var_during_rqmc, var_mean_during_rqmc, var_after_rqmc)
     plt.show()
     pdb.set_trace()
+
 
 
 
