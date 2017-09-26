@@ -45,7 +45,7 @@ if __name__ == '__main__':
     threshold_quantiles = np.linspace(2, 0.01, 20)
     quantile_single = 0.1
 
-    
+    """
     pdb.set_trace()
     vars_to_save = pickle.load(open('backup_means.p', "rb"))
     list_distributions_mc_var = vars_to_save[0]
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     plot_violin_plot(list_distributions_mc_var, list_distributions_qmc_var, list_distributions_rqmc_var, 'mean')
     #plot_violin_plot(list_distributions_mc_var, list_distributions_qmc_var, list_distributions_rqmc_var, 'var')
     pdb.set_trace()
-
+    """
     list_distributions_mc_mean = {}
     list_distributions_qmc_mean = {}
     list_distributions_rqmc_mean = {}
