@@ -64,16 +64,19 @@ if __name__ == '__main__':
     for dim in dim_list:
         y_star = functions_model.f_y_star(dim)
         instance_compare_samplers = compare_sampling_methods(M_repetitions, simulator, delta, dim, N_simulations, y_star, m_intra=m_intra)
+        instance_compare_samplers_mc = compare_sampling_methods(M_repetitions, simulator, delta, dim, N_simulations*m_intra, y_star, m_intra=1)
 
-        instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, theta_sampler_list, sampler_type_list)
+        #instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, theta_sampler_list, sampler_type_list)
+        instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, [theta_sampler_qmc, theta_sampler_rqmc], ['QMC', 'RQMC'])
+        instance_compare_samplers_mc.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, [theta_sampler_mc], ['MC'])
         name_plot = "mean_mixed_gaussian_static_dim_%s_m_%s.png" % (dim, m_intra)
         print 'now plotting'
         plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, name_plot)
 
-        list_distributions_mc_mean[str(dim)] = instance_compare_samplers.distribution_results_mc
+        list_distributions_mc_mean[str(dim)] = instance_compare_samplers_mc.distribution_results_mc
         list_distributions_qmc_mean[str(dim)] = instance_compare_samplers.distribution_results_qmc
         list_distributions_rqmc_mean[str(dim)] = instance_compare_samplers.distribution_results_rqmc
-
+        """ 
         instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_var, theta_sampler_list, sampler_type_list)
         name_plot = "var_mixed_gaussian_static_dim_%s_m_%s.png" % (dim, m_intra)
         print 'now plotting'
@@ -82,7 +85,7 @@ if __name__ == '__main__':
         list_distributions_mc_var[str(dim)] = instance_compare_samplers.distribution_results_mc
         list_distributions_qmc_var[str(dim)] = instance_compare_samplers.distribution_results_qmc
         list_distributions_rqmc_var[str(dim)] = instance_compare_samplers.distribution_results_rqmc
-    
+        """
     plot_violin_plot(list_distributions_mc_mean, list_distributions_qmc_mean, list_distributions_rqmc_mean, 'mean')
     plot_violin_plot(list_distributions_mc_var, list_distributions_qmc_var, list_distributions_rqmc_var, 'var')
     if False: 
