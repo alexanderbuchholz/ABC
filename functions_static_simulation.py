@@ -199,6 +199,7 @@ class compare_sampling_methods(object):
             del self.reference_table_distances_mc
 
         elif sampler_type == 'QMC':
+            self.threshold_single = np.percentile(self.reference_table_distances_qmc[0, :, 0], quantile_single)
             print("extract variance QMC")
             self.distribution_results_qmc = loop_extraction_reference_talbe_single(
                 self.reference_table_theta_qmc, 
@@ -209,6 +210,7 @@ class compare_sampling_methods(object):
             del self.reference_table_distances_qmc
 
         elif sampler_type == 'RQMC':
+            self.threshold_single = np.percentile(self.reference_table_distances_rqmc[0, :, 0], quantile_single)
             print("extract variance RQMC")
             self.distribution_results_rqmc = loop_extraction_reference_talbe_single(
                 self.reference_table_theta_rqmc, 
