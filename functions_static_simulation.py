@@ -248,7 +248,7 @@ def plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, 
     plt.yscale('log')
     plt.ylabel('Variance of the estimator', fontsize='14')
     if fixed_thresholds:
-        axes.set_ylim([10**(-7),10**(-3)])
+        axes.set_ylim([10**(-6),10**(-2)])
         plt.xlabel('Acceptance treshold epsilon', fontsize='14')
     else:
         plt.xlabel('Quantile of distance to y* in percent', fontsize='14')
