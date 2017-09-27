@@ -71,7 +71,7 @@ if __name__ == '__main__':
         instance_compare_samplers_mc.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, [theta_sampler_mc], ['MC'])
         name_plot = "mean_mixed_gaussian_static_dim_%s_m_%s.png" % (dim, m_intra)
         print 'now plotting'
-        plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, name_plot)
+        plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, instance_compare_samplers_mc, name_plot)
 
         list_distributions_mc_mean[str(dim)] = instance_compare_samplers_mc.distribution_results_mc
         list_distributions_qmc_mean[str(dim)] = instance_compare_samplers.distribution_results_qmc

@@ -234,14 +234,14 @@ class compare_sampling_methods(object):
             self.extract_information_distribution(quantile_single, target_function, sampler_type)
 
 
-def plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, name_plot, fixed_thresholds=True):
+def plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, instance_compare_samplers_mc, name_plot, fixed_thresholds=True):
     """
     a function that plots the variance reduction and that saves the figure
     """
     sns.set_style("whitegrid", {'axes.grid' : False})
     axes = plt.gca()
     axes.set_ylim([10**(-7),10**(-3)])
-    plt.plot(threshold_quantiles, instance_compare_samplers.variance_results_mc, label='MC', linewidth=3, linestyle='dashed')
+    plt.plot(threshold_quantiles, instance_compare_samplers_mc.variance_results_mc, label='MC', linewidth=3, linestyle='dashed')
     plt.plot(threshold_quantiles, instance_compare_samplers.variance_results_qmc, label='QMC', linewidth=3, linestyle='dotted')
     plt.plot(threshold_quantiles, instance_compare_samplers.variance_results_rqmc, label='RQMC', linewidth=3)
     #plt.xscale('log')
