@@ -15,7 +15,7 @@ def simulation_joint_distribution(simulator, delta, theta_sampler, dim, N_simula
     """
     prior_values = theta_sampler(0, dim, N_simulations)
     distances = np.zeros((N_simulations, m_intra))
-    pdb.set_trace()
+    #pdb.set_trace()
     if simulator_vectorized:
         y_pseudo = simulator(prior_values, m_intra)
         distances = delta(y_star, y_pseudo)
