@@ -65,7 +65,7 @@ if __name__ == '__main__':
     for dim in dim_list:
         y_star = functions_model.f_y_star(dim)
         #instance_compare_samplers = compare_sampling_methods(M_repetitions, simulator, delta, dim, N_simulations, y_star, m_intra=m_intra)
-        instance_compare_samplers_mc = compare_sampling_methods(M_repetitions, simulator, delta, dim, N_simulations*m_intra, y_star, m_intra=1, simulator_vectorized=False)
+        instance_compare_samplers_mc = compare_sampling_methods(M_repetitions, simulator, delta, dim, N_simulations*m_intra, y_star, m_intra=1, simulator_vectorized=True)
 
         #instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, theta_sampler_list, sampler_type_list)
         #instance_compare_samplers.simulate_and_extract(threshold_quantiles, threshold_single, target_function_mean, [theta_sampler_qmc, theta_sampler_rqmc], ['QMC', 'RQMC'])
