@@ -289,9 +289,28 @@ def epsilon_target(dim):
         return 0.01
     else:
         raise ValueError('epsilon_target not available for the chosen dimension')
-    
+
+
+# parallelize 
+from joblib import Parallel, delayed
+import multiprocessing
+num_cores = multiprocessing.cpu_count()
+# what are your inputs, and what operation do you want to 
+# perform on each input. For example...
+def simulator_vectorized(theta, m_intra=1):
+    iterations = theta.shape[1]
+    results = Parallel(n_jobs=num_cores)(delayed(simulator)(theta[:,i,np.newaxis]) for i in range(iterations))
+    return results
+
+def delta_vectorized(y_pseudo_list, y_star):
+    results = np.zeros(len(y_pseudo_list))
+    for i, y_pseudo in enumerate(y_pseudo_list):
+        results[i] = delta(y_star, y_pseudo)
+    return results
+
+
 if __name__ == '__main__':
-    if True:
+    if False:
         test = load_precomputed_data(exponent,dim)
         import pdb; pdb.set_trace()
 

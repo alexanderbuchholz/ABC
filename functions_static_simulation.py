@@ -15,15 +15,16 @@ def simulation_joint_distribution(simulator, delta, theta_sampler, dim, N_simula
     """
     prior_values = theta_sampler(0, dim, N_simulations)
     distances = np.zeros((N_simulations, m_intra))
-    #pdb.set_trace()
+    pdb.set_trace()
     if simulator_vectorized:
         y_pseudo = simulator(prior_values, m_intra)
         distances = delta(y_star, y_pseudo)
         #pdb.set_trace()
     else:
-        raise ValueError('error in implementation')
+        #raise ValueError('error in implementation')
         for iteration in range(N_simulations):
-            y_pseudo = simulator(prior_values[:, iteration])
+            #import ipdb; ipdb.set_trace()
+            y_pseudo = simulator(prior_values[:,iteration][:,np.newaxis])
             distances[iteration] = delta(y_pseudo, y_star)
     return(prior_values, distances)
 
@@ -67,14 +68,15 @@ def extract_mean_reference_table(reference_table_theta, reference_table_distance
 
 def target_function_mean(x, weights):
     #pdb.set_trace()
-    res = np.average(x, axis=1, weights=weights[0,:]).sum()
+    res = np.average(x, axis=1, weights=weights[0,:]).mean()
     # res = x.mean(axis=1).sum()
     return(res)
 
 def target_function_var(x, weights):
+    #import ipdb; ipdb.set_trace()	
     average = np.average(x, axis=1, weights=weights[0,:])
-    variance = np.average((x-average)**2, axis=1, weights=weights[0,:])  # Fast and numerically precise
-    res = variance.sum()
+    variance = np.average((x-average[:,np.newaxis])**2, axis=1, weights=weights[0,:])  # Fast and numerically precise
+    res = variance.mean()
     #return(x.var(axis=1).sum())
     return(res)
 
@@ -221,7 +223,7 @@ class compare_sampling_methods(object):
             del self.reference_table_distances_rqmc
 
     
-    def simulate_and_extract(self, threshold_quantiles, quantile_single, target_function, theta_sampler_list, sampler_type_list):
+    def simulate_and_extract(self, threshold_quantiles, quantile_single, target_function, theta_sampler_list, sampler_type_list, fixed_thresholds=True):
         """
         function that iterates the simulations and extracts the information
         """
@@ -230,7 +232,7 @@ class compare_sampling_methods(object):
             theta_sampler = theta_sampler_list[i_sampler]
             sampler_type = sampler_type_list[i_sampler]
             self.generate_samples(theta_sampler, sampler_type)
-            self.extract_information_aggregated_variance(threshold_quantiles, target_function, sampler_type)
+            self.extract_information_aggregated_variance(threshold_quantiles, target_function, sampler_type, fixed_thresholds=fixed_thresholds)
             self.extract_information_distribution(quantile_single, target_function, sampler_type)
 
 

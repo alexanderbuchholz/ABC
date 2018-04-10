@@ -160,11 +160,11 @@ def loop(theta, N):
 	#	G, X, death_counter, icounter, N_alive, X_cum, W_cum = inner_while(theta_cum, G, X, death_counter, icounter, N_alive, X_cum, W_cum)
         while icounter < N:
 ###################################
-                u = random.random()
+                u = np.random.random()
                 #selector_geneotype = bisect.bisect_left(W_cum, u)
                 selector_geneotype = np.searchsorted(W_cum, u)
 
-                u = random.random()
+                u = np.random.random()
                 #selector_event = bisect.bisect_left(theta_cum, u)
                 selector_event = np.searchsorted(theta_cum, u)
                 #selector_geneotype = multinomial_sample_cum(W_cum)
@@ -247,9 +247,12 @@ def simulator(theta):
         # t = 1
         X = loop(theta, N)
         X_reduced = np.int_(X[X>0])
-        l = []
-        for i in range(0, np.size(X_reduced)):
-            l.append(i)
+        #l = []
+
+        #for i in range(0, np.size(X_reduced)):
+        #    l.append(i)
+        l = range(np.size(X_reduced))
+        #import ipdb; ipdb.set_trace()
         identificator = np.array(l)
         #identificator = np.array([ i for i in range(0, np.size(X_reduced)) ]) # continue here
         disaggregated_X = np.repeat(identificator, X_reduced, axis=0)
@@ -299,5 +302,5 @@ if __name__ == "__main__":
 	yappi.get_func_stats().print_all()
 	#cProfile.run('simulator(theta)')
         yappi.start()
-	repeat_simulation(simulator, theta, 10)
+	repeat_simulation(simulator, theta, 100)
         yappi.get_func_stats().print_all()
