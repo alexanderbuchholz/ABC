@@ -133,30 +133,53 @@ def function_print_results_latex(_results):
 def plot_no_double_epsilon(results, label):
     if label == 'Del Moral':
         #pdb.set_trace()
-        plt.plot(results[1][1][0,:-1,0], (results[1][2][0,:]*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3, linestyle='dashed')
+        plt.plot(results[1][1][0,:-1,0], (results[1][2][0,:]*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=1.5, linestyle='dashed')
     elif label == 'Sisson':
         plt.plot(results[1][1][0,:-1,0], (results[1][2][0,:]*results[1][3].mean(axis=0))[:-1], label=label, linewidth=3, linestyle='dotted')
     else:
         epsilon_list = results[1][1][0,:,0]
         epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
+	unique_epsilon, indices = np.unique(epsilon_list, return_index=True)
         #pdb.set_trace()
         #var_list = results[1][2][0,:] #(results[1][2][0,:]*results[1][3].mean(axis=0))[:]
-        plt.plot(results[1][1][0,epsilon_selector,0], (results[1][2][0,:]*results[1][3].mean(axis=0))[epsilon_selector], label=label, linewidth=3)
+        #plt.plot(results[1][1][0,epsilon_selector,0], (results[1][2][0,:]*results[1][3].mean(axis=0))[epsilon_selector], label=label, linewidth=3)
         #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
+        lwd = 3
+        if label == 'MC':
+            lst = '-.'; lwd = 2
+        elif label == 'QMC':
+            lst = '--'; lwd = 4
+        elif label == 'RQMC':
+            lst = '-'; lwd = 2
+	else: 
+	    raise ValueError("linesyle does not existq")
+        plt.plot(unique_epsilon, (results[1][2][0,:]*results[1][3].mean(axis=0))[indices], label=label, linewidth=lwd, linestyle=lst)
 
 def plot_no_double_epsilon_number_simulations(results, label):
     if label == 'Del Moral':
         #pdb.set_trace()
-        plt.plot(results[1][1][0,:-1,0], (results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3, linestyle='dashed')
+        plt.plot(results[1][1][0,:-1,0], (results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=1.5, linestyle='dashed')
     elif label == 'Sisson':
         plt.plot(results[1][1][0,:-1,0], (results[1][3].mean(axis=0))[:-1], label=label, linewidth=3, linestyle='dotted')
     else:
         epsilon_list = results[1][1][0,:,0]
         epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
+	unique_epsilon, indices = np.unique(epsilon_list, return_index=True)
         #pdb.set_trace()
         #var_list = results[1][2][0,:] #(results[1][2][0,:]*results[1][3].mean(axis=0))[:]
-        plt.plot(results[1][1][0,:,0], (results[1][3].mean(axis=0))[:], label=label, linewidth=3)
+        #plt.plot(results[1][1][0,:,0], (results[1][3].mean(axis=0))[:], label=label, linewidth=3)
         #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
+        lwd = 3
+        if label == 'MC':
+            lst = '-.'; lwd = 2
+        elif label == 'QMC':
+            lst = '--'; lwd = 4
+        elif label == 'RQMC':
+            lst = '-'; lwd = 2
+	else: 
+	    raise ValueError("linesyle does not existq")
+        plt.plot(unique_epsilon, (results[1][3].mean(axis=0))[indices], label=label, linewidth=lwd, linestyle=lst)
+
 
 
 def plot_no_double_epsilon_variance(results, label, true_variance=1):
@@ -169,16 +192,27 @@ def plot_no_double_epsilon_variance(results, label, true_variance=1):
 
     if label == 'Del Moral':
         #pdb.set_trace()
-        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3, linestyle='dashed')
+        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=1.5, linestyle='dashed')
     elif label == 'Sisson':
         #pdb.set_trace()
         plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3].mean(axis=0))[:-1], label=label, linewidth=3, linestyle='dotted')
     else:
         epsilon_list = results[1][1][0,:,0]
         epsilon_selector = epsilon_list[1:]<epsilon_list[:-1]
+        unique_epsilon, indices = np.unique(epsilon_list, return_index=True)
         #pdb.set_trace()
         #var_list = results[1][2][0,:] #(results[1][2][0,:]*results[1][3].mean(axis=0))[:]
-        plt.plot(results[1][1][0,epsilon_selector,0], (mse_vars_all*results[1][3].mean(axis=0))[epsilon_selector], label=label, linewidth=3)
+        #plt.plot(results[1][1][0,epsilon_selector,0], (mse_vars_all*results[1][3].mean(axis=0))[epsilon_selector], label=label, linewidth=3)
+        lwd = 3
+        if label == 'MC':
+            lst = '-.'; lwd = 2
+        elif label == 'QMC':
+            lst = '--'; lwd = 4
+        elif label == 'RQMC':
+            lst = '-'; lwd = 2
+        else:
+            raise ValueError("linesyle does not existq")
+        plt.plot(unique_epsilon, (mse_vars_all*results[1][3].mean(axis=0))[indices], label=label, linewidth=lwd, linestyle=lst)
         #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
 
 def plot_no_double_epsilon_variance_simple(results, label):
@@ -186,11 +220,20 @@ def plot_no_double_epsilon_variance_simple(results, label):
     vars_all = results[1][6]
     mse_vars_all = np.nanvar(vars_all, axis=2).sum(axis=0)
     if label == 'Del Moral':
-        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=3, linestyle='dashed')
+        lwd=2
+        plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3][:,:].mean(axis=0))[:], label=label, linewidth=1.5, linestyle='dashed')
     elif label == 'Sisson':
         plt.plot(results[1][1][0,:-1,0], (mse_vars_all*results[1][3].mean(axis=0))[:-1], label=label, linewidth=3, linestyle='dotted')
     else:
-        plt.plot(results[1][1][0,:,0], (mse_vars_all*results[1][3].mean(axis=0))[:], label=label, linewidth=3)
+        
+        if label == 'MC':
+            lst = '-.'; lwd = 2
+        elif label == 'QMC':
+            lst = '--'; lwd = 4
+        elif label == 'RQMC':
+            lst = '-'; lwd = 2
+
+        plt.plot(results[1][1][0,:,0], (mse_vars_all*results[1][3].mean(axis=0))[:], label=label, linewidth=lwd, linestyle=lst)
         #plt.plot(epsilon_list[epsilon_selector], var_list[epsilon_selector], label=label)
 
 
@@ -198,7 +241,7 @@ def plot_no_double_epsilon_l1_distance(results, label):
     #pdb.set_trace()
     if label == 'Del Moral':
         #pdb.set_trace()
-        plt.plot(results[1][1][0,:-1,0], (results[1][-2].mean(axis=2))[0,:], label=label, linewidth=3, linestyle='dashed')
+        plt.plot(results[1][1][0,:-1,0], (results[1][-2].mean(axis=2))[0,:], label=label, linewidth=1.5, linestyle='dashed')
     elif label == 'Sisson':
         plt.plot(results[1][1][0,:-1,0], (results[1][-2].mean(axis=2))[0,:-1], label=label, linewidth=3, linestyle='dotted')
     else:

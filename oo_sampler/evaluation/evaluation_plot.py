@@ -31,14 +31,14 @@ sys.path.append(root_path+"/ABC/oo_sampler/functions/mixture_model")
 #import simulation_parameters_mixture_model_mixed_gaussian_dim2_16_5_17_desktop as simulation_parameters_model
 #import simulation_parameters_mixture_model_mixed_gaussian_dim1_14_6_17_desktop as simulation_parameters_model
 #import simulation_parameters_mixture_model_bimodal_gaussian_dim2_11_6_17_desktop as simulation_parameters_model
-import simulation_parameters_tuberculosis_model_dim2_14_6_17_desktop as simulation_parameters_model
+#import simulation_parameters_tuberculosis_model_dim2_14_6_17_desktop as simulation_parameters_model
 
-#import simulation_parameters_mixture_model_mixed_gaussian_dim3_15_6_17_desktop as simulation_parameters_model
+import simulation_parameters_mixture_model_mixed_gaussian_dim3_15_6_17_desktop as simulation_parameters_model
 
-
+#import simulation_parameters_mixture_model_single_gaussian_dim3_30_3_17_desktop as simulation_parameters_model
 path = simulation_parameters_model.path
 os.chdir(path)
-#import simulation_parameters_mixture_model_single_gaussian_dim3_30_3_17_desktop as simulation_parameters_model
+
 import f_rand_seq_gen
 import gaussian_densities_etc
 
@@ -100,26 +100,27 @@ if True:
             plt.ylabel('means')
             #plt.savefig(str(N_particles)+'N_means_epsilon.png')
             plt.show()
-
-        sns.set_style("whitegrid", {'axes.grid' : False})
-        sns.set_palette("husl")
-        #plt.title('ESS for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
-        plot_no_double_epsilon_ESS(MC_results, 'MC')
-        plot_no_double_epsilon_ESS(QMC_results, 'QMC')
-        plot_no_double_epsilon_ESS(RQMC_results, 'RQMC')
-        plot_no_double_epsilon_ESS(Del_Moral_results, 'Del Moral')
-        plot_no_double_epsilon_ESS(Sisson_results, 'Sisson')
-        #plt.yscale('log')
-        plt.xscale('log')
-        plt.legend( numpoints=1, ncol=3, fontsize=14)
-        plt.xlabel('epsilon')
-        plt.ylabel('ESS')
-        plt.savefig('ESS_'+str(N_particles)+'N_variance_epsilon.png')
-        plt.show()
+        if False:
+            sns.set_style("whitegrid", {'axes.grid' : False})
+            sns.set_palette("husl")
+            #plt.title('ESS for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
+            plot_no_double_epsilon_ESS(MC_results, 'MC')
+            plot_no_double_epsilon_ESS(QMC_results, 'QMC')
+            plot_no_double_epsilon_ESS(RQMC_results, 'RQMC')
+            plot_no_double_epsilon_ESS(Del_Moral_results, 'Del Moral')
+            plot_no_double_epsilon_ESS(Sisson_results, 'Sisson')
+            #plt.yscale('log')
+            plt.xscale('log')
+            plt.legend( numpoints=1, ncol=3, fontsize=14)
+            plt.xlabel('epsilon')
+            plt.ylabel('ESS')
+            #import ipdb; ipdb.set_trace()
+            #plt.savefig('ESS_'+str(N_particles)+'N_variance_epsilon.png')
+            plt.show()
 
         if False:
             #plt.title('L1 distance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
-            pdb.set_trace()
+            #pdb.set_trace()
             plot_no_double_epsilon_l1_distance(MC_results, 'MC')
             plot_no_double_epsilon_l1_distance(QMC_results, 'QMC')
             plot_no_double_epsilon_l1_distance(RQMC_results, 'RQMC')
@@ -136,16 +137,19 @@ if True:
         if True:
             sns.set_style("whitegrid", {'axes.grid' : False})
             #plt.title('MSE of variance for '+simulation_parameters_model.functions_model.model_string+' over epsilon and N = '+str(N_particles))
-            plot_no_double_epsilon_variance(MC_results, 'MC', true_variance= simulation_parameters_model.functions_model.var)
-            plot_no_double_epsilon_variance(QMC_results, 'QMC', true_variance= simulation_parameters_model.functions_model.var)
-            plot_no_double_epsilon_variance(RQMC_results, 'RQMC', true_variance= simulation_parameters_model.functions_model.var)
-            plot_no_double_epsilon_variance(Del_Moral_results, 'Del Moral', true_variance= simulation_parameters_model.functions_model.var)
-            plot_no_double_epsilon_variance(Sisson_results, 'Sisson', true_variance= simulation_parameters_model.functions_model.var)
+            import ipdb; ipdb.set_trace()
+            plot_no_double_epsilon_variance(MC_results, 'MC', true_variance= None )#simulation_parameters_model.functions_model.var)
+            plot_no_double_epsilon_variance(QMC_results, 'QMC', true_variance= None )#simulation_parameters_model.functions_model.var)
+            plot_no_double_epsilon_variance(RQMC_results, 'RQMC', true_variance= None )#simulation_parameters_model.functions_model.var)
+            plot_no_double_epsilon_variance(Del_Moral_results, 'Del Moral', true_variance= None )#simulation_parameters_model.functions_model.var)
+            plot_no_double_epsilon_variance(Sisson_results, 'Sisson', true_variance= None )#simulation_parameters_model.functions_model.var)
             plt.yscale('log')
             plt.xscale('log')
             plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
+            #plt.legend(numpoints=1, ncol=3, fontsize=14)
             plt.xlabel('epsilon')
             plt.ylabel('Variance times cumulative budget')
+            #import ipdb; ipdb.set_trace()
             plt.savefig('mse_variance_budget'+str(N_particles)+'N_variance_epsilon.png')
             plt.show()
 
@@ -160,8 +164,9 @@ if True:
         plt.yscale('log')
         plt.xscale('log')
         plt.legend(loc='upper left', numpoints=1, ncol=3, fontsize=14)
+        #plt.legend(numpoints=1, ncol=3, fontsize=14)
         plt.xlabel('epsilon')
-        plt.ylabel('Variance times cumulative budget')
+        plt.ylabel('MSE times cumulative budget')
         plt.savefig('mse_cum_budget'+str(N_particles)+'N_variance_epsilon.png')
         plt.show()
 

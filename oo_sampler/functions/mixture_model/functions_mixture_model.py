@@ -86,6 +86,14 @@ def theta_sampler_qmc(i, dim, n,*args, **kwargs):
         u = u*20-10
         return u.transpose()
 
+def test_random(u):
+    tol = 10**-15
+    if (u+tol>1.).any() or (u-tol<0.).any():
+        print("ERROR: outside 0 1 ! ")
+        return True
+    else: 
+        return False
+
 def theta_sampler_rqmc(i, dim, n,*args, **kwargs):
         """
         rqmc sampler for the prior generation of the tuberculosis example
@@ -95,6 +103,10 @@ def theta_sampler_rqmc(i, dim, n,*args, **kwargs):
         random_seed = random.randrange(10**9)
 
         u = np.array(randtoolbox.sobol(n=n, dim=dim, init=(i==0), scrambling=1, seed=random_seed)).reshape((n,dim)) # randtoolbox for sobol sequence
+        while test_random(u):
+            random_seed = random.randrange(10**9)
+            u = np.array(randtoolbox.sobol(n=n, dim=dim, init=(i==0), scrambling=1, seed=random_seed)).reshape((n,dim)) # randtoolbox for sobol sequence
+
         # sample gamma dist, theta1 is birth event proba
         #print u
         u = u*20-10

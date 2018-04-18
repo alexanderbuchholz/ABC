@@ -80,12 +80,16 @@ def target_function_var(x, weights):
     #return(x.var(axis=1).sum())
     return(res)
 
-def loop_extraction_reference_talbe_aggregated(reference_table_theta, reference_table_distances, threshold_list, target_function):
+def loop_extraction_reference_talbe_aggregated(reference_table_theta, reference_table_distances, threshold_list, target_function, true_expectation=None):
     variance_results = np.zeros(len(threshold_list))
     iteration = 0
     for threshold in threshold_list:
         results_inter = extract_mean_reference_table(reference_table_theta, reference_table_distances, threshold, target_function)
-        variance_results[iteration] = np.array(results_inter).var()
+        #import ipdb; ipdb.set_trace()
+        if true_expectation is None: 
+            variance_results[iteration] = np.array(results_inter).var()
+        else: 
+            variance_results[iteration] = ((np.array(results_inter)-true_expectation)**2).mean()
         iteration +=1
     return(variance_results)
 
@@ -134,8 +138,8 @@ class compare_sampling_methods(object):
             m_intra=self.m_intra)
 
         if sampler_type == 'MC':
-            self.reference_table_theta_mc = copy.copy(reference_table_theta)
-            self.reference_table_distances_mc = copy.copy(reference_table_distances)
+            self.reference_table_theta_mc = copy.deepcopy(reference_table_theta)
+            self.reference_table_distances_mc = copy.deepcopy(reference_table_distances)
 
         elif sampler_type == 'QMC':
             self.reference_table_theta_qmc = copy.copy(reference_table_theta)
@@ -150,14 +154,15 @@ class compare_sampling_methods(object):
             raise ValueError('type of sampler does not exit !')
         
 
-    def extract_information_aggregated_variance(self, threshold_quantiles, target_function, sampler_type, fixed_thresholds=True):
+    def extract_information_aggregated_variance(self, threshold_quantiles, target_function, sampler_type, fixed_thresholds=True, true_expectation=None):
         """
         function that applies the extraction to the simulated results
         """
         if fixed_thresholds: 
             self.threshold_list = threshold_quantiles
         else: 
-            self.threshold_list = np.percentile(self.reference_table_distances_mc[0, :, 0], threshold_quantiles)
+            try: self.threshold_list = np.percentile(self.reference_table_distances_mc[0, :, 0], threshold_quantiles)
+            except: pass
 
         if sampler_type == 'MC':
             #self.threshold_list = np.percentile(self.reference_table_distances_mc[0, :, 0], threshold_quantiles)
@@ -166,7 +171,8 @@ class compare_sampling_methods(object):
                 self.reference_table_theta_mc,
                 self.reference_table_distances_mc,
                 self.threshold_list,
-                target_function)
+                target_function, 
+                true_expectation=true_expectation)
 
         elif sampler_type == 'QMC':
             print("extract variance QMC")
@@ -174,7 +180,8 @@ class compare_sampling_methods(object):
                 self.reference_table_theta_qmc,
                 self.reference_table_distances_qmc,
                 self.threshold_list,
-                target_function)
+                target_function, 
+                true_expectation= true_expectation)
 
         elif sampler_type == 'RQMC':
             print("extract variance RQMC")
@@ -182,7 +189,8 @@ class compare_sampling_methods(object):
                 self.reference_table_theta_rqmc,
                 self.reference_table_distances_rqmc,
                 self.threshold_list,
-                target_function)
+                target_function, 
+                true_expectation=true_expectation)
 
 
     def extract_information_distribution(self, quantile_single, target_function, sampler_type):
@@ -223,7 +231,7 @@ class compare_sampling_methods(object):
             del self.reference_table_distances_rqmc
 
     
-    def simulate_and_extract(self, threshold_quantiles, quantile_single, target_function, theta_sampler_list, sampler_type_list, fixed_thresholds=True):
+    def simulate_and_extract(self, threshold_quantiles, quantile_single, target_function, theta_sampler_list, sampler_type_list, fixed_thresholds=True, true_expectation=None):
         """
         function that iterates the simulations and extracts the information
         """
@@ -232,11 +240,11 @@ class compare_sampling_methods(object):
             theta_sampler = theta_sampler_list[i_sampler]
             sampler_type = sampler_type_list[i_sampler]
             self.generate_samples(theta_sampler, sampler_type)
-            self.extract_information_aggregated_variance(threshold_quantiles, target_function, sampler_type, fixed_thresholds=fixed_thresholds)
+            self.extract_information_aggregated_variance(threshold_quantiles, target_function, sampler_type, fixed_thresholds=fixed_thresholds, true_expectation=true_expectation)
             self.extract_information_distribution(quantile_single, target_function, sampler_type)
 
 
-def plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, instance_compare_samplers_mc, name_plot, fixed_thresholds=True):
+def plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, instance_compare_samplers_mc, name_plot, fixed_thresholds=True, type_var_mse='Variance'):
     """
     a function that plots the variance reduction and that saves the figure
     """
@@ -248,7 +256,7 @@ def plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, 
     plt.plot(threshold_quantiles, instance_compare_samplers.variance_results_rqmc, label='RQMC', linewidth=3)
     #plt.xscale('log')
     plt.yscale('log')
-    plt.ylabel('Variance of the estimator', fontsize='14')
+    plt.ylabel(type_var_mse+' of the estimator', fontsize='14')
     if fixed_thresholds:
         axes.set_ylim([10**(-6),10**(-2)])
         plt.xlabel('Acceptance treshold epsilon', fontsize='14')
