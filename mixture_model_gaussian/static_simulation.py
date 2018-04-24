@@ -36,8 +36,8 @@ if __name__ == '__main__':
     theta_sampler_list = [theta_sampler_mc, theta_sampler_qmc, theta_sampler_rqmc]
     sampler_type_list = ['MC', 'QMC', 'RQMC']
 
-    dim_list = [1,2,4,8]
-    #dim_list = [1]
+    #dim_list = [1,2,4,8]
+    dim_list = [2]
     m_intra = np.array(int(sys.argv[1]))
     N_simulations = 10**5
     M_repetitions = 40
@@ -65,20 +65,20 @@ if __name__ == '__main__':
         y_star = functions_model.f_y_star(dim)
         instance_compare_samplers = compare_sampling_methods(M_repetitions, simulator, delta, dim, N_simulations, y_star, m_intra=m_intra)
         #instance_compare_samplers_mc = compare_sampling_methods(M_repetitions, simulator, delta, dim, N_simulations*m_intra, y_star, m_intra=1)
+        if False: 
+            instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, theta_sampler_list, sampler_type_list, true_expectation=0, fixed_thresholds=False)
+            #instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, [theta_sampler_qmc, theta_sampler_rqmc], ['QMC', 'RQMC'], true_expectation=0, fixed_thresholds=True)
+            #instance_compare_samplers_mc.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, [theta_sampler_mc], ['MC'], true_expectation=0, fixed_thresholds=True)
+            name_plot = "new_mean_mixed_gaussian_static_dim_%s_m_%s.png" % (dim, m_intra)
+            print 'now plotting'
+            #plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, instance_compare_samplers_mc, name_plot, fixed_thresholds=True)
+            plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, instance_compare_samplers, name_plot, fixed_thresholds=False, type_var_mse="MSE")
 
-        instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, theta_sampler_list, sampler_type_list, true_expectation=0, fixed_thresholds=False)
-        #instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, [theta_sampler_qmc, theta_sampler_rqmc], ['QMC', 'RQMC'], true_expectation=0, fixed_thresholds=True)
-        #instance_compare_samplers_mc.simulate_and_extract(threshold_quantiles, quantile_single, target_function_mean, [theta_sampler_mc], ['MC'], true_expectation=0, fixed_thresholds=True)
-        name_plot = "new_mean_mixed_gaussian_static_dim_%s_m_%s.png" % (dim, m_intra)
-        print 'now plotting'
-        #plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, instance_compare_samplers_mc, name_plot, fixed_thresholds=True)
-        plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, instance_compare_samplers, name_plot, fixed_thresholds=False, type_var_mse="MSE")
-
-        #list_distributions_mc_mean[str(dim)] = instance_compare_samplers_mc.distribution_results_mc
-        #list_distributions_qmc_mean[str(dim)] = instance_compare_samplers.distribution_results_qmc
-        #list_distributions_rqmc_mean[str(dim)] = instance_compare_samplers.distribution_results_rqmc
-         
-        instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_var, theta_sampler_list, sampler_type_list, fixed_thresholds=False)
+            #list_distributions_mc_mean[str(dim)] = instance_compare_samplers_mc.distribution_results_mc
+            #list_distributions_qmc_mean[str(dim)] = instance_compare_samplers.distribution_results_qmc
+            #list_distributions_rqmc_mean[str(dim)] = instance_compare_samplers.distribution_results_rqmc
+        # replace the true expectation at this point
+        instance_compare_samplers.simulate_and_extract(threshold_quantiles, quantile_single, target_function_var, theta_sampler_list, sampler_type_list, true_expectation=None, fixed_thresholds=False)
         name_plot = "new_var_mixed_gaussian_static_dim_%s_m_%s.png" % (dim, m_intra)
         print 'now plotting'
         plot_variance_mean_variance(threshold_quantiles, instance_compare_samplers, instance_compare_samplers, name_plot, type_var_mse="Variance")

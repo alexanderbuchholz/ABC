@@ -88,6 +88,13 @@ def loop_extraction_reference_talbe_aggregated(reference_table_theta, reference_
         #import ipdb; ipdb.set_trace()
         if true_expectation is None: 
             variance_results[iteration] = np.array(results_inter).var()
+        elif callable(true_expectation):
+            theta = reference_table_theta[:,:,0]
+            proba = true_expectation(theta, threshold) # infact rather true probability
+            weights = proba/proba.sum()
+            true_value = ((theta**2*weights).sum(axis=1)-(theta*weights).sum(axis=1)**2).mean()
+            variance_results[iteration] = ((np.array(results_inter)-true_value)**2).mean()
+            import ipdb; ipdb.set_trace()
         else: 
             variance_results[iteration] = ((np.array(results_inter)-true_expectation)**2).mean()
         iteration +=1

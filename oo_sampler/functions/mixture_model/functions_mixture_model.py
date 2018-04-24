@@ -17,6 +17,8 @@ import rpy2.robjects.packages as rpackages
 import rpy2.robjects as robjects
 from scipy.stats import multivariate_normal
 from scipy.stats import gaussian_kde
+from scipy.stats import ncx2
+
 
 
 #from numba import jit
@@ -158,6 +160,21 @@ def check_consistency_theta(theta_prop):
 def f_y_star(dim=2):
     y_star = np.zeros(dim)
     return y_star
+
+def probability_ball(theta, epsilon):
+    #import ipdb; ipdb.set_trace()
+    dim, N = theta.shape
+    nc1 = (theta**2/var).sum(axis=0)
+    nc2 = (theta**2/(var*0.01)).sum(axis=0)
+    #proba_list = []
+    #for epsilon in epsilon_list:
+    part1 = ncx2.cdf(x=epsilon**0.5, df=dim, nc=nc1)
+    part2 = ncx2.cdf(x=epsilon**0.5, df=dim, nc=nc2)
+    proba = 0.5*part1+0.5*part2
+    #proba_list.append(proba)
+    #return np.array(proba_list)
+    return proba
+    
 
 
 def true_posterior(theta):
